@@ -21,6 +21,39 @@ description: Пошаговая инструкция по заполнению e
 10. Добавьте `examples`, чтобы справа появились реальные JSON-примеры.
 11. Добавьте `x-docs`, если нужен статус, блоки внимания, ручной порядок секций или PHP/Node.js примеры.
 
+## Операции с документацией
+
+Вся работа с API reference сейчас выполняется через редактирование файлов. Основной файл для endpoint-страниц — `content/openapi.yaml`. Статические страницы верхнего меню лежат в `content/pages/*.mdx`. Порядок статических страниц задается в `PAGE_ORDER` внутри `lib/pages.ts`.
+
+| Что редактируем | Где находится | Что изменится на сайте |
+| --- | --- | --- |
+| Endpoint | `paths` в `content/openapi.yaml` | Появится, изменится или исчезнет страница в API Reference. |
+| Метод endpoint | `get`, `post`, `put`, `patch`, `delete` внутри path | Изменится method badge, cURL и сортировка методов. |
+| Header/path/query parameter | `parameters` внутри endpoint | Изменятся секции параметров и cURL. |
+| Request body field | `requestBody` или `$ref` схема в `components.schemas` | Изменится дерево Request body и request-пример. |
+| Response | `responses` внутри endpoint | Изменятся секция Responses и response tabs справа. |
+| Response example | `example` или `examples` внутри response content | Изменятся JSON tabs справа. |
+| Дополнительный блок | `x-docs.blocks` внутри endpoint | Появится, изменится, переместится или исчезнет notice/text/code блок. |
+| Request-пример справа | `x-docs.requestExamples` внутри endpoint | Появится, изменится или исчезнет языковой tab справа. |
+| API-группа в левом меню | Root-level `tags` и operation-level `tags` | Endpoint попадет в нужную группу API Reference. |
+| Статическая docs-страница | `content/pages/*.mdx` | Появится или изменится страница верхней навигации. |
+
+Главное правило: технический контракт endpoint хранится в стандартном OpenAPI, а редакционные вставки и порядок контента — в `x-docs`. Не переносите технические поля в `x-docs`, иначе cURL, схемы и response-примеры не смогут построиться автоматически.
+
+## CRUD Workflow Overview
+
+CRUD в этой системе означает ручные операции с YAML/MDX: создать, прочитать/проверить, отредактировать, удалить или переместить объект документации.
+
+| Операция | Что сделать | Что проверить |
+| --- | --- | --- |
+| Create | Добавить новый YAML/MDX-блок с уникальными ключами. | Страница появилась, нет дубликатов `operationId`, примеры рендерятся. |
+| Read | Найти объект по path, method, `operationId`, `id` блока или имени схемы. | Вы редактируете правильный endpoint и правильный вложенный блок. |
+| Update | Изменить нужные поля, не меняя соседние блоки. | Навигация, URL, schema tree, examples и notices остались согласованными. |
+| Delete | Удалить только нужный method, response, parameter, block или schema. | Нет битых `$ref`, пустых groups, неиспользуемых examples и неверных ссылок. |
+| Move | Изменить `tags`, path, `placement`, `sectionOrder` или порядок item в массиве. | Объект появился в новом месте и не продублировался в старом. |
+
+Перед любой крупной правкой найдите endpoint по двум признакам: path в `paths` и method внутри path. `operationId` помогает понять, что это тот же endpoint, но URL зависит от него, поэтому переименовывайте `operationId` только когда сознательно готовы изменить ссылку на страницу.
+
 ## Главные поля OpenAPI
 
 | Поле | Когда использовать | Что влияет на странице |
@@ -92,6 +125,41 @@ x-docs:
 | `tone` | Цвет notice-блока. Используется только для `notice`. |
 | `language` | Язык code-блока. Используется только для `code`. |
 | `value` | Код или данные code-блока. Используется только для `code`. |
+
+## CRUD для дополнительных блоков
+
+Дополнительные блоки редактируются только внутри массива `x-docs.blocks` конкретного endpoint. Порядок блоков с одинаковым `placement` равен порядку элементов в YAML.
+
+| Операция | Как выполнить |
+| --- | --- |
+| Create block | Добавьте новый item в `x-docs.blocks` с уникальным `id`, типом, `placement`, заголовком и содержимым. |
+| Edit block | Измените `title`, `body`, `tone`, `language` или `value` у существующего item. `id` лучше не менять, если на блок уже есть якорные ссылки. |
+| Delete block | Удалите весь item из массива `x-docs.blocks`. После удаления проверьте, что между соседними YAML-блоками не сломалась indentation. |
+| Move block между секциями | Измените `placement`, например с `after:request-body` на `before:responses`. |
+| Move block внутри одной секции | Переместите item выше или ниже в массиве `x-docs.blocks`, не меняя `placement`. |
+| Change block type | Поменяйте `type`, затем оставьте только поля, нужные для нового типа. Для `notice` нужен `tone`, для `code` нужны `language` и `value`. |
+
+```yaml
+x-docs:
+  blocks:
+    - id: auth-warning
+      type: notice
+      tone: warning
+      placement: before:header-parameters
+      title: Store the token securely
+      body: The secret token is returned only once.
+    - id: retry-behavior
+      type: text
+      placement: after:responses
+      title: Retry behavior
+      body: Use `Idempotency-Key` when retrying create requests.
+```
+
+Чтобы перенести `retry-behavior` перед response-секцией, измените только `placement`.
+
+```yaml
+placement: before:responses
+```
 
 ## Места вставки блоков
 
@@ -283,6 +351,236 @@ responses:
               message: Query parameter is invalid.
 ```
 
+## CRUD для endpoint
+
+Endpoint создается как пара `path + method` внутри `paths`. Один path может содержать несколько методов, например `get` и `post`.
+
+### Create endpoint
+
+1. Найдите или создайте нужный path в `paths`.
+2. Добавьте method-блок: `get`, `post`, `put`, `patch` или `delete`.
+3. Укажите `tags`, чтобы endpoint попал в правильную группу.
+4. Укажите уникальный `operationId`. Это основа URL страницы.
+5. Укажите `summary` для левого меню.
+6. Укажите `description` для верхнего абзаца страницы.
+7. Добавьте `parameters`, если есть headers, path или query.
+8. Добавьте `requestBody`, если запрос принимает body.
+9. Добавьте `responses` минимум для успешного статуса и основных ошибок.
+10. Добавьте `x-docs`, если нужны статус, блоки, ручной порядок секций или языковые request-примеры.
+
+```yaml
+paths:
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: Get an order
+      description: Returns a single order by its identifier.
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Unique order identifier.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+```
+
+### Edit endpoint
+
+Меняйте только поля, которые отвечают за нужный результат.
+
+| Нужно изменить | Что редактировать | Важное последствие |
+| --- | --- | --- |
+| Текст в левом меню | `summary` | URL не меняется, если `operationId` прежний. |
+| Большой H1 | `x-docs.title` | Навигация не меняется. |
+| Верхнее описание | `description` | Меняется абзац под H1. |
+| Группу в левом меню | Первый item в `tags` endpoint | Может измениться URL, потому что slug группы участвует в href. |
+| URL endpoint-страницы | `operationId` или первый `tag` | Все внешние ссылки на старый URL нужно обновить. |
+| HTTP method | Ключ `get/post/put/...` | cURL и method badge изменятся; проверьте request body. |
+| API path | Ключ path в `paths` | Изменится cURL, path parameters и вложенная навигация. |
+| Порядок авто-секций | `x-docs.sectionOrder` | Неуказанные секции не скрываются, а добавляются ниже. |
+
+### Delete endpoint
+
+Если удаляется только один метод, удалите method-блок внутри path. Если path больше не содержит методов, удалите весь path.
+
+```yaml
+paths:
+  /orders/{orderId}:
+    get:
+      # удалить только этот блок, если endpoint больше не нужен
+```
+
+После удаления endpoint проверьте `components.schemas`: если schema использовалась только удаленным endpoint, ее можно удалить отдельно. Если schema используется другими endpoint, оставьте ее.
+
+### Duplicate endpoint
+
+Копирование удобно для похожих endpoint, но после копирования обязательно замените уникальные поля.
+
+1. Скопируйте method-блок целиком.
+2. Измените path или method.
+3. Измените `operationId`.
+4. Измените `summary` и `description`.
+5. Проверьте `parameters`, особенно path-параметры.
+6. Проверьте request/response examples, чтобы они не описывали старый endpoint.
+7. Проверьте `x-docs.blocks`, чтобы `id` блоков не повторялись внутри нового endpoint.
+
+## CRUD для параметров
+
+Параметры endpoint находятся в массиве `parameters`. Каждый item — отдельный header, path, query или cookie параметр.
+
+| Операция | Как выполнить |
+| --- | --- |
+| Create parameter | Добавьте item с `name`, `in`, `required`, `description`, `schema` и при необходимости `example`. |
+| Edit parameter | Измените описание, requirement, example или constraints внутри `schema`. |
+| Delete parameter | Удалите item из массива и проверьте, что cURL больше не содержит этот параметр. |
+| Move parameter | Переместите item выше/ниже внутри `parameters`. На странице порядок внутри группы повторяет YAML-порядок. |
+| Change location | Измените `in`, например с `query` на `header`, и проверьте, что параметр появился в другой секции. |
+
+Path-параметр должен соответствовать имени в path. Если path содержит `/orders/{orderId}`, параметр должен называться `orderId` и иметь `in: path`.
+
+```yaml
+- name: orderId
+  in: path
+  required: true
+  description: Unique order identifier.
+  schema:
+    type: string
+```
+
+## CRUD для request/response schemas
+
+Схемы можно описывать прямо внутри endpoint или через `$ref` на `components.schemas`. Для сложных и повторно используемых объектов используйте `$ref`.
+
+| Операция | Как выполнить |
+| --- | --- |
+| Create schema | Добавьте новую schema в `components.schemas` и подключите ее через `$ref`. |
+| Edit field | Найдите property внутри schema и измените `type`, `description`, `format`, constraints или вложенные `properties`. |
+| Delete field | Удалите property и уберите его из массива `required`, если оно было mandatory. |
+| Move field | Переместите property выше/ниже внутри `properties`; дерево на странице повторит порядок YAML. |
+| Rename field | Переименуйте ключ property, обновите `required`, examples и все упоминания в описаниях. |
+| Delete schema | Сначала убедитесь, что на schema больше нет `$ref`, затем удалите ее из `components.schemas`. |
+
+Если меняете поле в shared schema, изменение появится во всех endpoint, которые используют этот `$ref`. Для endpoint-специфичного отличия создайте отдельную schema, а не ломайте общую.
+
+```yaml
+components:
+  schemas:
+    Order:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+          description: Stable order identifier.
+        status:
+          type: string
+          enum: [pending, paid, canceled]
+```
+
+## CRUD для examples
+
+Request examples и response examples используются в правой панели. cURL строится автоматически, а дополнительные языки берутся из `x-docs.requestExamples`.
+
+| Операция | Request examples | Response examples |
+| --- | --- | --- |
+| Create | Добавьте item в `x-docs.requestExamples`. | Добавьте `example` или item в `examples` внутри response content. |
+| Edit | Измените `label`, `language` или `value`. | Измените `summary`, `description` или `value`. |
+| Delete | Удалите item из `x-docs.requestExamples`. | Удалите item из `examples` или поле `example`. |
+| Move | Переместите item выше/ниже в `requestExamples`. | Переместите item выше/ниже в `examples`; tabs повторяют порядок YAML. |
+| Duplicate | Скопируйте item и замените `id`, `label`, `language`, `value`. | Скопируйте example и замените ключ, `summary`, `value`. |
+
+Для response examples ключи внутри `examples` должны быть уникальными в рамках одного status/content-type.
+
+```yaml
+examples:
+  created:
+    summary: Created
+    value:
+      id: key_8xK2mR9
+  dryRun:
+    summary: Dry run
+    value:
+      id: preview_key
+```
+
+## Управление навигацией
+
+Левая API-навигация создается автоматически из OpenAPI. Верхняя навигация создается из MDX-страниц.
+
+| Навигационный элемент | Источник | Как изменить |
+| --- | --- | --- |
+| Главная API-группа | Root-level `tags` и первый `tags` item endpoint | Добавьте/переименуйте tag в root-level `tags`, затем используйте его в endpoint. |
+| Порядок API-групп | Порядок root-level `tags` | Переместите tag выше/ниже в верхнем массиве `tags`. |
+| Вложенная группа | Path segments | Измените path, например `/users/{userId}/api-keys`. |
+| Label endpoint | `summary` | Измените `summary`. |
+| URL endpoint | Первый `tag` плюс `operationId` | Меняйте только если готовы обновить внешние ссылки. |
+| Порядок endpoint внутри группы | Сейчас: tag order, path alphabetical, method order | Измените path/method только если это корректно для API. |
+| Верхняя docs-страница | `content/pages/*.mdx` | Создайте, отредактируйте или удалите MDX-файл. |
+| Порядок верхних docs-страниц | `PAGE_ORDER` в `lib/pages.ts` | Добавьте slug страницы в нужное место массива. |
+
+Пример создания новой API-группы:
+
+```yaml
+tags:
+  - name: Users
+    description: Customer identity endpoints.
+  - name: Orders
+    description: Order management endpoints.
+paths:
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: Get an order
+```
+
+Статическая docs-страница создается отдельным MDX-файлом.
+
+```md
+---
+title: Billing
+description: Billing concepts and payment flows.
+---
+
+## Overview
+
+Use this page for conceptual documentation that is not tied to one endpoint.
+```
+
+Чтобы эта страница была в нужном месте верхнего меню, добавьте ее slug в `PAGE_ORDER`.
+
+```ts
+const PAGE_ORDER = ["guides", "manager-guide", "billing", "authentication", "errors", "changelog"];
+```
+
+## Безопасное переименование и удаление
+
+Некоторые поля меняют URL или ломают связи, если изменить их без проверки.
+
+| Действие | Риск | Безопасный порядок |
+| --- | --- | --- |
+| Rename `operationId` | Меняется URL endpoint-страницы. | Сначала проверьте внешние ссылки, затем меняйте `operationId`, затем проверьте новый URL. |
+| Rename first `tag` | Endpoint переедет в другую группу и URL изменится. | Обновите root-level `tags`, endpoint `tags`, затем проверьте левую навигацию. |
+| Rename path parameter | Может разойтись path и `parameters`. | Переименуйте `{param}` в path и `name` у `in: path` параметра одновременно. |
+| Delete schema | `$ref` может начать указывать в пустоту. | Найдите все `$ref` на schema, удалите или замените их, потом удаляйте schema. |
+| Delete block | Можно потерять важное предупреждение. | Проверьте, что информация не нужна в другом placement или endpoint. |
+| Delete response | Правая панель может потерять важный JSON example. | Удаляйте только если status больше не является частью контракта. |
+
+Что нельзя сделать только YAML-редактированием:
+
+1. Нельзя задать произвольный drag-and-drop порядок endpoint внутри группы. Сейчас порядок строится из root-level `tags`, затем path, затем method.
+2. Нельзя скрыть авто-секцию через `sectionOrder`. Неуказанные секции добавляются автоматически, чтобы случайно не потерять важные параметры или responses.
+3. Нельзя добавить ручной `navOrder` без изменения кода. Если такой порядок понадобится, это отдельная задача для разработки.
+4. Нельзя сделать кликабельную форму редактирования endpoint только через OpenAPI. Сейчас источник данных — YAML/MDX.
+
 ## Финальная проверка перед публикацией
 
 1. У endpoint есть `operationId`, `summary`, `description` и `tags`.
@@ -294,4 +592,9 @@ responses:
 7. Ограничения (`format`, `enum`, `minimum`, `maxLength`, `pattern`) указаны там, где они важны для интеграции.
 8. Notice-блоки используются только для действительно важных сигналов.
 9. PHP/Node.js примеры в `x-docs.requestExamples` не противоречат JSON body и headers.
-10. После изменения файла сайт проходит сборку без ошибок.
+10. Нет дубликатов `operationId` в `content/openapi.yaml`.
+11. После удаления endpoint, response или schema нет неиспользуемых `$ref` и битых ссылок.
+12. После переноса блока проверен его `placement` и порядок внутри `x-docs.blocks`.
+13. После изменения `summary`, `tag`, `operationId` или path проверены левое меню и URL страницы.
+14. После изменения top navigation проверен `PAGE_ORDER` и slug MDX-страницы.
+15. После изменения файла сайт проходит сборку без ошибок.
