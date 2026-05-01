@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Menu, X } from "lucide-react";
+import { ChevronRight, Headphones, Menu, X } from "lucide-react";
 import type { NavNode } from "@/lib/openapi";
 import { MethodBadge } from "@/components/MethodBadge";
 
@@ -68,7 +68,7 @@ function EndpointNavNode({
   }
 
   return (
-    <div className="endpoint-group">
+    <div className={level === 0 ? "endpoint-group endpoint-group-root" : "endpoint-group"}>
       <button
         type="button"
         className="endpoint-group-button"
@@ -121,19 +121,32 @@ export function EndpointNav({ nodes, activeHref, onNavigate }: EndpointNavProps)
   }
 
   return (
-    <nav className="endpoint-nav" aria-label="Endpoint navigation">
-      {nodes.map((node) => (
-        <EndpointNavNode
-          key={node.id}
-          node={node}
-          level={0}
-          expanded={expanded}
-          activeHref={activeHref}
-          onToggle={toggle}
-          onNavigate={onNavigate}
-        />
-      ))}
-    </nav>
+    <div className="endpoint-nav-card">
+      <div className="endpoint-nav-heading">
+        <span>Endpoints</span>
+      </div>
+      <nav className="endpoint-nav" aria-label="Endpoint navigation">
+        {nodes.map((node) => (
+          <EndpointNavNode
+            key={node.id}
+            node={node}
+            level={0}
+            expanded={expanded}
+            activeHref={activeHref}
+            onToggle={toggle}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </nav>
+      <div className="endpoint-support-card">
+        <span>Need help?</span>
+        <p>Contact our support team for integration questions.</p>
+        <button type="button">
+          <Headphones size={14} aria-hidden="true" />
+          Contact Support
+        </button>
+      </div>
+    </div>
   );
 }
 

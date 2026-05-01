@@ -2,119 +2,94 @@ openapi: 3.0.3
 info:
   title: Example Commerce API
   version: 1.0.0
-  description: A sample OpenAPI document used to demonstrate generated endpoint pages.
+  description: A single-endpoint showcase specification for the API documentation UI.
 servers:
   - url: https://api.example.com/v1
 tags:
   - name: Users
-    description: Customer identity and profile endpoints.
-  - name: Orders
-    description: Order lookup and fulfillment endpoints.
+    description: Customer identity and access management endpoints.
 paths:
-  /users:
-    get:
-      tags: [Users]
-      operationId: listUsers
-      summary: List users
-      description: Returns a paginated list of users ordered by creation date.
-      parameters:
-        - name: limit
-          in: query
-          description: Maximum number of users to return.
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            example: 20
-        - name: cursor
-          in: query
-          description: Cursor returned by the previous page.
-          schema:
-            type: string
-      responses:
-        "200":
-          description: A page of users.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserList"
-        "401":
-          description: Authentication failed.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /users/{userId}:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        description: Unique user identifier.
-        schema:
-          type: string
-          format: uuid
-    get:
-      tags: [Users]
-      operationId: getUser
-      summary: Retrieve a user
-      description: Retrieves a single user profile and account status.
-      responses:
-        "200":
-          description: User details.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "404":
-          description: User was not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    patch:
-      tags: [Users]
-      operationId: updateUser
-      summary: Update a user
-      description: Updates profile fields for a user. Omitted fields remain unchanged.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateUserRequest"
-      responses:
-        "200":
-          description: Updated user details.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "422":
-          description: Validation failed.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
   /users/{userId}/api-keys:
     post:
       tags: [Users]
       operationId: createUserApiKey
       summary: Create an API key
-      description: Creates a scoped API key for the selected user.
+      description: Creates a scoped API key for a user. The token is returned only once, so store it securely when the response is received.
       parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Bearer access token with permission to manage API keys.
+          example: Bearer sk_live_51H8example
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Unique key used to safely retry a create request without creating duplicate credentials.
+          example: req_20260502_create_reporting_key
+          schema:
+            type: string
+        - name: X-Request-Id
+          in: header
+          required: false
+          description: Optional client-generated request identifier for support and audit correlation.
+          example: web-portal-8f2e1a
+          schema:
+            type: string
         - name: userId
           in: path
           required: true
-          description: Unique user identifier.
+          description: Unique user identifier that will own the new API key.
+          example: 018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4
           schema:
             type: string
             format: uuid
+        - name: dryRun
+          in: query
+          required: false
+          description: Validates the request and returns the generated permissions summary without persisting a key.
+          example: false
+          schema:
+            type: boolean
+        - name: includeSecretPreview
+          in: query
+          required: false
+          description: Adds a masked token preview to the response for UI confirmation screens.
+          example: true
+          schema:
+            type: boolean
       requestBody:
         required: true
+        description: Configuration for the API key, including display metadata, scopes, expiration policy, and network restrictions.
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateApiKeyRequest"
+            example:
+              name: Reporting integration
+              description: Read-only key used by the revenue dashboard.
+              scopes:
+                - users:read
+                - orders:read
+                - reports:read
+              expiresAt: "2026-12-31T23:59:59Z"
+              metadata:
+                ownerTeam: analytics
+                ticket: SEC-2419
+              restrictions:
+                ipAllowlist:
+                  - 203.0.113.10
+                  - 203.0.113.11
+                allowedOrigins:
+                  - https://dashboard.example.com
+                environment: production
+              rotation:
+                enabled: true
+                intervalDays: 90
+                notifyEmails:
+                  - security@example.com
+                  - analytics@example.com
       responses:
         "201":
           description: API key created.
@@ -122,61 +97,224 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKey"
+              example:
+                id: key_8xK2mR9
+                name: Reporting integration
+                token: sk_live_rpt_51H8example_secret
+                tokenPreview: sk_live_rpt_51H8...cret
+                status: active
+                scopes:
+                  - users:read
+                  - orders:read
+                  - reports:read
+                expiresAt: "2026-12-31T23:59:59Z"
+                restrictions:
+                  ipAllowlist:
+                    - 203.0.113.10
+                    - 203.0.113.11
+                  allowedOrigins:
+                    - https://dashboard.example.com
+                  environment: production
+                rotation:
+                  enabled: true
+                  intervalDays: 90
+                  nextRotationAt: "2026-08-01T00:00:00Z"
+                metadata:
+                  ownerTeam: analytics
+                  ticket: SEC-2419
+                createdAt: "2026-05-02T12:00:00Z"
+                createdBy:
+                  id: 018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4
+                  email: admin@example.com
+        "400":
+          description: Request body or query parameters are malformed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: bad_request
+                message: The request could not be parsed.
+                requestId: req_01HX9Z4Y
+                details:
+                  body: JSON payload is invalid.
+        "401":
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: unauthorized
+                message: Missing or invalid bearer token.
+                requestId: req_01HX9Z4Z
+                details:
+                  Authorization: Bearer token is required.
         "403":
-          description: Current token does not have permission.
+          description: Current token does not have permission to create API keys for this user.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /orders/{orderId}:
-    get:
-      tags: [Orders]
-      operationId: getOrder
-      summary: Retrieve an order
-      description: Retrieves order totals, line items, shipping address, and fulfillment state.
-      parameters:
-        - name: orderId
-          in: path
-          required: true
-          description: Unique order identifier.
-          schema:
-            type: string
-            example: ord_9x82b
-      responses:
-        "200":
-          description: Order details.
+              example:
+                code: forbidden
+                message: The authenticated principal cannot manage keys for this user.
+                requestId: req_01HX9Z50
+                details:
+                  permission: users.api_keys.create
+        "422":
+          description: Validation failed.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Order"
-        "404":
-          description: Order was not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ValidationError"
+              example:
+                code: validation_failed
+                message: One or more fields failed validation.
+                requestId: req_01HX9Z51
+                errors:
+                  - field: scopes
+                    reason: At least one scope is not available for this account.
+                  - field: restrictions.ipAllowlist
+                    reason: CIDR ranges are not allowed for this account tier.
 components:
   schemas:
-    UserList:
+    CreateApiKeyRequest:
       type: object
-      required: [data, pagination]
+      required: [name, scopes, restrictions]
       properties:
-        data:
+        name:
+          type: string
+          description: Human-readable name shown in dashboards and audit logs.
+          example: Reporting integration
+        description:
+          type: string
+          nullable: true
+          description: Optional purpose statement for the credential.
+          example: Read-only key used by the revenue dashboard.
+        scopes:
+          type: array
+          description: Permission scopes granted to the key.
+          items:
+            type: string
+            enum: [users:read, users:write, orders:read, reports:read, webhooks:write]
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiration timestamp. Null creates a non-expiring key if policy allows it.
+          example: "2026-12-31T23:59:59Z"
+        metadata:
+          type: object
+          description: Free-form string metadata copied into audit logs.
+          additionalProperties:
+            type: string
+        restrictions:
+          $ref: "#/components/schemas/ApiKeyRestrictions"
+        rotation:
+          $ref: "#/components/schemas/RotationPolicy"
+    ApiKey:
+      type: object
+      required: [id, name, token, status, scopes, restrictions, rotation, createdAt, createdBy]
+      properties:
+        id:
+          type: string
+          description: Stable API key identifier.
+          example: key_8xK2mR9
+        name:
+          type: string
+          description: Display name provided at creation time.
+        token:
+          type: string
+          description: Secret token value. This is returned only once.
+        tokenPreview:
+          type: string
+          nullable: true
+          description: Masked token preview for UI confirmation.
+        status:
+          type: string
+          enum: [active, disabled, expired]
+          description: Current lifecycle state.
+        scopes:
           type: array
           items:
-            $ref: "#/components/schemas/User"
-        pagination:
+            type: string
+          description: Granted permission scopes.
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Expiration timestamp, or null when the key does not expire.
+        restrictions:
+          $ref: "#/components/schemas/ApiKeyRestrictions"
+        rotation:
+          $ref: "#/components/schemas/RotationState"
+        metadata:
           type: object
-          required: [hasMore]
-          properties:
-            hasMore:
-              type: boolean
-            nextCursor:
-              type: string
-              nullable: true
-    User:
+          additionalProperties:
+            type: string
+          description: Metadata copied from the create request.
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/UserReference"
+    ApiKeyRestrictions:
       type: object
-      required: [id, email, status, profile, createdAt]
+      required: [environment]
+      properties:
+        ipAllowlist:
+          type: array
+          description: Public IP addresses allowed to use the key.
+          items:
+            type: string
+            example: 203.0.113.10
+        allowedOrigins:
+          type: array
+          description: Browser origins allowed to present this key.
+          items:
+            type: string
+            example: https://dashboard.example.com
+        environment:
+          type: string
+          enum: [sandbox, production]
+          description: Runtime environment where the key can be used.
+        dailyRequestLimit:
+          type: integer
+          nullable: true
+          description: Optional daily cap for requests made with this key.
+          example: 50000
+    RotationPolicy:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+          description: Whether automatic rotation reminders are enabled.
+        intervalDays:
+          type: integer
+          nullable: true
+          description: Number of days between rotation reminders.
+          example: 90
+        notifyEmails:
+          type: array
+          description: Email recipients for rotation reminders.
+          items:
+            type: string
+            format: email
+    RotationState:
+      allOf:
+        - $ref: "#/components/schemas/RotationPolicy"
+        - type: object
+          properties:
+            nextRotationAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: Next scheduled rotation reminder timestamp.
+    UserReference:
+      type: object
+      required: [id, email]
       properties:
         id:
           type: string
@@ -184,170 +322,43 @@ components:
         email:
           type: string
           format: email
-        status:
-          type: string
-          enum: [active, invited, suspended]
-        profile:
-          $ref: "#/components/schemas/Profile"
-        metadata:
-          type: object
-          additionalProperties:
-            type: string
-        createdAt:
-          type: string
-          format: date-time
-    Profile:
-      type: object
-      required: [displayName]
-      properties:
-        displayName:
-          type: string
-          example: Ada Lovelace
-        avatarUrl:
-          type: string
-          nullable: true
-        company:
-          type: object
-          properties:
-            name:
-              type: string
-            role:
-              type: string
-    UpdateUserRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        profile:
-          $ref: "#/components/schemas/Profile"
-        metadata:
-          type: object
-          additionalProperties:
-            type: string
-    CreateApiKeyRequest:
-      type: object
-      required: [name, scopes]
-      properties:
-        name:
-          type: string
-          example: Reporting integration
-        scopes:
-          type: array
-          items:
-            type: string
-            enum: [users:read, users:write, orders:read]
-        expiresAt:
-          type: string
-          format: date-time
-          nullable: true
-    ApiKey:
-      type: object
-      required: [id, name, token, scopes, createdAt]
-      properties:
-        id:
-          type: string
-          example: key_123
-        name:
-          type: string
-        token:
-          type: string
-          description: The token is only returned once.
-        scopes:
-          type: array
-          items:
-            type: string
-        createdAt:
-          type: string
-          format: date-time
-    Order:
-      type: object
-      required: [id, status, total, items, shippingAddress]
-      properties:
-        id:
-          type: string
-          example: ord_9x82b
-        status:
-          type: string
-          enum: [pending, paid, fulfilled, canceled]
-        total:
-          $ref: "#/components/schemas/Money"
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/OrderItem"
-        shippingAddress:
-          $ref: "#/components/schemas/Address"
-        fulfillment:
-          type: object
-          properties:
-            carrier:
-              type: string
-            trackingNumber:
-              type: string
-            events:
-              type: array
-              items:
-                type: object
-                required: [status, occurredAt]
-                properties:
-                  status:
-                    type: string
-                  occurredAt:
-                    type: string
-                    format: date-time
-    OrderItem:
-      type: object
-      required: [sku, name, quantity, unitPrice]
-      properties:
-        sku:
-          type: string
-        name:
-          type: string
-        quantity:
-          type: integer
-        unitPrice:
-          $ref: "#/components/schemas/Money"
-    Money:
-      type: object
-      required: [amount, currency]
-      properties:
-        amount:
-          type: integer
-          description: Minor units, for example cents.
-          example: 1299
-        currency:
-          type: string
-          example: USD
-    Address:
-      type: object
-      required: [line1, city, country, postalCode]
-      properties:
-        line1:
-          type: string
-        line2:
-          type: string
-          nullable: true
-        city:
-          type: string
-        region:
-          type: string
-          nullable: true
-        country:
-          type: string
-          example: US
-        postalCode:
-          type: string
     Error:
       type: object
-      required: [code, message]
+      required: [code, message, requestId]
       properties:
         code:
           type: string
-          example: not_found
+          description: Machine-readable error code.
+          example: forbidden
         message:
           type: string
+          description: Human-readable error message.
+        requestId:
+          type: string
+          description: Identifier to provide to support.
         details:
           type: object
+          description: Optional field or permission details.
           additionalProperties:
             type: string
+    ValidationError:
+      type: object
+      required: [code, message, requestId, errors]
+      properties:
+        code:
+          type: string
+          example: validation_failed
+        message:
+          type: string
+        requestId:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required: [field, reason]
+            properties:
+              field:
+                type: string
+              reason:
+                type: string

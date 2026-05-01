@@ -1,30 +1,51 @@
-import type { BodyContent, EndpointDoc, EndpointParameter, ResponseDoc } from "@/lib/openapi";
-import { CodeBlock } from "@/components/CodeBlock";
+import type { BodyContent, EndpointDoc, EndpointParameter, ParameterLocation, ResponseDoc } from "@/lib/openapi";
+import { getResponseStatusTone } from "@/lib/examples";
 import { MethodBadge } from "@/components/MethodBadge";
-import { SchemaTree } from "@/components/SchemaTree";
+import { SchemaTable } from "@/components/SchemaTable";
 
 interface EndpointContentProps {
   endpoint: EndpointDoc;
 }
 
-function contentTitle(content: BodyContent): string {
+const PARAMETER_TITLES: Record<ParameterLocation, string> = {
+  header: "Header parameters",
+  path: "Path parameters",
+  query: "Query parameters",
+  cookie: "Cookie parameters",
+};
+
+const PARAMETER_ORDER: ParameterLocation[] = ["header", "path", "query", "cookie"];
+
+function schemaTypeLabel(parameter: EndpointParameter): string {
+  const schema = parameter.schema;
+
+  if (!schema) {
+    return "unknown";
+  }
+
+  return [schema.type, schema.format].filter(Boolean).join(" / ");
+}
+
+function contentLabel(content: BodyContent): string {
   return content.contentType || "application/json";
 }
 
-function ParametersTable({ parameters }: { parameters: EndpointParameter[] }) {
-  if (!parameters.length) {
-    return <p className="empty-state">No parameters documented.</p>;
-  }
+function groupedParameters(parameters: EndpointParameter[]) {
+  return PARAMETER_ORDER.map((location) => ({
+    location,
+    title: PARAMETER_TITLES[location],
+    parameters: parameters.filter((parameter) => parameter.location === location),
+  })).filter((group) => group.parameters.length > 0);
+}
 
+function ParametersTable({ parameters }: { parameters: EndpointParameter[] }) {
   return (
-    <div className="table-wrap">
-      <table className="docs-table">
+    <div className="parameter-table-wrap">
+      <table className="parameter-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Type</th>
-            <th>Required</th>
+            <th>Attribute</th>
+            <th>Requirement</th>
             <th>Description</th>
           </tr>
         </thead>
@@ -33,10 +54,13 @@ function ParametersTable({ parameters }: { parameters: EndpointParameter[] }) {
             <tr key={`${parameter.location}-${parameter.name}`}>
               <td>
                 <code>{parameter.name}</code>
+                <span>{schemaTypeLabel(parameter)}</span>
               </td>
-              <td>{parameter.location}</td>
-              <td>{parameter.schema?.type ?? "unknown"}</td>
-              <td>{parameter.required ? "Yes" : "No"}</td>
+              <td>
+                <span className={parameter.required ? "schema-required" : "schema-optional"}>
+                  {parameter.required ? "mandatory" : "optional"}
+                </span>
+              </td>
               <td>{parameter.description ?? "-"}</td>
             </tr>
           ))}
@@ -48,53 +72,65 @@ function ParametersTable({ parameters }: { parameters: EndpointParameter[] }) {
 
 function RequestBodySection({ endpoint }: EndpointContentProps) {
   if (!endpoint.requestBody?.content.length) {
-    return <p className="empty-state">No request body documented.</p>;
+    return null;
+  }
+
+  return (
+    <section className="docs-section docs-section-spacious" id="request-body">
+      <h2>Request body</h2>
+      {endpoint.requestBody.description ? <p className="section-copy">{endpoint.requestBody.description}</p> : null}
+      <div className="content-stack">
+        {endpoint.requestBody.content.map((content) => (
+          <div className="schema-card" key={content.contentType}>
+            <div className="schema-card-header">
+              <h3>{contentLabel(content)}</h3>
+              {endpoint.requestBody?.required ? <span className="schema-required">mandatory</span> : null}
+            </div>
+            <SchemaTable schema={content.schema} rootLabel="body" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ResponseSchema({ response }: { response: ResponseDoc }) {
+  if (!response.content.length) {
+    return <p className="empty-state">This response has no documented body.</p>;
   }
 
   return (
     <div className="content-stack">
-      {endpoint.requestBody.description ? <p>{endpoint.requestBody.description}</p> : null}
-      {endpoint.requestBody.content.map((content) => (
-        <div className="schema-card" key={content.contentType}>
-          <div className="schema-card-header">
-            <h3>{contentTitle(content)}</h3>
-            {endpoint.requestBody?.required ? <span className="schema-required">required</span> : null}
-          </div>
-          <SchemaTree schema={content.schema} />
-          {content.example !== undefined ? <CodeBlock value={content.example} /> : null}
+      {response.content.map((content) => (
+        <div className="schema-panel" key={`${response.status}-${content.contentType}`}>
+          <p className="content-type-label">{contentLabel(content)}</p>
+          <SchemaTable schema={content.schema} rootLabel={`response ${response.status}`} />
         </div>
       ))}
     </div>
   );
 }
 
-function ResponseSection({ response }: { response: ResponseDoc }) {
+function ResponseCard({ response }: { response: ResponseDoc }) {
+  const tone = getResponseStatusTone(response);
+
   return (
-    <div className="schema-card">
-      <div className="schema-card-header">
-        <h3>
-          <span className="status-pill">{response.status}</span>
-          {response.description ? <span>{response.description}</span> : null}
-        </h3>
+    <details className="response-doc-card" open={response.status.startsWith("2")}>
+      <summary>
+        <span className={`status-dot status-dot-${tone}`} aria-hidden="true" />
+        <span className="response-doc-status">{response.status}</span>
+        <span>{response.description ?? "Response"}</span>
+      </summary>
+      <div className="response-doc-content">
+        <ResponseSchema response={response} />
       </div>
-      {response.content.length ? (
-        <div className="content-stack">
-          {response.content.map((content) => (
-            <div key={content.contentType}>
-              <p className="content-type-label">{contentTitle(content)}</p>
-              <SchemaTree schema={content.schema} />
-              {content.example !== undefined ? <CodeBlock value={content.example} /> : null}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="empty-state">This response has no documented body.</p>
-      )}
-    </div>
+    </details>
   );
 }
 
 export function EndpointContent({ endpoint }: EndpointContentProps) {
+  const parameterGroups = groupedParameters(endpoint.parameters);
+
   return (
     <article className="endpoint-content">
       <header className="endpoint-hero">
@@ -106,21 +142,44 @@ export function EndpointContent({ endpoint }: EndpointContentProps) {
         {endpoint.description ? <p>{endpoint.description}</p> : null}
       </header>
 
-      <section className="docs-section" id="parameters">
-        <h2>Parameters</h2>
-        <ParametersTable parameters={endpoint.parameters} />
+      <section className="overview-card" aria-label="Endpoint overview">
+        <div className="overview-card-accent" aria-hidden="true" />
+        <div className="overview-grid">
+          <div className="overview-item">
+            <span>Group</span>
+            <strong>{endpoint.tag}</strong>
+          </div>
+          <div className="overview-item">
+            <span>Method</span>
+            <strong>{endpoint.method.toUpperCase()}</strong>
+          </div>
+          <div className="overview-item overview-item-wide">
+            <span>Path</span>
+            <code>{endpoint.path}</code>
+          </div>
+          {endpoint.operationId ? (
+            <div className="overview-item overview-item-wide">
+              <span>Operation ID</span>
+              <code>{endpoint.operationId}</code>
+            </div>
+          ) : null}
+        </div>
       </section>
 
-      <section className="docs-section" id="request-body">
-        <h2>Request body</h2>
-        <RequestBodySection endpoint={endpoint} />
-      </section>
+      {parameterGroups.map((group) => (
+        <section className="docs-section docs-section-spacious" id={`${group.location}-parameters`} key={group.location}>
+          <h2>{group.title}</h2>
+          <ParametersTable parameters={group.parameters} />
+        </section>
+      ))}
 
-      <section className="docs-section" id="responses">
+      <RequestBodySection endpoint={endpoint} />
+
+      <section className="docs-section docs-section-spacious" id="responses">
         <h2>Responses</h2>
-        <div className="content-stack">
+        <div className="response-doc-list">
           {endpoint.responses.length ? (
-            endpoint.responses.map((response) => <ResponseSection key={response.status} response={response} />)
+            endpoint.responses.map((response) => <ResponseCard response={response} key={response.status} />)
           ) : (
             <p className="empty-state">No responses documented.</p>
           )}

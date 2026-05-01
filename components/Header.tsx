@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export interface HeaderNavItem {
   label: string;
@@ -22,9 +22,10 @@ export function Header({ items }: HeaderProps) {
       <div className="site-header-inner">
         <Link href={items[0]?.href ?? "/"} className="brand-link" aria-label="API documentation home">
           <span className="brand-icon">
-            <BookOpen size={17} strokeWidth={2.2} />
+            <Sparkles size={19} strokeWidth={2.1} />
           </span>
-          <span className="brand-text">API Docs</span>
+          <span className="brand-wordmark">Aurelia</span>
+          <span className="brand-api-label">API</span>
         </Link>
         <nav className="top-nav" aria-label="Main navigation">
           {items.map((item) => {
@@ -43,6 +44,11 @@ export function Header({ items }: HeaderProps) {
             );
           })}
         </nav>
+        <div className="header-actions">
+          <button type="button" className="api-key-button">
+            Get API Key
+          </button>
+        </div>
       </div>
     </header>
   );
