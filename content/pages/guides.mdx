@@ -1,0 +1,19 @@
+---
+title: Guides
+description: Practical implementation notes for using the API.
+---
+
+## Getting started
+
+Use the API reference as the source of truth for endpoint shapes. Each endpoint page is generated from the OpenAPI document, so paths, parameters, request bodies, responses, and examples stay aligned with the specification.
+
+## Recommended workflow
+
+1. Import or update `content/openapi.yaml`.
+2. Run the documentation build.
+3. Review endpoint navigation and generated examples.
+4. Add longer conceptual docs to the MDX pages when an endpoint needs context.
+
+## Versioning
+
+Keep breaking changes in a separate OpenAPI version file or branch. The current scaffold assumes one published version at a time.

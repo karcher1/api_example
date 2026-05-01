@@ -1,0 +1,16 @@
+---
+title: Authentication
+description: How API clients authenticate requests.
+---
+
+## Bearer tokens
+
+Send an access token in the `Authorization` header.
+
+```http
+Authorization: Bearer sk_live_example
+```
+
+## Token handling
+
+Store tokens outside client-side code. Rotate long-lived credentials and issue scoped keys for integrations that do not need full account access.

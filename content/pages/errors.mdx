@@ -1,0 +1,18 @@
+---
+title: Errors
+description: Standard error conventions used by the API.
+---
+
+## Error format
+
+Most error responses use the shared `Error` schema from the OpenAPI components section. Endpoint pages show the exact response codes that are documented for each operation.
+
+| Field | Description |
+| --- | --- |
+| `code` | Machine-readable error code. |
+| `message` | Human-readable explanation. |
+| `details` | Optional field-specific context. |
+
+## Handling errors
+
+Treat `4xx` responses as request or permission issues. Treat `5xx` responses as retryable only when the endpoint contract says it is safe to retry.
