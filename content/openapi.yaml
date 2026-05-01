@@ -15,6 +15,68 @@ paths:
       operationId: createUserApiKey
       summary: Create an API key
       description: Creates a scoped API key for a user. The token is returned only once, so store it securely when the response is received.
+      x-docs:
+        status: beta
+        title: Create an API key
+        sectionOrder:
+          - overview
+          - header-parameters
+          - path-parameters
+          - query-parameters
+          - request-body
+          - responses
+        blocks:
+          - id: auth-warning
+            type: notice
+            tone: warning
+            placement: before:header-parameters
+            title: Store the token securely
+            body: The secret token is returned only once. Do not log it or send it to client-side applications.
+          - id: rotation-note
+            type: notice
+            tone: info
+            placement: after:request-body
+            title: Rotation policy
+            body: Use the `rotation` object when the credential belongs to a long-lived integration.
+          - id: retry-behavior
+            type: text
+            placement: after:responses
+            title: Retry behavior
+            body: Use `Idempotency-Key` when retrying create requests. Reusing the same key lets the API return the original result instead of creating duplicate credentials.
+        requestExamples:
+          - id: php
+            label: PHP
+            language: php
+            value: |
+              <?php
+              $response = file_get_contents('https://api.example.com/v1/users/018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4/api-keys', false, stream_context_create([
+                  'http' => [
+                      'method' => 'POST',
+                      'header' => "Authorization: Bearer sk_live_51H8example\r\nContent-Type: application/json\r\nIdempotency-Key: req_20260502_create_reporting_key\r\n",
+                      'content' => json_encode([
+                          'name' => 'Reporting integration',
+                          'scopes' => ['users:read', 'orders:read', 'reports:read'],
+                          'restrictions' => ['environment' => 'production']
+                      ])
+                  ]
+              ]));
+          - id: node
+            label: Node.js
+            language: javascript
+            value: |
+              const response = await fetch("https://api.example.com/v1/users/018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4/api-keys", {
+                method: "POST",
+                headers: {
+                  Authorization: "Bearer sk_live_51H8example",
+                  "Content-Type": "application/json",
+                  "Idempotency-Key": "req_20260502_create_reporting_key"
+                },
+                body: JSON.stringify({
+                  name: "Reporting integration",
+                  scopes: ["users:read", "orders:read", "reports:read"],
+                  restrictions: { environment: "production" }
+                })
+              });
       parameters:
         - name: Authorization
           in: header
@@ -30,6 +92,9 @@ paths:
           example: req_20260502_create_reporting_key
           schema:
             type: string
+            minLength: 8
+            maxLength: 128
+            pattern: "^[A-Za-z0-9._:-]+$"
         - name: X-Request-Id
           in: header
           required: false
@@ -37,6 +102,7 @@ paths:
           example: web-portal-8f2e1a
           schema:
             type: string
+            maxLength: 64
         - name: userId
           in: path
           required: true
@@ -52,6 +118,7 @@ paths:
           example: false
           schema:
             type: boolean
+            default: false
         - name: includeSecretPreview
           in: query
           required: false
@@ -59,6 +126,7 @@ paths:
           example: true
           schema:
             type: boolean
+            default: true
       requestBody:
         required: true
         description: Configuration for the API key, including display metadata, scopes, expiration policy, and network restrictions.
@@ -97,47 +165,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKey"
-              example:
-                id: key_8xK2mR9
-                name: Reporting integration
-                token: sk_live_rpt_51H8example_secret
-                tokenPreview: sk_live_rpt_51H8...cret
-                status: active
-                scopes:
-                  - users:read
-                  - orders:read
-                  - reports:read
-                expiresAt: "2026-12-31T23:59:59Z"
-                restrictions:
-                  ipAllowlist:
-                    - 203.0.113.10
-                    - 203.0.113.11
-                  allowedOrigins:
-                    - https://dashboard.example.com
-                  environment: production
-                rotation:
-                  enabled: true
-                  intervalDays: 90
-                  nextRotationAt: "2026-08-01T00:00:00Z"
-                metadata:
-                  ownerTeam: analytics
-                  ticket: SEC-2419
-                createdAt: "2026-05-02T12:00:00Z"
-                createdBy:
-                  id: 018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4
-                  email: admin@example.com
+              examples:
+                created:
+                  summary: Created
+                  value:
+                    id: key_8xK2mR9
+                    name: Reporting integration
+                    token: sk_live_rpt_51H8example_secret
+                    tokenPreview: sk_live_rpt_51H8...cret
+                    status: active
+                    scopes:
+                      - users:read
+                      - orders:read
+                      - reports:read
+                    expiresAt: "2026-12-31T23:59:59Z"
+                    restrictions:
+                      ipAllowlist:
+                        - 203.0.113.10
+                        - 203.0.113.11
+                      allowedOrigins:
+                        - https://dashboard.example.com
+                      environment: production
+                    rotation:
+                      enabled: true
+                      intervalDays: 90
+                      nextRotationAt: "2026-08-01T00:00:00Z"
+                    metadata:
+                      ownerTeam: analytics
+                      ticket: SEC-2419
+                    createdAt: "2026-05-02T12:00:00Z"
+                    createdBy:
+                      id: 018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4
+                      email: admin@example.com
+                dryRun:
+                  summary: Dry run
+                  value:
+                    id: preview_key
+                    name: Reporting integration
+                    token: sk_preview_not_persisted
+                    tokenPreview: null
+                    status: active
+                    scopes:
+                      - users:read
+                      - orders:read
+                      - reports:read
+                    expiresAt: "2026-12-31T23:59:59Z"
+                    restrictions:
+                      environment: production
+                    rotation:
+                      enabled: true
+                      intervalDays: 90
+                      nextRotationAt: "2026-08-01T00:00:00Z"
+                    metadata: {}
+                    createdAt: "2026-05-02T12:00:00Z"
+                    createdBy:
+                      id: 018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4
+                      email: admin@example.com
         "400":
           description: Request body or query parameters are malformed.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-              example:
-                code: bad_request
-                message: The request could not be parsed.
-                requestId: req_01HX9Z4Y
-                details:
-                  body: JSON payload is invalid.
+              examples:
+                malformedJson:
+                  summary: Malformed JSON
+                  value:
+                    code: bad_request
+                    message: The request could not be parsed.
+                    requestId: req_01HX9Z4Y
+                    details:
+                      body: JSON payload is invalid.
+                invalidQuery:
+                  summary: Invalid query
+                  value:
+                    code: bad_request
+                    message: Query parameter includeSecretPreview must be a boolean.
+                    requestId: req_01HX9Z4Y
+                    details:
+                      includeSecretPreview: Expected true or false.
         "401":
           description: Authentication failed.
           content:
@@ -187,14 +293,19 @@ components:
           type: string
           description: Human-readable name shown in dashboards and audit logs.
           example: Reporting integration
+          minLength: 3
+          maxLength: 80
         description:
           type: string
           nullable: true
           description: Optional purpose statement for the credential.
           example: Read-only key used by the revenue dashboard.
+          maxLength: 240
         scopes:
           type: array
           description: Permission scopes granted to the key.
+          minItems: 1
+          maxItems: 20
           items:
             type: string
             enum: [users:read, users:write, orders:read, reports:read, webhooks:write]
@@ -266,24 +377,29 @@ components:
         ipAllowlist:
           type: array
           description: Public IP addresses allowed to use the key.
+          maxItems: 50
           items:
             type: string
             example: 203.0.113.10
         allowedOrigins:
           type: array
           description: Browser origins allowed to present this key.
+          maxItems: 25
           items:
             type: string
             example: https://dashboard.example.com
         environment:
           type: string
           enum: [sandbox, production]
+          default: sandbox
           description: Runtime environment where the key can be used.
         dailyRequestLimit:
           type: integer
           nullable: true
           description: Optional daily cap for requests made with this key.
           example: 50000
+          minimum: 1000
+          maximum: 1000000
     RotationPolicy:
       type: object
       required: [enabled]
@@ -296,9 +412,12 @@ components:
           nullable: true
           description: Number of days between rotation reminders.
           example: 90
+          minimum: 30
+          maximum: 365
         notifyEmails:
           type: array
           description: Email recipients for rotation reminders.
+          maxItems: 10
           items:
             type: string
             format: email

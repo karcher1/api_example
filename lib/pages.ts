@@ -10,7 +10,7 @@ export interface ContentPage {
 }
 
 const PAGES_DIR = path.join(process.cwd(), "content", "pages");
-const PAGE_ORDER = ["guides", "authentication", "errors", "changelog"];
+const PAGE_ORDER = ["guides", "manager-guide", "authentication", "errors", "changelog"];
 
 function pageTitleFromSlug(slug: string): string {
   return slug

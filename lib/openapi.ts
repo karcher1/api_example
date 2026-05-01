@@ -16,6 +16,54 @@ export const HTTP_METHODS = [
 export type HttpMethod = (typeof HTTP_METHODS)[number];
 
 export type ParameterLocation = "path" | "query" | "header" | "cookie";
+export type DocsStatus = "stable" | "beta" | "deprecated" | "draft";
+export type DocsNoticeTone = "info" | "warning" | "danger" | "success" | "neutral";
+export type AutoSectionId =
+  | "overview"
+  | "header-parameters"
+  | "path-parameters"
+  | "query-parameters"
+  | "cookie-parameters"
+  | "request-body"
+  | "responses";
+export type DocsBlockPlacement =
+  | "hero-after-description"
+  | `before:${AutoSectionId}`
+  | `after:${AutoSectionId}`
+  | "end";
+export type DocsBlockType = "text" | "notice" | "code";
+
+export interface EndpointCodeExample {
+  id: string;
+  label: string;
+  language: string;
+  value: unknown;
+}
+
+export interface EndpointContentExample {
+  id: string;
+  label: string;
+  description?: string;
+  value: unknown;
+}
+
+export interface EndpointDocBlock {
+  id: string;
+  type: DocsBlockType;
+  placement: DocsBlockPlacement;
+  title?: string;
+  body?: string;
+  tone?: DocsNoticeTone;
+  language?: string;
+  value?: unknown;
+}
+
+export interface EndpointDocs {
+  status?: DocsStatus;
+  sectionOrder: AutoSectionId[];
+  blocks: EndpointDocBlock[];
+  requestExamples: EndpointCodeExample[];
+}
 
 export interface SchemaNode {
   name?: string;
@@ -26,6 +74,14 @@ export interface SchemaNode {
   description?: string;
   enum?: string[];
   example?: unknown;
+  default?: unknown;
+  minimum?: number;
+  maximum?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  minItems?: number;
+  maxItems?: number;
   properties?: SchemaNode[];
   items?: SchemaNode;
   variants?: SchemaNode[];
@@ -45,6 +101,7 @@ export interface BodyContent {
   contentType: string;
   schema?: SchemaNode;
   example?: unknown;
+  examples: EndpointContentExample[];
 }
 
 export interface RequestBodyDoc {
@@ -70,7 +127,9 @@ export interface EndpointDoc {
   tagSlug: string;
   operationId?: string;
   summary: string;
+  title: string;
   description?: string;
+  docs: EndpointDocs;
   parameters: EndpointParameter[];
   requestBody?: RequestBodyDoc;
   responses: ResponseDoc[];
@@ -94,6 +153,23 @@ type UnknownRecord = Record<string, unknown>;
 
 const OPENAPI_PATH = path.join(process.cwd(), "content", "openapi.yaml");
 const METHOD_ORDER = new Map(HTTP_METHODS.map((method, index) => [method, index]));
+const DOCS_STATUSES: DocsStatus[] = ["stable", "beta", "deprecated", "draft"];
+const DOCS_TONES: DocsNoticeTone[] = ["info", "warning", "danger", "success", "neutral"];
+const DOCS_BLOCK_TYPES: DocsBlockType[] = ["text", "notice", "code"];
+const AUTO_SECTION_IDS: AutoSectionId[] = [
+  "overview",
+  "header-parameters",
+  "path-parameters",
+  "query-parameters",
+  "cookie-parameters",
+  "request-body",
+  "responses",
+];
+const DOCS_PLACEMENTS: DocsBlockPlacement[] = [
+  "hero-after-description",
+  "end",
+  ...AUTO_SECTION_IDS.flatMap((section) => [`before:${section}`, `after:${section}`] as DocsBlockPlacement[]),
+];
 
 let documentCache: UnknownRecord | undefined;
 let endpointCache: EndpointDoc[] | undefined;
@@ -112,6 +188,10 @@ function asString(value: unknown, fallback = ""): string {
 
 function asBoolean(value: unknown, fallback = false): boolean {
   return typeof value === "boolean" ? value : fallback;
+}
+
+function asNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
 function asRecord(value: unknown): UnknownRecord {
@@ -254,6 +334,30 @@ function schemaEnum(schema: UnknownRecord): string[] | undefined {
   return schema.enum.map(String);
 }
 
+function isDocsStatus(value: unknown): value is DocsStatus {
+  return typeof value === "string" && DOCS_STATUSES.includes(value as DocsStatus);
+}
+
+function isDocsTone(value: unknown): value is DocsNoticeTone {
+  return typeof value === "string" && DOCS_TONES.includes(value as DocsNoticeTone);
+}
+
+function isDocsBlockType(value: unknown): value is DocsBlockType {
+  return typeof value === "string" && DOCS_BLOCK_TYPES.includes(value as DocsBlockType);
+}
+
+function isAutoSectionId(value: unknown): value is AutoSectionId {
+  return typeof value === "string" && AUTO_SECTION_IDS.includes(value as AutoSectionId);
+}
+
+function isDocsPlacement(value: unknown): value is DocsBlockPlacement {
+  return typeof value === "string" && DOCS_PLACEMENTS.includes(value as DocsBlockPlacement);
+}
+
+function exampleLabel(id: string, example: UnknownRecord): string {
+  return asString(example.summary) || asString(example.title) || id;
+}
+
 export function toSchemaNode(
   name: string | undefined,
   schema: unknown,
@@ -293,6 +397,14 @@ export function toSchemaNode(
     description: asString(normalized.description) || undefined,
     enum: schemaEnum(normalized),
     example: normalized.example,
+    default: normalized.default,
+    minimum: asNumber(normalized.minimum),
+    maximum: asNumber(normalized.maximum),
+    minLength: asNumber(normalized.minLength),
+    maxLength: asNumber(normalized.maxLength),
+    pattern: asString(normalized.pattern) || undefined,
+    minItems: asNumber(normalized.minItems),
+    maxItems: asNumber(normalized.maxItems),
   };
 
   if (isRecord(normalized.properties)) {
@@ -417,18 +529,40 @@ function exampleFromSchema(
   return exampleScalar(type, normalized.format);
 }
 
-function readExample(mediaType: UnknownRecord, schema: unknown, document: UnknownRecord): unknown {
+function readExplicitExamples(mediaType: UnknownRecord, document: UnknownRecord): EndpointContentExample[] {
+  const examples: EndpointContentExample[] = [];
+
   if (mediaType.example !== undefined) {
-    return mediaType.example;
+    examples.push({
+      id: "default",
+      label: "Default",
+      value: mediaType.example,
+    });
   }
 
   if (isRecord(mediaType.examples)) {
-    const firstExample = Object.values(mediaType.examples)[0];
-    const resolved = resolveObject(firstExample, document);
+    Object.entries(mediaType.examples).forEach(([id, exampleValue]) => {
+      const resolved = resolveObject(exampleValue, document);
+      const value = resolved.value ?? exampleValue;
 
-    if (resolved.value !== undefined) {
-      return resolved.value;
-    }
+      examples.push({
+        id,
+        label: exampleLabel(id, resolved),
+        description: asString(resolved.description) || undefined,
+        value,
+      });
+    });
+  }
+
+  return examples;
+}
+
+function readExample(mediaType: UnknownRecord, schema: unknown, document: UnknownRecord): unknown {
+  const explicitExamples = readExplicitExamples(mediaType, document);
+  const firstExplicit = explicitExamples[0];
+
+  if (firstExplicit) {
+    return firstExplicit.value;
   }
 
   if (schema !== undefined) {
@@ -451,8 +585,85 @@ function parseBodyContent(content: unknown, document: UnknownRecord): BodyConten
       contentType,
       schema: schema ? toSchemaNode("body", schema, document, true) : undefined,
       example: readExample(mediaType, schema, document),
+      examples: readExplicitExamples(mediaType, document),
     };
   });
+}
+
+function parseDocsBlocks(value: unknown): EndpointDocBlock[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((blockValue, index): EndpointDocBlock | undefined => {
+      const block = asRecord(blockValue);
+      const type = isDocsBlockType(block.type) ? block.type : undefined;
+
+      if (!type) {
+        return undefined;
+      }
+
+      const title = asString(block.title) || undefined;
+      const body = asString(block.body) || undefined;
+      const id = asString(block.id) || slugify(title || `${type}-${index + 1}`);
+
+      return {
+        id,
+        type,
+        placement: isDocsPlacement(block.placement) ? block.placement : "end",
+        title,
+        body,
+        tone: isDocsTone(block.tone) ? block.tone : "info",
+        language: asString(block.language) || undefined,
+        value: block.value,
+      };
+    })
+    .filter((block): block is EndpointDocBlock => Boolean(block));
+}
+
+function parseRequestExamples(value: unknown): EndpointCodeExample[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((exampleValue, index): EndpointCodeExample | undefined => {
+      const example = asRecord(exampleValue);
+      const label = asString(example.label) || asString(example.id) || `Example ${index + 1}`;
+      const value = example.value;
+
+      if (value === undefined) {
+        return undefined;
+      }
+
+      return {
+        id: asString(example.id) || slugify(label),
+        label,
+        language: asString(example.language) || asString(example.id) || "text",
+        value,
+      };
+    })
+    .filter((example): example is EndpointCodeExample => Boolean(example));
+}
+
+function parseSectionOrder(value: unknown): AutoSectionId[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter(isAutoSectionId);
+}
+
+function parseEndpointDocs(value: unknown): EndpointDocs {
+  const docs = asRecord(value);
+
+  return {
+    status: isDocsStatus(docs.status) ? docs.status : undefined,
+    sectionOrder: parseSectionOrder(docs.sectionOrder),
+    blocks: parseDocsBlocks(docs.blocks),
+    requestExamples: parseRequestExamples(docs.requestExamples),
+  };
 }
 
 function parseParameters(
@@ -569,6 +780,7 @@ export function getEndpoints(): EndpointDoc[] {
       const tagSlug = slugify(tag);
       const summary =
         asString(operation.summary) || `${methodName.toUpperCase()} ${apiPath}`;
+      const docs = parseEndpointDocs(operation["x-docs"]);
       const operationId = asString(operation.operationId) || undefined;
       const baseSlug = slugify(operationId || summary || `${methodName}-${apiPath}`);
       const slugKey = `${tagSlug}/${baseSlug}`;
@@ -600,6 +812,8 @@ export function getEndpoints(): EndpointDoc[] {
         tagSlug,
         operationId,
         summary,
+        title: asString(asRecord(operation["x-docs"]).title) || summary,
+        docs,
         description: asString(operation.description) || undefined,
         parameters: parseParameters(pathParameters, operation.parameters, document),
         requestBody,

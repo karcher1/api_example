@@ -1,8 +1,10 @@
-import type { EndpointDoc, EndpointParameter, ResponseDoc } from "@/lib/openapi";
+import type { EndpointCodeExample, EndpointDoc, EndpointParameter, ResponseDoc } from "@/lib/openapi";
 import { getOpenApiDocument } from "@/lib/openapi";
 
-interface PrimaryResponseExample {
+export interface ResponseExample {
+  id: string;
   status: string;
+  label: string;
   description?: string;
   contentType?: string;
   example?: unknown;
@@ -105,22 +107,54 @@ export function buildCurlExample(endpoint: EndpointDoc): string {
   return `curl ${args.join(" \\\n  ")}`;
 }
 
-export function getPrimaryResponseExample(endpoint: EndpointDoc): PrimaryResponseExample | undefined {
-  const response =
-    endpoint.responses.find((item) => item.status.startsWith("2")) ?? endpoint.responses[0];
+export function getRequestExamples(endpoint: EndpointDoc): EndpointCodeExample[] {
+  return [
+    {
+      id: "curl",
+      label: "cURL",
+      language: "curl",
+      value: buildCurlExample(endpoint),
+    },
+    ...endpoint.docs.requestExamples.filter((example) => example.id !== "curl"),
+  ];
+}
 
-  if (!response) {
-    return undefined;
-  }
+export function getResponseExamples(endpoint: EndpointDoc): ResponseExample[] {
+  return endpoint.responses.flatMap((response) =>
+    response.content.flatMap((content) => {
+      if (content.examples.length > 0) {
+        return content.examples.map((example) => ({
+          id: `${response.status}-${content.contentType}-${example.id}`,
+          status: response.status,
+          label: example.label,
+          description: example.description ?? response.description,
+          contentType: content.contentType,
+          example: example.value,
+        }));
+      }
 
-  const content = response.content[0];
+      if (content.example !== undefined) {
+        return [
+          {
+            id: `${response.status}-${content.contentType}`,
+            status: response.status,
+            label: response.status,
+            description: response.description,
+            contentType: content.contentType,
+            example: endpoint.examples.responses[response.status] ?? content.example,
+          },
+        ];
+      }
 
-  return {
-    status: response.status,
-    description: response.description,
-    contentType: content?.contentType,
-    example: endpoint.examples.responses[response.status] ?? content?.example,
-  };
+      return [];
+    }),
+  );
+}
+
+export function getPrimaryResponseExample(endpoint: EndpointDoc): ResponseExample | undefined {
+  const examples = getResponseExamples(endpoint);
+
+  return examples.find((item) => item.status.startsWith("2")) ?? examples[0];
 }
 
 export function getResponseStatusTone(response: ResponseDoc): "success" | "warning" | "error" {
