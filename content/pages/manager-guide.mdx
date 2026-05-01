@@ -1,0 +1,297 @@
+---
+title: Manager Guide
+description: Пошаговая инструкция по заполнению endpoint-документации через OpenAPI и x-docs.
+---
+
+## Назначение системы
+
+Каждая endpoint-страница собирается из `content/openapi.yaml`. Стандартные поля OpenAPI отвечают за техническую часть: метод, путь, параметры, request body, response body, схемы и JSON-примеры. Поле `x-docs` отвечает за редакционный слой: статус endpoint, большой заголовок, дополнительные текстовые блоки, предупреждения, порядок секций и ручные request-примеры.
+
+## Базовый чеклист endpoint
+
+1. Найдите нужный путь в `paths`.
+2. Выберите метод: `get`, `post`, `put`, `patch`, `delete`.
+3. Заполните `tags`, чтобы endpoint попал в правильную группу навигации.
+4. Заполните `operationId`, чтобы URL страницы был стабильным.
+5. Заполните `summary`, это короткое название endpoint.
+6. Заполните `description`, это абзац под большим заголовком.
+7. Опишите `parameters`, если endpoint принимает header, path или query параметры.
+8. Опишите `requestBody`, если endpoint принимает JSON body.
+9. Опишите `responses`, включая успешные и ошибочные статусы.
+10. Добавьте `examples`, чтобы справа появились реальные JSON-примеры.
+11. Добавьте `x-docs`, если нужен статус, блоки внимания, ручной порядок секций или PHP/Node.js примеры.
+
+## Главные поля OpenAPI
+
+| Поле | Когда использовать | Что влияет на странице |
+| --- | --- | --- |
+| `summary` | Всегда | Название endpoint в навигации и fallback для большого заголовка. |
+| `description` | Всегда | Основной абзац под заголовком. |
+| `tags` | Всегда | Группа в левом меню. |
+| `operationId` | Всегда | Стабильный slug страницы и технический идентификатор. |
+| `parameters` | Когда есть headers, path, query или cookie параметры | Секции параметров в центральной части и cURL справа. |
+| `requestBody` | Когда endpoint принимает тело запроса | Секция Request body и request-пример справа. |
+| `responses` | Всегда | Секция Responses и response-примеры справа. |
+| `components.schemas` | Когда объект переиспользуется или сложный | Древовидное отображение атрибутов request/response. |
+
+## Статус endpoint
+
+Статус задается в `x-docs.status`. Используйте только одно из значений: `stable`, `beta`, `deprecated`, `draft`.
+
+| Статус | Когда ставить |
+| --- | --- |
+| `stable` | Endpoint готов для продакшена и контракт считается стабильным. |
+| `beta` | Endpoint доступен, но контракт может измениться. |
+| `deprecated` | Endpoint устарел, новый код не должен на него переходить. |
+| `draft` | Endpoint описывается заранее и еще не должен считаться публично готовым. |
+
+```yaml
+x-docs:
+  status: beta
+  title: Create an API key
+```
+
+## Большой заголовок
+
+Если `x-docs.title` не указан, страница использует `summary`. Указывайте `x-docs.title`, когда нужен более точный или более длинный H1, но в навигации лучше оставить короткий `summary`.
+
+```yaml
+summary: Create key
+x-docs:
+  title: Create an API key for a user
+```
+
+## Порядок секций
+
+Порядок задается через `x-docs.sectionOrder`. Можно перечислить только нужные секции. Все неуказанные авто-секции будут добавлены ниже в стандартном порядке, поэтому случайно скрыть headers, request body или responses нельзя.
+
+```yaml
+x-docs:
+  sectionOrder:
+    - overview
+    - header-parameters
+    - path-parameters
+    - query-parameters
+    - request-body
+    - responses
+```
+
+Доступные секции: `overview`, `header-parameters`, `path-parameters`, `query-parameters`, `cookie-parameters`, `request-body`, `responses`.
+
+## Дополнительные блоки
+
+Дополнительные блоки задаются в `x-docs.blocks`. Каждый блок должен иметь `id`, `type`, `placement` и содержимое. Доступные типы: `text`, `notice`, `code`.
+
+| Поле | Что означает |
+| --- | --- |
+| `id` | Уникальное имя блока внутри endpoint. Используйте латиницу, цифры и дефисы. |
+| `type` | Тип блока: `text`, `notice` или `code`. |
+| `placement` | Место, куда блок вставится. |
+| `title` | Заголовок блока. |
+| `body` | Основной текст. Поддерживает простой markdown: ссылки, `inline code`, списки, таблицы, code fences. |
+| `tone` | Цвет notice-блока. Используется только для `notice`. |
+| `language` | Язык code-блока. Используется только для `code`. |
+| `value` | Код или данные code-блока. Используется только для `code`. |
+
+## Места вставки блоков
+
+| Placement | Где появится блок |
+| --- | --- |
+| `hero-after-description` | Сразу после описания endpoint в верхней части страницы. |
+| `before:header-parameters` | Перед секцией Header parameters. |
+| `after:header-parameters` | После секции Header parameters. |
+| `before:path-parameters` | Перед секцией Path parameters. |
+| `after:path-parameters` | После секции Path parameters. |
+| `before:query-parameters` | Перед секцией Query parameters. |
+| `after:query-parameters` | После секции Query parameters. |
+| `before:request-body` | Перед секцией Request body. |
+| `after:request-body` | После секции Request body. |
+| `before:responses` | Перед секцией Responses. |
+| `after:responses` | После секции Responses. |
+| `end` | В самом конце центральной части endpoint-страницы. |
+
+## Notice-блоки
+
+Notice используйте для информации, которую пользователь должен заметить до отправки запроса или до обработки ответа.
+
+| Tone | Когда использовать |
+| --- | --- |
+| `info` | Нейтральное пояснение или полезная подсказка. |
+| `warning` | Риск ошибки, потери данных, повторного создания сущности. |
+| `danger` | Критичная опасность: секреты, irreversible-действие, безопасность. |
+| `success` | Подтверждение правильного сценария или хорошей практики. |
+| `neutral` | Дополнительное примечание без сильного сигнала. |
+
+```yaml
+x-docs:
+  blocks:
+    - id: auth-warning
+      type: notice
+      tone: warning
+      placement: before:header-parameters
+      title: Store the token securely
+      body: The secret token is returned only once.
+```
+
+## Text-блоки
+
+Text используйте для обычного объяснения: retry behavior, бизнес-правила, ограничения аккаунта, зависимости от тарифов, последовательность действий после response.
+
+```yaml
+x-docs:
+  blocks:
+    - id: retry-behavior
+      type: text
+      placement: after:responses
+      title: Retry behavior
+      body: Use `Idempotency-Key` when retrying create requests.
+```
+
+## Code-блоки
+
+Code-блок используйте, когда нужно показать отдельный фрагмент, который не является главным request-примером справа: например webhook payload, signature base string, SQL-like filter или дополнительный JSON.
+
+```yaml
+x-docs:
+  blocks:
+    - id: signature-base-string
+      type: code
+      placement: end
+      title: Signature base string
+      language: text
+      value: |
+        timestamp.method.path.body
+```
+
+## Header, path и query параметры
+
+Параметры описываются в `parameters`. Поле `in` определяет секцию: `header`, `path`, `query`, `cookie`.
+
+```yaml
+parameters:
+  - name: Idempotency-Key
+    in: header
+    required: true
+    description: Unique key used to safely retry a create request.
+    example: req_20260502_create_reporting_key
+    schema:
+      type: string
+      minLength: 8
+      maxLength: 128
+      pattern: "^[A-Za-z0-9._:-]+$"
+```
+
+Заполняйте `required: true`, если без параметра запрос не должен выполняться. Для path-параметров `required` всегда должен быть `true`. В `description` пишите практическую роль параметра, а не повторяйте его название.
+
+## Request body
+
+Request body описывает JSON, который клиент отправляет в endpoint. Для сложных объектов используйте `$ref` на `components.schemas`, чтобы схема была переиспользуемой и чистой.
+
+```yaml
+requestBody:
+  required: true
+  description: Configuration for the API key.
+  content:
+    application/json:
+      schema:
+        $ref: "#/components/schemas/CreateApiKeyRequest"
+      example:
+        name: Reporting integration
+        scopes:
+          - users:read
+        restrictions:
+          environment: production
+```
+
+## Response body
+
+В `responses` обязательно описывайте успешные статусы и ожидаемые ошибки. Для каждого статуса укажите `description`, `schema` и хотя бы один реалистичный пример.
+
+```yaml
+responses:
+  "201":
+    description: API key created.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/ApiKey"
+        examples:
+          created:
+            summary: Created
+            value:
+              id: key_8xK2mR9
+              status: active
+```
+
+## Constraints и стандарты
+
+Constraints помогают пользователю понять допустимые значения без чтения внешней документации. Добавляйте их прямо в `schema`.
+
+| Поле | Для каких типов | Пример |
+| --- | --- | --- |
+| `format` | `string` | `uuid`, `date-time`, `email` |
+| `enum` | `string`, `number`, `integer` | `[sandbox, production]` |
+| `default` | Любой тип | `false` |
+| `minimum` | `number`, `integer` | `1` |
+| `maximum` | `number`, `integer` | `100` |
+| `minLength` | `string` | `3` |
+| `maxLength` | `string` | `80` |
+| `pattern` | `string` | `"^[A-Za-z0-9._:-]+$"` |
+| `minItems` | `array` | `1` |
+| `maxItems` | `array` | `20` |
+
+## Request-примеры справа
+
+cURL генерируется автоматически из OpenAPI. PHP, Node.js и другие языки добавляйте в `x-docs.requestExamples`.
+
+```yaml
+x-docs:
+  requestExamples:
+    - id: node
+      label: Node.js
+      language: javascript
+      value: |
+        const response = await fetch("https://api.example.com/v1/users/123/api-keys", {
+          method: "POST"
+        });
+```
+
+Используйте `id` без пробелов. `label` показывается на табе. `language` показывается в кодовом блоке. `value` должен быть полноценным примером, который можно адаптировать в проекте пользователя.
+
+## Response-примеры справа
+
+Response-примеры берутся из стандартных `example` или `examples` внутри `responses`. Если нужно несколько вариантов для одного статуса, используйте `examples`.
+
+```yaml
+responses:
+  "400":
+    description: Request body or query parameters are malformed.
+    content:
+      application/json:
+        schema:
+          $ref: "#/components/schemas/Error"
+        examples:
+          malformedJson:
+            summary: Malformed JSON
+            value:
+              code: bad_request
+              message: The request could not be parsed.
+          invalidQuery:
+            summary: Invalid query
+            value:
+              code: bad_request
+              message: Query parameter is invalid.
+```
+
+## Финальная проверка перед публикацией
+
+1. У endpoint есть `operationId`, `summary`, `description` и `tags`.
+2. Все обязательные параметры отмечены `required: true`.
+3. Header, path и query параметры имеют понятные `description`.
+4. Request body содержит `schema` и реалистичный `example`.
+5. Response body содержит успешный статус и основные ошибки.
+6. Все объекты имеют `type`, а сложные объекты вынесены в `components.schemas`.
+7. Ограничения (`format`, `enum`, `minimum`, `maxLength`, `pattern`) указаны там, где они важны для интеграции.
+8. Notice-блоки используются только для действительно важных сигналов.
+9. PHP/Node.js примеры в `x-docs.requestExamples` не противоречат JSON body и headers.
+10. После изменения файла сайт проходит сборку без ошибок.

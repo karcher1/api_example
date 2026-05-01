@@ -1154,8 +1154,24 @@ pre {
   border-radius: 9px;
   background: rgb(255 255 255);
   color: rgb(90 97 111);
-  cursor: default;
+  cursor: pointer;
   box-shadow: 0 6px 14px rgb(20 83 90 / 0.06);
+}
+
+.example-icon-button:hover {
+  background: rgb(var(--color-muted));
+  color: rgb(var(--color-brand));
+}
+
+.example-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.example-icon-button-copied {
+  border-color: rgb(86 169 128);
+  background: rgb(232 247 237);
+  color: rgb(35 95 68);
 }
 
 .example-copy {
