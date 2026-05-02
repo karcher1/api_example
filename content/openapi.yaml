@@ -8,6 +8,8 @@ servers:
 tags:
   - name: Users
     description: Customer identity and access management endpoints.
+  - name: Buyers
+    description: Buyer profile and payment method token endpoints.
 paths:
   /users/{userId}/api-keys:
     post:
@@ -283,6 +285,177 @@ paths:
                     reason: At least one scope is not available for this account.
                   - field: restrictions.ipAllowlist
                     reason: CIDR ranges are not allowed for this account tier.
+  /api/v3/buyers/{buyerId}/enable-token:
+    put:
+      tags: [Buyers]
+      servers:
+        - url: https://pay-sandbox.billerbase.com
+      operationId: enableToken
+      summary: Enable token
+      description: Activates a payment method token that belongs to the buyer so it can be used for future transactions.
+      x-docs:
+        status: stable
+        title: Enable token
+        sectionOrder:
+          - overview
+          - header-parameters
+          - path-parameters
+          - request-body
+          - responses
+        blocks:
+          - id: errors-reference
+            type: text
+            placement: after:responses
+            title: Errors and interpretation
+            body: Possible endpoint errors are described in the general endpoint response errors reference.
+        requestExamples:
+          - id: php
+            label: PHP
+            language: php
+            value: |
+              <?php
+              $headers = [
+                  'x-date: 2026-05-03 12:00:00.000000',
+                  'x-public-key: 8f156a38-bcbb-47eb-a08f-f7a47a1a9f6f',
+                  'x-buyer-ip: 203.0.113.42',
+                  'x-token: generated-token-example',
+                  'x-source: shop',
+                  'x-id: merchant-name',
+                  'Content-Type: application/json',
+              ];
+
+              $body = json_encode([
+                  'chargeMethodTokenId' => 630,
+              ]);
+
+              $context = stream_context_create([
+                  'http' => [
+                      'method' => 'PUT',
+                      'header' => implode("\r\n", $headers),
+                      'content' => $body,
+                  ],
+              ]);
+
+              $response = file_get_contents(
+                  'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/enable-token',
+                  false,
+                  $context
+              );
+          - id: node
+            label: Node.js
+            language: javascript
+            value: |
+              const response = await fetch("https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/enable-token", {
+                method: "PUT",
+                headers: {
+                  "x-date": "2026-05-03 12:00:00.000000",
+                  "x-public-key": "8f156a38-bcbb-47eb-a08f-f7a47a1a9f6f",
+                  "x-buyer-ip": "203.0.113.42",
+                  "x-token": "generated-token-example",
+                  "x-source": "shop",
+                  "x-id": "merchant-name",
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  chargeMethodTokenId: 630
+                })
+              });
+      parameters:
+        - name: x-public-key
+          in: header
+          required: true
+          description: Public key that identifies the merchant account.
+          example: 8f156a38-bcbb-47eb-a08f-f7a47a1a9f6f
+          schema:
+            type: string
+            format: uuid
+        - name: x-buyer-ip
+          in: header
+          required: true
+          description: Buyer IP address used for request context.
+          example: 203.0.113.42
+          schema:
+            type: string
+            format: ipv4
+        - name: x-date
+          in: header
+          required: true
+          description: Date and time when the request is sent, formatted as Y-m-d H:i:s.u.
+          example: "2026-05-03 12:00:00.000000"
+          schema:
+            type: string
+        - name: x-token
+          in: header
+          required: true
+          description: Request token generated on the merchant side.
+          example: generated-token-example
+          schema:
+            type: string
+        - name: x-source
+          in: header
+          required: true
+          description: Request source. Pass the value shop.
+          example: shop
+          schema:
+            type: string
+            enum: [shop]
+        - name: x-id
+          in: header
+          required: true
+          description: Merchant name or service identifier.
+          example: merchant-name
+          schema:
+            type: string
+        - name: buyerId
+          in: path
+          required: true
+          description: Unique identifier of the buyer in the system.
+          example: 9b4afcac-c8e4-4b0e-a98b-6fd6053db120
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        description: Optional payment method token identifier to activate for the buyer.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillerixEnableTokenRequest"
+            example:
+              chargeMethodTokenId: 630
+      responses:
+        "204":
+          description: Token enabled successfully. No response body is returned.
+        "400":
+          description: Request syntax is malformed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillerixError"
+              examples:
+                malformedRequest:
+                  summary: Malformed request
+                  value:
+                    uuid: 6642ea47-568c-4f12-bc85-dc750f5a140e
+                    code: 3000
+                    message: Malformed request syntax.
+                    traceId: 082d86c339533af07c14252afcecc7bd
+        "422":
+          description: Request validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillerixValidationError"
+              examples:
+                validationFailed:
+                  summary: Validation failed
+                  value:
+                    code: 0
+                    message: Malformed request syntax.
+                    traceId: 082d86c339533af07c14252afcecc7bd
+                    errors:
+                      - field: chargeMethodTokenId
+                        title: Payment method token was not found.
 components:
   schemas:
     CreateApiKeyRequest:
@@ -481,3 +654,66 @@ components:
                 type: string
               reason:
                 type: string
+    BillerixEnableTokenRequest:
+      type: object
+      properties:
+        chargeMethodTokenId:
+          type: integer
+          format: int64
+          description: Payment method token identifier.
+          example: 630
+          minimum: 1
+    BillerixError:
+      type: object
+      required: [code, message, traceId]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Error event identifier.
+          example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+        code:
+          type: integer
+          description: Numeric Billerix error code.
+          example: 3000
+        message:
+          type: string
+          description: Human-readable error message.
+          example: Malformed request syntax.
+        traceId:
+          type: string
+          description: Trace identifier for support and diagnostics.
+          example: 082d86c339533af07c14252afcecc7bd
+    BillerixValidationError:
+      type: object
+      required: [code, message, traceId, errors]
+      properties:
+        code:
+          type: integer
+          description: Numeric Billerix validation error code.
+          example: 0
+        message:
+          type: string
+          description: Human-readable validation error message.
+          example: Malformed request syntax.
+        traceId:
+          type: string
+          description: Trace identifier for support and diagnostics.
+          example: 082d86c339533af07c14252afcecc7bd
+        errors:
+          type: array
+          description: Field-level validation errors.
+          items:
+            $ref: "#/components/schemas/BillerixValidationIssue"
+    BillerixValidationIssue:
+      type: object
+      required: [field, title]
+      properties:
+        field:
+          type: string
+          description: Field that failed validation.
+          example: chargeMethodTokenId
+        title:
+          type: string
+          description: Validation error title.
+          example: Payment method token was not found.

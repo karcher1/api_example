@@ -83,7 +83,7 @@ function withQueryParameters(endpoint: EndpointDoc, url: string): string {
 }
 
 export function buildCurlExample(endpoint: EndpointDoc): string {
-  const baseUrl = getBaseUrl().replace(/\/$/, "");
+  const baseUrl = (endpoint.serverUrl ?? getBaseUrl()).replace(/\/$/, "");
   const path = withPathParameters(endpoint);
   const url = withQueryParameters(endpoint, `${baseUrl}${path}`);
   const body = requestBodyExample(endpoint);
@@ -119,36 +119,49 @@ export function getRequestExamples(endpoint: EndpointDoc): EndpointCodeExample[]
   ];
 }
 
-export function getResponseExamples(endpoint: EndpointDoc): ResponseExample[] {
-  return endpoint.responses.flatMap((response) =>
-    response.content.flatMap((content) => {
-      if (content.examples.length > 0) {
-        return content.examples.map((example) => ({
-          id: `${response.status}-${content.contentType}-${example.id}`,
+function getResponseExamplesForStatus(endpoint: EndpointDoc, response: ResponseDoc): ResponseExample[] {
+  if (response.content.length === 0) {
+    return [
+      {
+        id: `${response.status}-empty`,
+        status: response.status,
+        label: response.status,
+        description: response.description,
+      },
+    ];
+  }
+
+  return response.content.flatMap((content) => {
+    if (content.examples.length > 0) {
+      return content.examples.map((example) => ({
+        id: `${response.status}-${content.contentType}-${example.id}`,
+        status: response.status,
+        label: example.label,
+        description: example.description ?? response.description,
+        contentType: content.contentType,
+        example: example.value,
+      }));
+    }
+
+    if (content.example !== undefined) {
+      return [
+        {
+          id: `${response.status}-${content.contentType}`,
           status: response.status,
-          label: example.label,
-          description: example.description ?? response.description,
+          label: response.status,
+          description: response.description,
           contentType: content.contentType,
-          example: example.value,
-        }));
-      }
+          example: endpoint.examples.responses[response.status] ?? content.example,
+        },
+      ];
+    }
 
-      if (content.example !== undefined) {
-        return [
-          {
-            id: `${response.status}-${content.contentType}`,
-            status: response.status,
-            label: response.status,
-            description: response.description,
-            contentType: content.contentType,
-            example: endpoint.examples.responses[response.status] ?? content.example,
-          },
-        ];
-      }
+    return [];
+  });
+}
 
-      return [];
-    }),
-  );
+export function getResponseExamples(endpoint: EndpointDoc): ResponseExample[] {
+  return endpoint.responses.flatMap((response) => getResponseExamplesForStatus(endpoint, response));
 }
 
 export function getPrimaryResponseExample(endpoint: EndpointDoc): ResponseExample | undefined {

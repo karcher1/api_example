@@ -90,8 +90,6 @@ export function TabbedExamples({ requestExamples, responseExamples }: TabbedExam
             onChange={setActiveResponseId}
           />
         </div>
-        {activeResponse?.description ? <p className="example-copy">{activeResponse.description}</p> : null}
-        {activeResponse?.contentType ? <p className="content-type-label">{activeResponse.contentType}</p> : null}
         {activeResponse?.example !== undefined ? (
           <CodeBlock value={activeResponse.example} language="json" />
         ) : (

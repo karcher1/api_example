@@ -511,6 +511,84 @@ examples:
       id: preview_key
 ```
 
+## Быстрый YAML-шаблон endpoint
+
+Используйте этот шаблон, когда нужно добавить endpoint без изменений в коде. Если endpoint живет на другом host, задайте `servers` внутри method-блока: он перекроет root-level `servers` только для этой страницы и generated cURL.
+
+```yaml
+paths:
+  /api/v3/resource/{resourceId}/action:
+    put:
+      tags: [Resource]
+      servers:
+        - url: https://api.example.com
+      operationId: resourceAction
+      summary: Resource action
+      description: Performs an action for a single resource.
+      x-docs:
+        status: stable
+        title: Resource action
+        sectionOrder:
+          - overview
+          - header-parameters
+          - path-parameters
+          - request-body
+          - responses
+        blocks:
+          - id: behavior-note
+            type: notice
+            tone: info
+            placement: after:request-body
+            title: Behavior
+            body: Add only important integration notes here.
+        requestExamples:
+          - id: node
+            label: Node.js
+            language: javascript
+            value: |
+              const response = await fetch("https://api.example.com/api/v3/resource/123/action", {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ enabled: true })
+              });
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Bearer access token.
+          schema:
+            type: string
+        - name: resourceId
+          in: path
+          required: true
+          description: Unique resource identifier.
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResourceActionRequest"
+            example:
+              enabled: true
+      responses:
+        "204":
+          description: Action completed. No response body is returned.
+        "400":
+          description: Request is malformed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                code: bad_request
+                message: Request is malformed.
+                requestId: req_123
+```
+
 ## Управление навигацией
 
 Левая API-навигация создается автоматически из OpenAPI. Верхняя навигация создается из MDX-страниц.

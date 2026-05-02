@@ -123,6 +123,7 @@ export interface EndpointDoc {
   href: string;
   method: HttpMethod;
   path: string;
+  serverUrl?: string;
   tag: string;
   tagSlug: string;
   operationId?: string;
@@ -733,6 +734,29 @@ function getTagOrder(document: UnknownRecord): Map<string, number> {
   );
 }
 
+function firstServerUrl(serversValue: unknown): string | undefined {
+  if (!Array.isArray(serversValue)) {
+    return undefined;
+  }
+
+  const firstServer = serversValue.find(isRecord);
+  const url = firstServer ? asString(firstServer.url) : "";
+
+  return url || undefined;
+}
+
+function endpointServerUrl(
+  document: UnknownRecord,
+  pathItem: UnknownRecord,
+  operation: UnknownRecord,
+): string | undefined {
+  return (
+    firstServerUrl(operation.servers) ??
+    firstServerUrl(pathItem.servers) ??
+    firstServerUrl(document.servers)
+  );
+}
+
 export function getOpenApiDocument(): UnknownRecord {
   if (documentCache) {
     return documentCache;
@@ -788,6 +812,7 @@ export function getEndpoints(): EndpointDoc[] {
       const slug = duplicateCount === 0 ? baseSlug : `${baseSlug}-${duplicateCount + 1}`;
       const requestBody = parseRequestBody(operation.requestBody, document);
       const responses = parseResponses(operation.responses, document);
+      const serverUrl = endpointServerUrl(document, pathItem, operation);
       const firstRequestExample = requestBody?.content.find((item) => item.example !== undefined)?.example;
       const responseExamples = responses.reduce<Record<string, unknown>>((examples, response) => {
         const example = response.content.find((item) => item.example !== undefined)?.example;
@@ -808,6 +833,7 @@ export function getEndpoints(): EndpointDoc[] {
         href: `/reference/${tagSlug}/${slug}`,
         method: methodName,
         path: apiPath,
+        serverUrl,
         tag,
         tagSlug,
         operationId,

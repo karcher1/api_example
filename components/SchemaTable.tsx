@@ -1,11 +1,16 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
+import { ChevronRight } from "lucide-react";
 import type { SchemaNode } from "@/lib/openapi";
 
 interface SchemaTableProps {
   schema?: SchemaNode;
   rootLabel?: string;
+  variant?: "tree" | "fieldList";
+  chrome?: "panel" | "embedded";
+  initialExpansion?: "all" | "default" | "none";
+  controlMode?: "toolbar" | "inline-toggle" | "none";
 }
 
 interface SchemaTreeNodeProps {
@@ -13,8 +18,6 @@ interface SchemaTreeNodeProps {
   label: string;
   path: string;
   depth: number;
-  branchIndex: number;
-  branchDepth: number;
   isRoot?: boolean;
   expanded: Set<string>;
   onToggle: (path: string) => void;
@@ -24,19 +27,6 @@ interface SchemaChild {
   node: SchemaNode;
   label: string;
 }
-
-type RgbTuple = readonly [number, number, number];
-
-const BRANCH_COLORS: RgbTuple[] = [
-  [22, 125, 132],
-  [48, 101, 145],
-  [139, 105, 224],
-  [88, 184, 151],
-  [184, 139, 82],
-  [190, 18, 60],
-];
-const ROOT_BRANCH_COLOR: RgbTuple = [91, 105, 116];
-const WHITE: RgbTuple = [255, 255, 255];
 
 function schemaTypeLabel(node: SchemaNode): string {
   if (node.items) {
@@ -167,44 +157,30 @@ function collectExpandedPaths(node: SchemaNode, path = "root", depth = 0, includ
   return paths;
 }
 
-function rgbValue(color: RgbTuple): string {
-  return color.join(" ");
-}
-
-function mixRgb(source: RgbTuple, target: RgbTuple, amount: number): RgbTuple {
-  return source.map((channel, index) =>
-    Math.round(channel + (target[index] - channel) * amount),
-  ) as unknown as RgbTuple;
-}
-
-function branchColor(branchIndex: number): RgbTuple {
-  if (branchIndex < 0) {
-    return ROOT_BRANCH_COLOR;
+function initialExpandedPaths(node: SchemaNode, initialExpansion: NonNullable<SchemaTableProps["initialExpansion"]>) {
+  if (initialExpansion === "all") {
+    return collectExpandedPaths(node, "root", 0, true);
   }
 
-  return BRANCH_COLORS[branchIndex % BRANCH_COLORS.length];
+  if (initialExpansion === "none") {
+    return new Set<string>();
+  }
+
+  return collectExpandedPaths(node);
 }
 
-function branchStyle(depth: number, branchIndex: number, branchDepth: number): CSSProperties {
+function branchStyle(depth: number): CSSProperties {
   const desktopStep = 30;
   const mobileStep = 20;
-  const color = branchColor(branchIndex);
-  const tintAmount = Math.min(0.58, 0.22 + branchDepth * 0.08);
-  const softTintAmount = Math.min(0.78, 0.54 + branchDepth * 0.05);
 
   return {
     "--schema-indent": `${42 + depth * desktopStep}px`,
-    "--schema-dot-offset": `${14 + depth * desktopStep}px`,
     "--schema-dot-center": `${22 + depth * desktopStep}px`,
     "--schema-parent-dot-center": `${22 + Math.max(depth - 1, 0) * desktopStep}px`,
+    "--schema-marker-center-y": "27px",
     "--schema-indent-mobile": `${36 + depth * mobileStep}px`,
-    "--schema-dot-offset-mobile": `${10 + depth * mobileStep}px`,
     "--schema-dot-center-mobile": `${18 + depth * mobileStep}px`,
     "--schema-parent-dot-center-mobile": `${18 + Math.max(depth - 1, 0) * mobileStep}px`,
-    "--schema-branch": rgbValue(color),
-    "--schema-branch-tint": rgbValue(mixRgb(color, WHITE, tintAmount)),
-    "--schema-branch-soft": rgbValue(mixRgb(color, WHITE, softTintAmount)),
-    "--schema-line-opacity": String(Math.max(0.42, 0.78 - branchDepth * 0.06)),
   } as CSSProperties;
 }
 
@@ -213,8 +189,6 @@ function SchemaTreeNode({
   label,
   path,
   depth,
-  branchIndex,
-  branchDepth,
   isRoot = false,
   expanded,
   onToggle,
@@ -232,7 +206,7 @@ function SchemaTreeNode({
         hasChildren ? "schema-tree-node-expandable" : "schema-tree-node-leaf",
         hasChildren && isExpanded ? "schema-tree-node-open" : "",
       ].join(" ")}
-      style={branchStyle(depth, branchIndex, branchDepth)}
+      style={branchStyle(depth)}
     >
       <div className="schema-tree-item">
         {hasChildren ? (
@@ -243,11 +217,11 @@ function SchemaTreeNode({
             aria-label={isExpanded ? `Collapse ${label}` : `Expand ${label}`}
             aria-expanded={isExpanded}
           >
-            <span className="schema-tree-node-point-core" aria-hidden="true" />
+            <ChevronRight className="schema-tree-node-chevron" size={14} strokeWidth={2.4} aria-hidden="true" />
           </button>
         ) : (
           <span className="schema-tree-node-point schema-tree-node-point-leaf" aria-hidden="true">
-            <span className="schema-tree-node-point-core" />
+            <span className="schema-tree-leaf-dot" />
           </span>
         )}
         <div className="schema-tree-body">
@@ -263,7 +237,7 @@ function SchemaTreeNode({
           <p className="schema-tree-description">{schemaDescription(node)}</p>
         </div>
         <span className={node.required ? "schema-required" : "schema-optional"}>
-          {node.required ? "mandatory" : "optional"}
+          {node.required ? "required" : "optional"}
         </span>
       </div>
 
@@ -271,8 +245,6 @@ function SchemaTreeNode({
         <div className="schema-tree-children">
           {children.map((child, index) => {
             const nextPath = childPath(path, child, index);
-            const nextBranchIndex = isRoot ? index : branchIndex;
-            const nextBranchDepth = isRoot ? 0 : branchDepth + 1;
 
             return (
               <SchemaTreeNode
@@ -281,8 +253,6 @@ function SchemaTreeNode({
                 label={child.label}
                 path={nextPath}
                 depth={depth + 1}
-                branchIndex={nextBranchIndex}
-                branchDepth={nextBranchDepth}
                 expanded={expanded}
                 onToggle={onToggle}
               />
@@ -294,12 +264,31 @@ function SchemaTreeNode({
   );
 }
 
-export function SchemaTable({ schema, rootLabel = "body" }: SchemaTableProps) {
+export function SchemaTable({
+  schema,
+  rootLabel = "body",
+  variant = "tree",
+  chrome = "panel",
+  initialExpansion = "default",
+  controlMode = "toolbar",
+}: SchemaTableProps) {
   const rootName = rootLabel || schema?.name || "body";
   const rootNode = useMemo(() => (schema ? { ...schema, name: rootName } : undefined), [schema, rootName]);
-  const defaultExpanded = useMemo(() => (rootNode ? collectExpandedPaths(rootNode) : new Set<string>()), [rootNode]);
+  const defaultExpanded = useMemo(
+    () => (rootNode ? initialExpandedPaths(rootNode, initialExpansion) : new Set<string>()),
+    [initialExpansion, rootNode],
+  );
   const allExpanded = useMemo(() => (rootNode ? collectExpandedPaths(rootNode, "root", 0, true) : new Set<string>()), [rootNode]);
   const [expanded, setExpanded] = useState(() => defaultExpanded);
+  const rootChildren = useMemo(() => (rootNode ? childNodes(rootNode) : []), [rootNode]);
+  const isFieldList = variant === "fieldList";
+  const isEmbedded = chrome === "embedded";
+  const canBulkToggle = allExpanded.size > 0;
+  const allPathsExpanded = canBulkToggle && Array.from(allExpanded).every((path) => expanded.has(path));
+
+  function toggleAll() {
+    setExpanded(allPathsExpanded ? new Set<string>() : allExpanded);
+  }
 
   function toggle(path: string) {
     setExpanded((current) => {
@@ -320,30 +309,66 @@ export function SchemaTable({ schema, rootLabel = "body" }: SchemaTableProps) {
   }
 
   return (
-    <div className="schema-tree-wrap">
-      <div className="schema-tree-toolbar">
-        <span>Schema fields</span>
-        <div className="schema-tree-controls" aria-label="Schema tree controls">
-          <button type="button" className="schema-tree-control" onClick={() => setExpanded(allExpanded)}>
-            Expand all
-          </button>
-          <button type="button" className="schema-tree-control" onClick={() => setExpanded(new Set<string>())}>
-            Collapse all
+    <div
+      className={[
+        "schema-tree-wrap",
+        isFieldList ? "schema-tree-wrap-field-list" : "",
+        isEmbedded ? "schema-tree-wrap-embedded" : "",
+      ].filter(Boolean).join(" ")}
+    >
+      {controlMode === "toolbar" && !isEmbedded ? (
+        <div className={isFieldList ? "schema-tree-toolbar schema-tree-toolbar-actions-only" : "schema-tree-toolbar"}>
+          {isFieldList ? null : <span>Schema fields</span>}
+          <div className="schema-tree-controls" aria-label="Schema tree controls">
+            <button type="button" className="schema-tree-control" onClick={() => setExpanded(allExpanded)}>
+              Expand all
+            </button>
+            <button type="button" className="schema-tree-control" onClick={() => setExpanded(new Set<string>())}>
+              Collapse all
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {controlMode === "inline-toggle" && canBulkToggle ? (
+        <div className="schema-tree-inline-actions">
+          <button type="button" className="schema-tree-inline-control" onClick={toggleAll}>
+            {allPathsExpanded ? "Свернуть всё" : "Развернуть всё"}
           </button>
         </div>
-      </div>
+      ) : null}
       <div className="schema-tree-list">
-        <SchemaTreeNode
-          node={rootNode}
-          label={rootName}
-          path="root"
-          depth={0}
-          branchIndex={-1}
-          branchDepth={0}
-          isRoot
-          expanded={expanded}
-          onToggle={toggle}
-        />
+        {isFieldList ? (
+          rootChildren.length > 0 ? (
+            rootChildren.map((child, index) => {
+              const path = childPath("root", child, index);
+
+              return (
+                <SchemaTreeNode
+                  key={path}
+                  node={child.node}
+                  label={child.label}
+                  path={path}
+                  depth={0}
+                  isRoot
+                  expanded={expanded}
+                  onToggle={toggle}
+                />
+              );
+            })
+          ) : (
+            <p className="empty-state schema-tree-empty">No fields documented.</p>
+          )
+        ) : (
+          <SchemaTreeNode
+            node={rootNode}
+            label={rootName}
+            path="root"
+            depth={0}
+            isRoot
+            expanded={expanded}
+            onToggle={toggle}
+          />
+        )}
       </div>
     </div>
   );

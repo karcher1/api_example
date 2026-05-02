@@ -1,7 +1,6 @@
 import { Fragment } from "react";
 import type {
   AutoSectionId,
-  BodyContent,
   DocsBlockPlacement,
   EndpointDoc,
   EndpointDocBlock,
@@ -84,10 +83,6 @@ function schemaMetaChips(schema?: SchemaNode): string[] {
   ].filter((chip): chip is string => Boolean(chip));
 }
 
-function contentLabel(content: BodyContent): string {
-  return content.contentType || "application/json";
-}
-
 function groupedParameters(parameters: EndpointParameter[]) {
   return PARAMETER_ORDER.map((location) => ({
     location,
@@ -121,7 +116,7 @@ function ParametersList({ parameters }: { parameters: EndpointParameter[] }) {
               ) : null}
             </div>
             <span className={parameter.required ? "schema-required" : "schema-optional"}>
-              {parameter.required ? "mandatory" : "optional"}
+              {parameter.required ? "required" : "optional"}
             </span>
           </article>
         );
@@ -180,29 +175,19 @@ function OverviewSection({ endpoint }: EndpointContentProps) {
   return (
     <section className="overview-card" id="overview" aria-label="Endpoint overview">
       <div className="overview-card-accent" aria-hidden="true" />
-      <div className="overview-grid">
-        <div className="overview-item">
-          <span>Group</span>
-          <strong>{endpoint.tag}</strong>
+      <div className="overview-command">
+        <div className="overview-method">
+          <span className="overview-label">Method</span>
+          <MethodBadge method={endpoint.method} />
         </div>
-        <div className="overview-item">
-          <span>Method</span>
-          <strong>{endpoint.method.toUpperCase()}</strong>
-        </div>
-        {endpoint.docs.status ? (
-          <div className="overview-item">
-            <span>Status</span>
-            <strong>{STATUS_LABELS[endpoint.docs.status]}</strong>
-          </div>
-        ) : null}
-        <div className="overview-item overview-item-wide">
-          <span>Path</span>
+        <div className="overview-path">
+          <span className="overview-label">Path</span>
           <code>{endpoint.path}</code>
         </div>
-        {endpoint.operationId ? (
-          <div className="overview-item overview-item-wide">
-            <span>Operation ID</span>
-            <code>{endpoint.operationId}</code>
+        {endpoint.docs.status ? (
+          <div className={`overview-status overview-status-${endpoint.docs.status}`}>
+            <span className="overview-status-dot" aria-hidden="true" />
+            <span>{STATUS_LABELS[endpoint.docs.status]}</span>
           </div>
         ) : null}
       </div>
@@ -228,24 +213,17 @@ function RequestBodySection({ endpoint }: EndpointContentProps) {
     return null;
   }
 
+  const bodyContent = endpoint.requestBody.content[0];
+
   return (
     <section className="docs-section docs-section-spacious" id="request-body">
       <h2>Request body</h2>
-      {endpoint.requestBody.description ? <p className="section-copy">{endpoint.requestBody.description}</p> : null}
-      <div className="content-stack">
-        {endpoint.requestBody.content.map((content) => (
-          <div className="schema-card" key={content.contentType}>
-            <div className="schema-card-header">
-              <div>
-                <h3>{contentLabel(content)}</h3>
-                <span>Request payload schema</span>
-              </div>
-              {endpoint.requestBody?.required ? <span className="schema-required">mandatory</span> : null}
-            </div>
-            <SchemaTable schema={content.schema} rootLabel="body" />
-          </div>
-        ))}
-      </div>
+      <SchemaTable
+        schema={bodyContent.schema}
+        rootLabel="body"
+        variant="fieldList"
+        initialExpansion="all"
+      />
     </section>
   );
 }
@@ -255,15 +233,17 @@ function ResponseSchema({ response }: { response: ResponseDoc }) {
     return <p className="empty-state">This response has no documented body.</p>;
   }
 
+  const content = response.content[0];
+
   return (
-    <div className="content-stack">
-      {response.content.map((content) => (
-        <div className="schema-panel" key={`${response.status}-${content.contentType}`}>
-          <p className="content-type-label">{contentLabel(content)}</p>
-          <SchemaTable schema={content.schema} rootLabel={`response ${response.status}`} />
-        </div>
-      ))}
-    </div>
+    <SchemaTable
+      schema={content.schema}
+      rootLabel={`response ${response.status}`}
+      variant="fieldList"
+      chrome="embedded"
+      initialExpansion="none"
+      controlMode="inline-toggle"
+    />
   );
 }
 
@@ -271,7 +251,7 @@ function ResponseCard({ response }: { response: ResponseDoc }) {
   const tone = getResponseStatusTone(response);
 
   return (
-    <details className="response-doc-card" open={response.status.startsWith("2")}>
+    <details className="response-doc-card">
       <summary>
         <span className={`status-dot status-dot-${tone}`} aria-hidden="true" />
         <span className="response-doc-status">{response.status}</span>
