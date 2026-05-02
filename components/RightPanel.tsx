@@ -12,7 +12,6 @@ export function RightPanel({ endpoint }: RightPanelProps) {
 
   return (
     <TabbedExamples
-      method={endpoint.method}
       requestExamples={requestExamples}
       responseExamples={responseExamples}
     />

@@ -1101,77 +1101,51 @@ pre {
   padding: 16px;
 }
 
-.example-card-header > div:first-child span {
+.example-card-title {
+  min-width: 0;
+}
+
+.example-card-title span {
   display: block;
-  margin-bottom: 6px;
   color: rgb(var(--color-brand));
   font-size: 11px;
   font-weight: 760;
   text-transform: uppercase;
 }
 
-.example-card-header h3 {
-  margin: 0;
-  color: rgb(var(--color-ink));
-  font-family: Georgia, "Times New Roman", ui-serif, serif;
-  font-size: 21px;
-  font-weight: 700;
-}
-
-.example-card-actions {
-  display: flex;
+.example-select-wrap {
+  position: relative;
   flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
+  width: 132px;
+  max-width: min(132px, 46vw);
 }
 
-.example-chip,
-.response-code-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 30px;
-  border: 1px solid rgb(var(--color-line));
+.example-select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid rgb(184 210 209);
   border-radius: 9px;
-  background: rgb(242 249 247);
-  padding: 0 10px;
-  color: rgb(74 79 90);
-  font-size: 12px;
-  font-weight: 720;
-}
-
-.response-code-chip {
-  color: rgb(35 95 68);
-}
-
-.example-icon-button {
-  display: inline-flex;
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 9px;
-  background: rgb(255 255 255);
-  color: rgb(90 97 111);
+  background: rgb(248 252 251);
+  color: rgb(50 59 73);
   cursor: pointer;
-  box-shadow: 0 6px 14px rgb(20 83 90 / 0.06);
+  overflow: hidden;
+  padding: 0 30px 0 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 760;
+  box-shadow: 0 6px 14px rgb(20 83 90 / 0.05);
 }
 
-.example-icon-button:hover {
+.example-select:hover {
+  border-color: rgb(143 195 205);
   background: rgb(var(--color-muted));
   color: rgb(var(--color-brand));
 }
 
-.example-icon-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
-}
-
-.example-icon-button-copied {
-  border-color: rgb(86 169 128);
-  background: rgb(232 247 237);
-  color: rgb(35 95 68);
+.example-select:focus {
+  outline: 2px solid rgb(22 125 132 / 0.22);
+  outline-offset: 2px;
 }
 
 .example-copy {
@@ -1179,42 +1153,6 @@ pre {
   color: rgb(82 89 102);
   font-size: 13px;
   line-height: 1.6;
-}
-
-.example-tabs {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  border-bottom: 1px solid rgb(224 233 230);
-  margin: -12px 0 0;
-  padding: 10px 14px;
-  scrollbar-width: thin;
-}
-
-.example-tab {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  min-height: 30px;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 8px;
-  background: rgb(248 252 251);
-  color: rgb(74 79 90);
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 720;
-}
-
-.example-tab:hover {
-  background: rgb(var(--color-muted));
-  color: rgb(var(--color-brand));
-}
-
-.example-tab-active {
-  border-color: rgb(143 195 205);
-  background: rgb(229 245 248);
-  color: rgb(18 94 103);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6);
 }
 
 .examples-panel .content-type-label {
