@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, type CSSProperties } from "react";
-import { ChevronRight } from "lucide-react";
 import type { SchemaNode } from "@/lib/openapi";
 
 interface SchemaTableProps {
@@ -14,6 +13,9 @@ interface SchemaTreeNodeProps {
   label: string;
   path: string;
   depth: number;
+  branchIndex: number;
+  branchDepth: number;
+  isRoot?: boolean;
   expanded: Set<string>;
   onToggle: (path: string) => void;
 }
@@ -22,6 +24,19 @@ interface SchemaChild {
   node: SchemaNode;
   label: string;
 }
+
+type RgbTuple = readonly [number, number, number];
+
+const BRANCH_COLORS: RgbTuple[] = [
+  [22, 125, 132],
+  [48, 101, 145],
+  [139, 105, 224],
+  [88, 184, 151],
+  [184, 139, 82],
+  [190, 18, 60],
+];
+const ROOT_BRANCH_COLOR: RgbTuple = [91, 105, 116];
+const WHITE: RgbTuple = [255, 255, 255];
 
 function schemaTypeLabel(node: SchemaNode): string {
   if (node.items) {
@@ -152,14 +167,44 @@ function collectExpandedPaths(node: SchemaNode, path = "root", depth = 0, includ
   return paths;
 }
 
-function depthStyle(depth: number): CSSProperties {
+function rgbValue(color: RgbTuple): string {
+  return color.join(" ");
+}
+
+function mixRgb(source: RgbTuple, target: RgbTuple, amount: number): RgbTuple {
+  return source.map((channel, index) =>
+    Math.round(channel + (target[index] - channel) * amount),
+  ) as unknown as RgbTuple;
+}
+
+function branchColor(branchIndex: number): RgbTuple {
+  if (branchIndex < 0) {
+    return ROOT_BRANCH_COLOR;
+  }
+
+  return BRANCH_COLORS[branchIndex % BRANCH_COLORS.length];
+}
+
+function branchStyle(depth: number, branchIndex: number, branchDepth: number): CSSProperties {
+  const desktopStep = 30;
+  const mobileStep = 20;
+  const color = branchColor(branchIndex);
+  const tintAmount = Math.min(0.58, 0.22 + branchDepth * 0.08);
+  const softTintAmount = Math.min(0.78, 0.54 + branchDepth * 0.05);
+
   return {
-    "--schema-indent": `${42 + depth * 30}px`,
-    "--schema-guide-offset": `${21 + depth * 30}px`,
-    "--schema-dot-offset": `${14 + depth * 30}px`,
-    "--schema-indent-mobile": `${36 + depth * 20}px`,
-    "--schema-guide-offset-mobile": `${18 + depth * 20}px`,
-    "--schema-dot-offset-mobile": `${11 + depth * 20}px`,
+    "--schema-indent": `${42 + depth * desktopStep}px`,
+    "--schema-dot-offset": `${14 + depth * desktopStep}px`,
+    "--schema-dot-center": `${22 + depth * desktopStep}px`,
+    "--schema-parent-dot-center": `${22 + Math.max(depth - 1, 0) * desktopStep}px`,
+    "--schema-indent-mobile": `${36 + depth * mobileStep}px`,
+    "--schema-dot-offset-mobile": `${10 + depth * mobileStep}px`,
+    "--schema-dot-center-mobile": `${18 + depth * mobileStep}px`,
+    "--schema-parent-dot-center-mobile": `${18 + Math.max(depth - 1, 0) * mobileStep}px`,
+    "--schema-branch": rgbValue(color),
+    "--schema-branch-tint": rgbValue(mixRgb(color, WHITE, tintAmount)),
+    "--schema-branch-soft": rgbValue(mixRgb(color, WHITE, softTintAmount)),
+    "--schema-line-opacity": String(Math.max(0.42, 0.78 - branchDepth * 0.06)),
   } as CSSProperties;
 }
 
@@ -168,6 +213,9 @@ function SchemaTreeNode({
   label,
   path,
   depth,
+  branchIndex,
+  branchDepth,
+  isRoot = false,
   expanded,
   onToggle,
 }: SchemaTreeNodeProps) {
@@ -180,31 +228,30 @@ function SchemaTreeNode({
     <div
       className={[
         "schema-tree-node",
-        `schema-tree-node-depth-${depth % 5}`,
+        isRoot ? "schema-tree-node-root" : "",
+        hasChildren ? "schema-tree-node-expandable" : "schema-tree-node-leaf",
         hasChildren && isExpanded ? "schema-tree-node-open" : "",
       ].join(" ")}
-      style={depthStyle(depth)}
+      style={branchStyle(depth, branchIndex, branchDepth)}
     >
       <div className="schema-tree-item">
-        <span className="schema-tree-dot" aria-hidden="true" />
+        {hasChildren ? (
+          <button
+            type="button"
+            className="schema-tree-node-point"
+            onClick={() => onToggle(path)}
+            aria-label={isExpanded ? `Collapse ${label}` : `Expand ${label}`}
+            aria-expanded={isExpanded}
+          >
+            <span className="schema-tree-node-point-core" aria-hidden="true" />
+          </button>
+        ) : (
+          <span className="schema-tree-node-point schema-tree-node-point-leaf" aria-hidden="true">
+            <span className="schema-tree-node-point-core" />
+          </span>
+        )}
         <div className="schema-tree-body">
           <div className="schema-tree-main">
-            {hasChildren ? (
-              <button
-                type="button"
-                className="schema-tree-toggle"
-                onClick={() => onToggle(path)}
-                aria-label={isExpanded ? `Collapse ${label}` : `Expand ${label}`}
-                aria-expanded={isExpanded}
-              >
-                <ChevronRight
-                  size={14}
-                  className={isExpanded ? "schema-tree-toggle-icon schema-tree-toggle-icon-open" : "schema-tree-toggle-icon"}
-                />
-              </button>
-            ) : (
-              <span className="schema-tree-toggle-spacer" aria-hidden="true" />
-            )}
             <span className="schema-tree-name">{label}</span>
             <span className="schema-tree-type-text">{schemaTypeLabel(node)}</span>
             {chips.map((chip) => (
@@ -222,17 +269,25 @@ function SchemaTreeNode({
 
       {hasChildren && isExpanded ? (
         <div className="schema-tree-children">
-          {children.map((child, index) => (
-            <SchemaTreeNode
-              key={childPath(path, child, index)}
-              node={child.node}
-              label={child.label}
-              path={childPath(path, child, index)}
-              depth={depth + 1}
-              expanded={expanded}
-              onToggle={onToggle}
-            />
-          ))}
+          {children.map((child, index) => {
+            const nextPath = childPath(path, child, index);
+            const nextBranchIndex = isRoot ? index : branchIndex;
+            const nextBranchDepth = isRoot ? 0 : branchDepth + 1;
+
+            return (
+              <SchemaTreeNode
+                key={nextPath}
+                node={child.node}
+                label={child.label}
+                path={nextPath}
+                depth={depth + 1}
+                branchIndex={nextBranchIndex}
+                branchDepth={nextBranchDepth}
+                expanded={expanded}
+                onToggle={onToggle}
+              />
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -283,6 +338,9 @@ export function SchemaTable({ schema, rootLabel = "body" }: SchemaTableProps) {
           label={rootName}
           path="root"
           depth={0}
+          branchIndex={-1}
+          branchDepth={0}
+          isRoot
           expanded={expanded}
           onToggle={toggle}
         />

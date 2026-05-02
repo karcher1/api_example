@@ -1427,29 +1427,29 @@ pre {
 }
 
 .schema-tree-node {
-  --schema-dot: 74 144 226;
-  --schema-guide: 196 216 244;
   position: relative;
 }
 
-.schema-tree-node-depth-1 {
-  --schema-dot: 139 105 224;
-  --schema-guide: 217 205 247;
+.schema-tree-node:not(.schema-tree-node-root)::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--schema-parent-dot-center);
+  z-index: 1;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--schema-branch-tint) / 0.48),
+    rgb(var(--schema-branch) / var(--schema-line-opacity)),
+    rgb(var(--schema-branch-soft) / 0.72)
+  );
+  content: "";
+  pointer-events: none;
 }
 
-.schema-tree-node-depth-2 {
-  --schema-dot: 88 184 151;
-  --schema-guide: 196 231 219;
-}
-
-.schema-tree-node-depth-3 {
-  --schema-dot: 224 171 93;
-  --schema-guide: 239 220 190;
-}
-
-.schema-tree-node-depth-4 {
-  --schema-dot: 58 186 186;
-  --schema-guide: 187 230 230;
+.schema-tree-node:not(.schema-tree-node-root):last-child::before {
+  bottom: calc(100% - 22px);
 }
 
 .schema-tree-item {
@@ -1463,15 +1463,38 @@ pre {
   padding: 14px 16px 14px var(--schema-indent);
 }
 
-.schema-tree-item::before {
+.schema-tree-node-open > .schema-tree-item::before {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--schema-guide-offset);
+  top: 22px;
+  bottom: -1px;
+  left: var(--schema-dot-center);
+  z-index: 1;
   width: 2px;
   border-radius: 999px;
-  background: rgb(var(--schema-guide));
+  background: linear-gradient(
+    180deg,
+    rgb(var(--schema-branch) / 0.82),
+    rgb(var(--schema-branch-soft) / 0.82)
+  );
   content: "";
+  pointer-events: none;
+}
+
+.schema-tree-node:not(.schema-tree-node-root) > .schema-tree-item::after {
+  position: absolute;
+  top: 22px;
+  left: var(--schema-parent-dot-center);
+  z-index: 1;
+  width: calc(var(--schema-dot-center) - var(--schema-parent-dot-center));
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--schema-branch-soft) / 0.74),
+    rgb(var(--schema-branch) / var(--schema-line-opacity))
+  );
+  content: "";
+  pointer-events: none;
 }
 
 .schema-tree-node:last-child > .schema-tree-item {
@@ -1480,25 +1503,101 @@ pre {
 
 .schema-tree-node:hover > .schema-tree-item,
 .schema-tree-node-open > .schema-tree-item {
-  background: rgb(247 252 251);
+  background: linear-gradient(90deg, rgb(var(--schema-branch-soft) / 0.34), rgb(247 252 251 / 0.88));
 }
 
-.schema-tree-dot {
+.schema-tree-node-open > .schema-tree-item {
+  box-shadow: inset 3px 0 0 rgb(var(--schema-branch) / 0.5);
+}
+
+.schema-tree-node-point {
   position: absolute;
-  top: 20px;
-  left: var(--schema-dot-offset);
-  z-index: 1;
-  width: 16px;
-  height: 16px;
-  border: 3px solid rgb(255 255 255);
+  top: 8px;
+  left: calc(var(--schema-dot-center) - 14px);
+  z-index: 3;
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
   border-radius: 999px;
-  background: rgb(var(--schema-dot));
+  background: transparent;
+  color: rgb(var(--schema-branch));
+  padding: 0;
+}
+
+button.schema-tree-node-point {
+  cursor: pointer;
+}
+
+.schema-tree-node-point:focus-visible {
+  outline: 2px solid rgb(var(--schema-branch) / 0.52);
+  outline-offset: 2px;
+}
+
+.schema-tree-node-point-core {
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgb(var(--schema-branch) / 0.72);
+  border-radius: 999px;
+  background: rgb(var(--color-surface));
   box-shadow:
-    0 0 0 1px rgb(var(--schema-dot) / 0.34),
-    0 4px 12px rgb(var(--schema-dot) / 0.2);
+    0 0 0 3px rgb(255 255 255),
+    0 0 0 4px rgb(var(--schema-branch) / 0.18),
+    0 6px 14px rgb(var(--schema-branch) / 0.16);
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.schema-tree-node-point-core::after {
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: rgb(var(--schema-branch) / 0.62);
+  content: "";
+}
+
+.schema-tree-node-open > .schema-tree-item .schema-tree-node-point-core {
+  border-color: rgb(255 255 255);
+  background: radial-gradient(circle at 35% 30%, rgb(var(--schema-branch-tint)), rgb(var(--schema-branch)));
+  box-shadow:
+    0 0 0 3px rgb(255 255 255),
+    0 0 0 5px rgb(var(--schema-branch) / 0.28),
+    0 8px 20px rgb(var(--schema-branch) / 0.22);
+}
+
+.schema-tree-node-open > .schema-tree-item .schema-tree-node-point-core::after {
+  inset: 4px;
+  background: rgb(255 255 255 / 0.82);
+}
+
+.schema-tree-node-point-leaf {
+  pointer-events: none;
+}
+
+.schema-tree-node-point-leaf .schema-tree-node-point-core {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  background: rgb(var(--schema-branch-tint));
+  box-shadow:
+    0 0 0 3px rgb(255 255 255),
+    0 0 0 4px rgb(var(--schema-branch) / 0.14);
+}
+
+.schema-tree-node-point-leaf .schema-tree-node-point-core::after {
+  display: none;
 }
 
 .schema-tree-body {
+  position: relative;
+  z-index: 2;
   min-width: 0;
 }
 
@@ -1508,32 +1607,6 @@ pre {
   flex-wrap: wrap;
   align-items: center;
   gap: 7px;
-}
-
-.schema-tree-toggle,
-.schema-tree-toggle-spacer {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-}
-
-.schema-tree-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(184 210 209);
-  border-radius: 7px;
-  background: rgb(239 249 248);
-  color: rgb(var(--color-brand));
-  cursor: pointer;
-}
-
-.schema-tree-toggle-icon {
-  transition: transform 140ms ease;
-}
-
-.schema-tree-toggle-icon-open {
-  transform: rotate(90deg);
 }
 
 .schema-tree-name {
@@ -1570,6 +1643,7 @@ pre {
 }
 
 .schema-tree-children {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -1960,12 +2034,21 @@ pre {
     padding-left: var(--schema-indent-mobile);
   }
 
-  .schema-tree-item::before {
-    left: var(--schema-guide-offset-mobile);
+  .schema-tree-node:not(.schema-tree-node-root)::before {
+    left: var(--schema-parent-dot-center-mobile);
   }
 
-  .schema-tree-dot {
-    left: var(--schema-dot-offset-mobile);
+  .schema-tree-node-open > .schema-tree-item::before {
+    left: var(--schema-dot-center-mobile);
+  }
+
+  .schema-tree-node:not(.schema-tree-node-root) > .schema-tree-item::after {
+    left: var(--schema-parent-dot-center-mobile);
+    width: calc(var(--schema-dot-center-mobile) - var(--schema-parent-dot-center-mobile));
+  }
+
+  .schema-tree-node-point {
+    left: calc(var(--schema-dot-center-mobile) - 14px);
   }
 
   .schema-tree-item > .schema-required,
