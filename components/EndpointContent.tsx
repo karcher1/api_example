@@ -174,14 +174,11 @@ function DocsBlocks({ endpoint, placement }: { endpoint: EndpointDoc; placement:
 function OverviewSection({ endpoint }: EndpointContentProps) {
   return (
     <section className="overview-card" id="overview" aria-label="Endpoint overview">
-      <div className="overview-card-accent" aria-hidden="true" />
       <div className="overview-command">
         <div className="overview-method">
-          <span className="overview-label">Method</span>
           <MethodBadge method={endpoint.method} />
         </div>
         <div className="overview-path">
-          <span className="overview-label">Path</span>
           <code>{endpoint.path}</code>
         </div>
         {endpoint.docs.status ? (
@@ -305,15 +302,6 @@ export function EndpointContent({ endpoint }: EndpointContentProps) {
   return (
     <article className="endpoint-content">
       <header className="endpoint-hero">
-        <div className="endpoint-kicker">
-          <MethodBadge method={endpoint.method} />
-          <code>{endpoint.path}</code>
-          {endpoint.docs.status ? (
-            <span className={`endpoint-status endpoint-status-${endpoint.docs.status}`}>
-              {STATUS_LABELS[endpoint.docs.status]}
-            </span>
-          ) : null}
-        </div>
         <h1>{endpoint.title}</h1>
         {endpoint.description ? <p>{endpoint.description}</p> : null}
       </header>
