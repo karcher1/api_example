@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Headphones, Menu, X } from "lucide-react";
@@ -10,6 +10,7 @@ import { MethodBadge } from "@/components/MethodBadge";
 interface EndpointNavProps {
   nodes: NavNode[];
   activeHref: string;
+  title?: string;
   onNavigate?: () => void;
 }
 
@@ -22,21 +23,24 @@ interface NodeProps {
   onNavigate?: () => void;
 }
 
-function collectOpenNodeIds(nodes: NavNode[], activeHref: string, open = new Set<string>()): Set<string> {
-  nodes.forEach((node) => {
-    const childContainsActive = node.children.some((child) => {
-      if (child.href === activeHref) {
-        return true;
-      }
+function collectOpenNodeIds(nodes: NavNode[], activeHref: string): Set<string> {
+  const open = new Set<string>();
 
-      const nested = collectOpenNodeIds([child], activeHref, open);
-      return nested.has(child.id);
-    });
-
-    if (childContainsActive) {
+  function visit(node: NavNode): boolean {
+    if (node.defaultOpen) {
       open.add(node.id);
     }
-  });
+
+    const containsActiveChild = node.children.some((child) => visit(child));
+
+    if (containsActiveChild) {
+      open.add(node.id);
+    }
+
+    return node.href === activeHref || containsActiveChild;
+  }
+
+  nodes.forEach((node) => visit(node));
 
   return open;
 }
@@ -102,9 +106,19 @@ function EndpointNavNode({
   );
 }
 
-export function EndpointNav({ nodes, activeHref, onNavigate }: EndpointNavProps) {
+export function EndpointNav({ nodes, activeHref, title = "Endpoints", onNavigate }: EndpointNavProps) {
   const openByDefault = useMemo(() => collectOpenNodeIds(nodes, activeHref), [nodes, activeHref]);
   const [expanded, setExpanded] = useState(openByDefault);
+
+  useEffect(() => {
+    setExpanded((current) => {
+      const next = new Set(current);
+
+      openByDefault.forEach((id) => next.add(id));
+
+      return next;
+    });
+  }, [openByDefault]);
 
   function toggle(id: string) {
     setExpanded((current) => {
@@ -123,7 +137,7 @@ export function EndpointNav({ nodes, activeHref, onNavigate }: EndpointNavProps)
   return (
     <div className="endpoint-nav-card">
       <div className="endpoint-nav-heading">
-        <span>Endpoints</span>
+        <span>{title}</span>
       </div>
       <nav className="endpoint-nav" aria-label="Endpoint navigation">
         {nodes.map((node) => (
@@ -150,7 +164,7 @@ export function EndpointNav({ nodes, activeHref, onNavigate }: EndpointNavProps)
   );
 }
 
-export function EndpointNavDrawer({ nodes, activeHref }: EndpointNavProps) {
+export function EndpointNavDrawer({ nodes, activeHref, title = "Endpoints" }: EndpointNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -158,19 +172,19 @@ export function EndpointNavDrawer({ nodes, activeHref }: EndpointNavProps) {
     <div className="mobile-nav-shell">
       <button type="button" className="mobile-nav-trigger" onClick={() => setOpen(true)}>
         <Menu size={18} />
-        Endpoints
+        {title}
       </button>
       {open ? (
         <div className="mobile-nav-overlay" role="dialog" aria-modal="true" aria-label="Endpoint navigation">
           <button type="button" className="mobile-nav-backdrop" onClick={() => setOpen(false)} aria-label="Close navigation" />
           <div className="mobile-nav-panel">
             <div className="mobile-nav-header">
-              <span>Endpoints</span>
+              <span>{title}</span>
               <button type="button" className="icon-button" onClick={() => setOpen(false)} aria-label="Close navigation">
                 <X size={18} />
               </button>
             </div>
-            <EndpointNav nodes={nodes} activeHref={pathname || activeHref} onNavigate={() => setOpen(false)} />
+            <EndpointNav nodes={nodes} activeHref={pathname || activeHref} title={title} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       ) : null}

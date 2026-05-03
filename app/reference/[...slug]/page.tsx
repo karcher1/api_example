@@ -4,6 +4,7 @@ import { ApiShell } from "@/components/ApiShell";
 import {
   getEndpointBySlug,
   getEndpointNavigation,
+  getEndpointNavigationTitle,
   getEndpointStaticParams,
 } from "@/lib/openapi";
 
@@ -43,5 +44,11 @@ export default async function EndpointPage({ params }: EndpointPageProps) {
     notFound();
   }
 
-  return <ApiShell endpoint={endpoint} navigation={getEndpointNavigation()} />;
+  return (
+    <ApiShell
+      endpoint={endpoint}
+      navigation={getEndpointNavigation()}
+      navigationTitle={getEndpointNavigationTitle()}
+    />
+  );
 }

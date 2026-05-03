@@ -1,0 +1,20 @@
+title: Endpoints
+items:
+  - type: group
+    id: users
+    label: Users
+    defaultOpen: true
+    children:
+      - type: endpoint
+        operationId: createUserApiKey
+  - type: group
+    id: buyers
+    label: Buyers
+    defaultOpen: true
+    children:
+      - type: group
+        id: buyer-tokens
+        label: Buyer tokens
+        children:
+          - type: endpoint
+            operationId: enableToken

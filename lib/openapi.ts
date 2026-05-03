@@ -147,12 +147,14 @@ export interface NavNode {
   href?: string;
   method?: HttpMethod;
   path?: string;
+  defaultOpen?: boolean;
   children: NavNode[];
 }
 
 type UnknownRecord = Record<string, unknown>;
 
 const OPENAPI_PATH = path.join(process.cwd(), "content", "openapi.yaml");
+const REFERENCE_NAV_PATH = path.join(process.cwd(), "content", "reference-nav.yaml");
 const METHOD_ORDER = new Map(HTTP_METHODS.map((method, index) => [method, index]));
 const DOCS_STATUSES: DocsStatus[] = ["stable", "beta", "deprecated", "draft"];
 const DOCS_TONES: DocsNoticeTone[] = ["info", "warning", "danger", "success", "neutral"];
@@ -208,14 +210,6 @@ export function slugify(value: string): string {
     .replace(/^-+|-+$/g, "");
 
   return slug || "untitled";
-}
-
-function pathToLabel(segment: string): string {
-  if (segment.startsWith("{") && segment.endsWith("}")) {
-    return `:${segment.slice(1, -1)}`;
-  }
-
-  return segment;
 }
 
 function pointerPart(value: string): string {
@@ -885,49 +879,183 @@ export function getFirstEndpointHref(): string {
   return getEndpoints()[0]?.href ?? "/guides";
 }
 
-function findOrCreateGroup(children: NavNode[], id: string, label: string): NavNode {
-  const existing = children.find((node) => node.id === id);
+function referenceNavError(message: string): never {
+  throw new Error(`Invalid reference navigation at ${REFERENCE_NAV_PATH}: ${message}`);
+}
 
-  if (existing) {
-    return existing;
+function readReferenceNavDocument(): UnknownRecord {
+  if (!fs.existsSync(REFERENCE_NAV_PATH)) {
+    referenceNavError("content/reference-nav.yaml was not found.");
   }
 
-  const node: NavNode = {
-    id,
-    type: "group",
-    label,
+  const file = fs.readFileSync(REFERENCE_NAV_PATH, "utf8");
+  const parsed = parse(file);
+
+  if (!isRecord(parsed)) {
+    referenceNavError("Expected a YAML object with a title and items array.");
+  }
+
+  return parsed;
+}
+
+function endpointDescription(endpoint: EndpointDoc): string {
+  return `${endpoint.method.toUpperCase()} ${endpoint.path}`;
+}
+
+function endpointNavNode(endpoint: EndpointDoc, label?: string): NavNode {
+  return {
+    id: endpoint.id,
+    type: "endpoint",
+    label: label || endpoint.summary,
+    href: endpoint.href,
+    method: endpoint.method,
+    path: endpoint.path,
     children: [],
   };
+}
 
-  children.push(node);
+function endpointsByOperationId(endpoints: EndpointDoc[]): Map<string, EndpointDoc> {
+  const byOperationId = new Map<string, EndpointDoc>();
 
-  return node;
+  endpoints.forEach((endpoint) => {
+    if (!endpoint.operationId) {
+      return;
+    }
+
+    const existing = byOperationId.get(endpoint.operationId);
+
+    if (existing) {
+      throw new Error(
+        `Duplicate operationId "${endpoint.operationId}" in ${OPENAPI_PATH}: ` +
+          `${endpointDescription(existing)} and ${endpointDescription(endpoint)}.`,
+      );
+    }
+
+    byOperationId.set(endpoint.operationId, endpoint);
+  });
+
+  return byOperationId;
+}
+
+function parseReferenceNavItems(
+  value: unknown,
+  endpointByOperationId: Map<string, EndpointDoc>,
+  placedOperationIds: Set<string>,
+  groupIds: Set<string>,
+  location: string,
+): NavNode[] {
+  if (!Array.isArray(value)) {
+    referenceNavError(`${location} must be an array.`);
+  }
+
+  return value.map((itemValue, index) => {
+    const itemLocation = `${location}[${index}]`;
+
+    if (!isRecord(itemValue)) {
+      referenceNavError(`${itemLocation} must be an object.`);
+    }
+
+    const type = asString(itemValue.type);
+
+    if (type === "group") {
+      const id = asString(itemValue.id);
+      const label = asString(itemValue.label);
+
+      if (!id) {
+        referenceNavError(`${itemLocation}.id is required for group items.`);
+      }
+
+      if (groupIds.has(id)) {
+        referenceNavError(`Group id "${id}" is used more than once.`);
+      }
+
+      if (!label) {
+        referenceNavError(`${itemLocation}.label is required for group items.`);
+      }
+
+      groupIds.add(id);
+
+      return {
+        id,
+        type: "group",
+        label,
+        defaultOpen: asBoolean(itemValue.defaultOpen),
+        children: parseReferenceNavItems(
+          itemValue.children,
+          endpointByOperationId,
+          placedOperationIds,
+          groupIds,
+          `${itemLocation}.children`,
+        ),
+      };
+    }
+
+    if (type === "endpoint") {
+      const operationId = asString(itemValue.operationId);
+
+      if (!operationId) {
+        referenceNavError(`${itemLocation}.operationId is required for endpoint items.`);
+      }
+
+      const endpoint = endpointByOperationId.get(operationId);
+
+      if (!endpoint) {
+        referenceNavError(`No endpoint with operationId "${operationId}" exists in content/openapi.yaml.`);
+      }
+
+      if (placedOperationIds.has(operationId)) {
+        referenceNavError(`Endpoint operationId "${operationId}" is listed more than once.`);
+      }
+
+      placedOperationIds.add(operationId);
+
+      return endpointNavNode(endpoint, asString(itemValue.label) || undefined);
+    }
+
+    referenceNavError(`${itemLocation}.type must be either "group" or "endpoint".`);
+  });
+}
+
+function withUnplacedEndpoints(nodes: NavNode[], endpoints: EndpointDoc[], placedOperationIds: Set<string>): NavNode[] {
+  const unplacedEndpoints = endpoints.filter(
+    (endpoint) => !endpoint.operationId || !placedOperationIds.has(endpoint.operationId),
+  );
+
+  if (unplacedEndpoints.length === 0) {
+    return nodes;
+  }
+
+  return [
+    ...nodes,
+    {
+      id: "auto:other-endpoints",
+      type: "group",
+      label: "Other endpoints",
+      defaultOpen: true,
+      children: unplacedEndpoints.map((endpoint) => endpointNavNode(endpoint)),
+    },
+  ];
+}
+
+export function getEndpointNavigationTitle(): string {
+  const document = readReferenceNavDocument();
+
+  return asString(document.title, "Endpoints") || "Endpoints";
 }
 
 export function getEndpointNavigation(): NavNode[] {
-  const roots: NavNode[] = [];
+  const endpoints = getEndpoints();
+  const document = readReferenceNavDocument();
+  const endpointByOperationId = endpointsByOperationId(endpoints);
+  const placedOperationIds = new Set<string>();
+  const groupIds = new Set<string>();
+  const nodes = parseReferenceNavItems(
+    document.items,
+    endpointByOperationId,
+    placedOperationIds,
+    groupIds,
+    "items",
+  );
 
-  getEndpoints().forEach((endpoint) => {
-    const tagNode = findOrCreateGroup(roots, `tag:${endpoint.tagSlug}`, endpoint.tag);
-    const pathSegments = endpoint.path.split("/").filter(Boolean);
-    let current = tagNode;
-    let pathId = `tag:${endpoint.tagSlug}`;
-
-    pathSegments.forEach((segment) => {
-      pathId = `${pathId}/${segment}`;
-      current = findOrCreateGroup(current.children, pathId, pathToLabel(segment));
-    });
-
-    current.children.push({
-      id: endpoint.id,
-      type: "endpoint",
-      label: endpoint.summary,
-      href: endpoint.href,
-      method: endpoint.method,
-      path: endpoint.path,
-      children: [],
-    });
-  });
-
-  return roots;
+  return withUnplacedEndpoints(nodes, endpoints, placedOperationIds);
 }
