@@ -1,11 +1,11 @@
 import type { HttpMethod } from "@/lib/openapi";
 
 const METHOD_STYLES: Record<HttpMethod, string> = {
-  get: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  post: "border-cyan-200 bg-cyan-50 text-cyan-800",
-  put: "border-sky-200 bg-sky-50 text-sky-800",
-  patch: "border-teal-200 bg-teal-50 text-teal-800",
-  delete: "border-rose-200 bg-rose-50 text-rose-700",
+  get: "border-[#bec6a6] bg-[#f3f5ea] text-[#4f6134]",
+  post: "border-[#c6d2e3] bg-[#eef3fa] text-[#365985]",
+  put: "border-[#cbd6e6] bg-[#f1f5fb] text-[#3f628f]",
+  patch: "border-[#d0cbe4] bg-[#f4f2fa] text-[#5a4f82]",
+  delete: "border-[#efc4cb] bg-[#fbedf0] text-[#9b2f45]",
   options: "border-slate-200 bg-slate-50 text-slate-700",
   head: "border-slate-200 bg-slate-50 text-slate-700",
 };

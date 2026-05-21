@@ -11,6 +11,7 @@ interface SchemaTableProps {
   chrome?: "panel" | "embedded";
   initialExpansion?: "all" | "default" | "none";
   controlMode?: "toolbar" | "inline-toggle" | "none";
+  showRequiredState?: boolean;
 }
 
 interface SchemaTreeNodeProps {
@@ -21,6 +22,7 @@ interface SchemaTreeNodeProps {
   isRoot?: boolean;
   expanded: Set<string>;
   onToggle: (path: string) => void;
+  showRequiredState: boolean;
 }
 
 interface SchemaChild {
@@ -170,17 +172,17 @@ function initialExpandedPaths(node: SchemaNode, initialExpansion: NonNullable<Sc
 }
 
 function branchStyle(depth: number): CSSProperties {
-  const desktopStep = 30;
-  const mobileStep = 20;
+  const desktopStep = 24;
+  const mobileStep = 18;
 
   return {
-    "--schema-indent": `${42 + depth * desktopStep}px`,
-    "--schema-dot-center": `${22 + depth * desktopStep}px`,
-    "--schema-parent-dot-center": `${22 + Math.max(depth - 1, 0) * desktopStep}px`,
-    "--schema-marker-center-y": "27px",
-    "--schema-indent-mobile": `${36 + depth * mobileStep}px`,
-    "--schema-dot-center-mobile": `${18 + depth * mobileStep}px`,
-    "--schema-parent-dot-center-mobile": `${18 + Math.max(depth - 1, 0) * mobileStep}px`,
+    "--schema-indent": `${34 + depth * desktopStep}px`,
+    "--schema-dot-center": `${18 + depth * desktopStep}px`,
+    "--schema-parent-dot-center": `${18 + Math.max(depth - 1, 0) * desktopStep}px`,
+    "--schema-marker-center-y": "22px",
+    "--schema-indent-mobile": `${32 + depth * mobileStep}px`,
+    "--schema-dot-center-mobile": `${17 + depth * mobileStep}px`,
+    "--schema-parent-dot-center-mobile": `${17 + Math.max(depth - 1, 0) * mobileStep}px`,
   } as CSSProperties;
 }
 
@@ -192,6 +194,7 @@ function SchemaTreeNode({
   isRoot = false,
   expanded,
   onToggle,
+  showRequiredState,
 }: SchemaTreeNodeProps) {
   const children = childNodes(node);
   const hasChildren = children.length > 0;
@@ -236,9 +239,11 @@ function SchemaTreeNode({
           </div>
           <p className="schema-tree-description">{schemaDescription(node)}</p>
         </div>
-        <span className={node.required ? "schema-required" : "schema-optional"}>
-          {node.required ? "required" : "optional"}
-        </span>
+        {showRequiredState ? (
+          <span className={node.required ? "schema-required" : "schema-optional"}>
+            {node.required ? "required" : "optional"}
+          </span>
+        ) : null}
       </div>
 
       {hasChildren && isExpanded ? (
@@ -255,6 +260,7 @@ function SchemaTreeNode({
                 depth={depth + 1}
                 expanded={expanded}
                 onToggle={onToggle}
+                showRequiredState={showRequiredState}
               />
             );
           })}
@@ -271,6 +277,7 @@ export function SchemaTable({
   chrome = "panel",
   initialExpansion = "default",
   controlMode = "toolbar",
+  showRequiredState = true,
 }: SchemaTableProps) {
   const rootName = rootLabel || schema?.name || "body";
   const rootNode = useMemo(() => (schema ? { ...schema, name: rootName } : undefined), [schema, rootName]);
@@ -352,6 +359,7 @@ export function SchemaTable({
                   isRoot
                   expanded={expanded}
                   onToggle={toggle}
+                  showRequiredState={showRequiredState}
                 />
               );
             })
@@ -367,6 +375,7 @@ export function SchemaTable({
             isRoot
             expanded={expanded}
             onToggle={toggle}
+            showRequiredState={showRequiredState}
           />
         )}
       </div>

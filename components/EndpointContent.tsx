@@ -250,8 +250,22 @@ function ResponseParameters({ parameters }: { parameters: ResponseParameter[] })
   );
 }
 
+function hasNestedSchema(node?: SchemaNode): boolean {
+  if (!node) {
+    return false;
+  }
+
+  if (node.items || node.properties?.some((property) => property.items || property.properties?.length)) {
+    return true;
+  }
+
+  return false;
+}
+
 function ResponseCard({ response }: { response: ResponseDoc }) {
   const tone = getResponseStatusTone(response);
+  const responseSchema = response.content[0]?.schema;
+  const shouldRenderSchemaTree = hasNestedSchema(responseSchema);
 
   return (
     <details className="response-doc-card">
@@ -261,7 +275,19 @@ function ResponseCard({ response }: { response: ResponseDoc }) {
         <span>{response.description ?? "Response"}</span>
       </summary>
       <div className="response-doc-content">
-        <ResponseParameters parameters={response.parameters} />
+        {shouldRenderSchemaTree ? (
+          <SchemaTable
+            schema={responseSchema}
+            rootLabel={`response ${response.status}`}
+            variant="fieldList"
+            chrome="embedded"
+            initialExpansion="default"
+            controlMode="inline-toggle"
+            showRequiredState={false}
+          />
+        ) : (
+          <ResponseParameters parameters={response.parameters} />
+        )}
       </div>
     </details>
   );

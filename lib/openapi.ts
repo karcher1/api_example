@@ -100,6 +100,7 @@ export interface ResponseParameter {
   name: string;
   type: string;
   description?: string;
+  schema?: SchemaNode;
 }
 
 export interface BodyContent {
@@ -434,10 +435,15 @@ function parseResponses(value: unknown, filePath: string): ResponseDoc[] {
           contentError(filePath, `responses[${index}].parameters[${parameterIndex}] must be an object.`);
         }
 
+        const name = requireString(parameterValue, "name", filePath);
+        const description = requireString(parameterValue, "description", filePath);
+        const schema = parseSchemaNode(parameterValue, filePath, `responses[${index}].parameters[${parameterIndex}]`);
+
         return {
-          name: requireString(parameterValue, "name", filePath),
-          type: requireString(parameterValue, "type", filePath),
-          description: requireString(parameterValue, "description", filePath),
+          name,
+          type: schema.type,
+          description,
+          schema,
         };
       },
     );
@@ -447,8 +453,10 @@ function parseResponses(value: unknown, filePath: string): ResponseDoc[] {
           type: "object",
           properties: parameters.map((parameter) => ({
             name: parameter.name,
-            type: parameter.type,
+            type: parameter.schema?.type ?? parameter.type,
             description: parameter.description,
+            properties: parameter.schema?.properties,
+            items: parameter.schema?.items,
           })),
         }
       : undefined;

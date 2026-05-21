@@ -301,9 +301,17 @@ parameters:
   - name: string
     type: string
     description: string
+    children:
+      - name: string
+        type: string
+        description: string
+    items:
+      type: string
+      description: string
 ```
 
 Response parameters do not include required/optional status.
+Nested response parameters can use `children` for object fields and `items` for array item schemas. Unlike request parameters, response child fields do not require `required`.
 
 Example:
 
@@ -315,6 +323,20 @@ responses:
       - name: id
         type: string
         description: Unique object identifier.
+      - name: data
+        type: object
+        description: Response payload.
+        children:
+          - name: items
+            type: array
+            description: Returned records.
+            items:
+              type: object
+              description: Returned record.
+              children:
+                - name: name
+                  type: string
+                  description: Record display name.
 ```
 
 ---

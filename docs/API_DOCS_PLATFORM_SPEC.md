@@ -297,6 +297,7 @@ Response parameters consist of:
 - description.
 
 For response parameters, required/optional is not displayed.
+Response parameters may optionally use `children` for nested object fields and `items` for array item schemas.
 
 Example:
 
@@ -311,6 +312,20 @@ responses:
       - name: createdAt
         type: string
         description: Date and time in ISO 8601 format.
+      - name: data
+        type: object
+        description: Response payload.
+        children:
+          - name: items
+            type: array
+            description: Returned records.
+            items:
+              type: object
+              description: Returned record.
+              children:
+                - name: name
+                  type: string
+                  description: Record display name.
 ```
 
 Responses must support multiple statuses, for example:

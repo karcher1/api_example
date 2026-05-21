@@ -75,237 +75,249 @@ responses:
       - name: data
         type: object
         description: Contains information related to the order
-      - name: currency
-        type: string
-        description: Currency code
-      - name: tax
-        type: object
-        description: "Contains information about the tax type applied to the subscription product, including the tax type and the country where this tax is applied. Note: If there is no tax information in the database, the response will contain the value null"
-      - name: type
-        type: string | null
-        description: Type of tax
-      - name: country
-        type: string | null
-        description: Country code for which the tax is applied
-      - name: products
-        type: object
-        description: Represents detailed information about the product and prices
-      - name: id
-        type: string
-        description: Unique product identifier
-      - name: code
-        type: string
-        description: Product code
-      - name: name
-        type: string
-        description: Product name in the EN locale
-      - name: nameByLocale
-        type: string
-        description: Product name in the buyer's locale
-      - name: durationDays
-        type: integer
-        description: Product duration in days
-      - name: durationWeeks
-        type: integer
-        description: Product duration in weeks
-      - name: durationMonth
-        type: integer
-        description: Product duration in months
-      - name: currentDurationDays
-        type: integer
-        description: Actual duration of the current subscription (including the trial period). For trial products, currentDurationDays < durationDays. For non-trial products, the values are equal.
-      - name: availableForPurchase
-        type: bool
-        description: Availability for purchase
-      - name: availableForShop
-        type: bool
-        description: Availability for purchase in the Offer page
-      - name: availableForControlPanel
-        type: bool
-        description: Availability for purchase in the CP
-      - name: availableForAutocharge
-        type: bool
-        description: Autocharge availability
-      - name: isTrial
-        type: bool
-        description: Indicates whether the product is a trial version
-      - name: prices
-        type: object
-        description: Contains detailed price information for the product with a breakdown
-      - name: amount
-        type: object
-        description: Contains information about the full price of the product
-      - name: origin
-        type: string | (float data)
-        description: Original amount of the item before discounts and taxes
-      - name: amountForDowngrade
-        type: string | (float data)
-        description: Amount for performing downgrade
-      - name: amountForUpgrade
-        type: string | (float data)
-        description: Amount for performing upgrade
-      - name: discountPercent
-        type: string | (float data)
-        description: Discount percentage applied to the initial amount
-      - name: discount
-        type: string | (float data)
-        description: Total discount amount applied to the initial amount
-      - name: amountWithDiscount
-        type: string | (float data)
-        description: Final amount after the discount is applied
-      - name: couponPercent
-        type: string | (float data)
-        description: Percentage of the discount applied from the coupon
-      - name: couponCode
-        type: string | null
-        description: Coupon code used for the additional discount
-      - name: coupon
-        type: string | (float data)
-        description: Total discount amount from the coupon
-      - name: amountWithDiscountAndCoupon
-        type: string | (float data)
-        description: Final amount after both the discount and the coupon are applied
-      - name: taxPercent
-        type: string | (float data)
-        description: Tax percentage applied to the final amount
-      - name: tax
-        type: string | (float data)
-        description: Total tax amount applied to the final amount
-      - name: amountWithDiscountAndCouponAndTax
-        type: string | (float data)
-        description: Final amount after applying the discount, coupon, and tax
-      - name: dailyAmount
-        type: object
-        description: Contains information about the product price per day
-      - name: origin
-        type: string | (float data)
-        description: Original amount of the item before discounts and taxes
-      - name: discountPercent
-        type: string | (float data)
-        description: Discount percentage applied to the initial amount
-      - name: discount
-        type: string | (float data)
-        description: Total discount amount applied to the initial amount
-      - name: amountWithDiscount
-        type: string | (float data)
-        description: Final amount after the discount is applied
-      - name: couponPercent
-        type: string | (float data)
-        description: Percentage of the discount applied from the coupon
-      - name: couponCode
-        type: string | null
-        description: Coupon code used for the additional discount
-      - name: coupon
-        type: string | (float data)
-        description: Total discount amount from the coupon
-      - name: amountWithDiscountAndCoupon
-        type: string | (float data)
-        description: Final amount after both the discount and the coupon are applied
-      - name: taxPercent
-        type: string | (float data)
-        description: Tax percentage applied to the final amount
-      - name: tax
-        type: string | (float data)
-        description: Total tax amount applied to the final amount
-      - name: amountWithDiscountAndCouponAndTax
-        type: string | (float data)
-        description: Final amount after applying the discount, coupon, and tax
-      - name: amountForDowngrade
-        type: string | (float data)
-        description: Amount for performing downgrade
-      - name: amountForUpgrade
-        type: string | (float data)
-        description: Amount for performing upgrade
-      - name: weeklyAmount
-        type: object
-        description: Contains information about the product price per week
-      - name: origin
-        type: string | (float data)
-        description: Original amount of the item before discounts and taxes
-      - name: discountPercent
-        type: string | (float data)
-        description: Discount percentage applied to the initial amount
-      - name: discount
-        type: string | (float data)
-        description: Total discount amount applied to the initial amount
-      - name: amountWithDiscount
-        type: string | (float data)
-        description: Final amount after the discount is applied
-      - name: couponPercent
-        type: string | (float data)
-        description: Percentage of the discount applied from the coupon
-      - name: couponCode
-        type: string | null
-        description: Coupon code used for the additional discount
-      - name: coupon
-        type: string | (float data)
-        description: Total discount amount from the coupon
-      - name: amountWithDiscountAndCoupon
-        type: string | (float data)
-        description: Final amount after both the discount and the coupon are applied
-      - name: taxPercent
-        type: string | (float data)
-        description: Tax percentage applied to the final amount
-      - name: tax
-        type: string | (float data)
-        description: Total tax amount applied to the final amount
-      - name: amountWithDiscountAndCouponAndTax
-        type: string | (float data)
-        description: Final amount after applying the discount, coupon, and tax
-      - name: amountForDowngrade
-        type: string | (float data)
-        description: Amount for performing downgrade
-      - name: amountForUpgrade
-        type: string | (float data)
-        description: Amount for performing upgrade
-      - name: monthlyAmount
-        type: object
-        description: Contains information about the product price per month
-      - name: origin
-        type: string | (float data)
-        description: Original amount of the item before discounts and taxes
-      - name: discountPercent
-        type: string | (float data)
-        description: Discount percentage applied to the initial amount
-      - name: discount
-        type: string | (float data)
-        description: Total discount amount applied to the initial amount
-      - name: amountWithDiscount
-        type: string | (float data)
-        description: Final amount after the discount is applied
-      - name: couponPercent
-        type: string | (float data)
-        description: Percentage of the discount applied from the coupon
-      - name: couponCode
-        type: string | null
-        description: Coupon code used for the additional discount
-      - name: coupon
-        type: string | (float data)
-        description: Total discount amount from the coupon
-      - name: amountWithDiscountAndCoupon
-        type: string | (float data)
-        description: Final amount after both the discount and the coupon are applied
-      - name: taxPercent
-        type: string | (float data)
-        description: Tax percentage applied to the final amount
-      - name: tax
-        type: string | (float data)
-        description: Total tax amount applied to the final amount
-      - name: amountWithDiscountAndCouponAndTax
-        type: string | (float data)
-        description: Final amount after applying the discount, coupon, and tax
-      - name: amountForDowngrade
-        type: string | (float data)
-        description: Amount for performing downgrade
-      - name: amountForUpgrade
-        type: string | (float data)
-        description: Amount for performing upgrade
+        children:
+          - name: currency
+            type: string
+            description: Currency code
+          - name: tax
+            type: object
+            description: "Contains information about the tax type applied to the subscription product, including the tax type and the country where this tax is applied. Note: If there is no tax information in the database, the response will contain the value null"
+            children:
+              - name: type
+                type: string | null
+                description: Type of tax
+              - name: country
+                type: string | null
+                description: Country code for which the tax is applied
+          - name: products
+            type: array
+            description: Represents detailed information about the product and prices
+            items:
+              type: object
+              description: Product record
+              children:
+                - name: id
+                  type: string
+                  description: Unique product identifier
+                - name: code
+                  type: string
+                  description: Product code
+                - name: name
+                  type: string
+                  description: Product name in the EN locale
+                - name: nameByLocale
+                  type: string
+                  description: Product name in the buyer's locale
+                - name: durationDays
+                  type: integer
+                  description: Product duration in days
+                - name: durationWeeks
+                  type: integer
+                  description: Product duration in weeks
+                - name: durationMonths
+                  type: integer
+                  description: Product duration in months
+                - name: currentDurationDays
+                  type: integer
+                  description: Actual duration of the current subscription (including the trial period). For trial products, currentDurationDays < durationDays. For non-trial products, the values are equal.
+                - name: availableForPurchase
+                  type: bool
+                  description: Availability for purchase
+                - name: availableForShop
+                  type: bool
+                  description: Availability for purchase in the Offer page
+                - name: availableForControlPanel
+                  type: bool
+                  description: Availability for purchase in the CP
+                - name: availableForAutocharge
+                  type: bool
+                  description: Autocharge availability
+                - name: isTrial
+                  type: bool
+                  description: Indicates whether the product is a trial version
+                - name: prices
+                  type: object
+                  description: Contains detailed price information for the product with a breakdown
+                  children:
+                    - name: amount
+                      type: object
+                      description: Contains information about the full price of the product
+                      children:
+                        - name: origin
+                          type: string | (float data)
+                          description: Original amount of the item before discounts and taxes
+                        - name: amountForDowngrade
+                          type: string | (float data)
+                          description: Amount for performing downgrade
+                        - name: amountForUpgrade
+                          type: string | (float data)
+                          description: Amount for performing upgrade
+                        - name: discountPercent
+                          type: string | (float data)
+                          description: Discount percentage applied to the initial amount
+                        - name: discount
+                          type: string | (float data)
+                          description: Total discount amount applied to the initial amount
+                        - name: amountWithDiscount
+                          type: string | (float data)
+                          description: Final amount after the discount is applied
+                        - name: couponPercent
+                          type: string | (float data)
+                          description: Percentage of the discount applied from the coupon
+                        - name: couponCode
+                          type: string | null
+                          description: Coupon code used for the additional discount
+                        - name: coupon
+                          type: string | (float data)
+                          description: Total discount amount from the coupon
+                        - name: amountWithDiscountAndCoupon
+                          type: string | (float data)
+                          description: Final amount after both the discount and the coupon are applied
+                        - name: taxPercent
+                          type: string | (float data)
+                          description: Tax percentage applied to the final amount
+                        - name: tax
+                          type: string | (float data)
+                          description: Total tax amount applied to the final amount
+                        - name: amountWithDiscountAndCouponAndTax
+                          type: string | (float data)
+                          description: Final amount after applying the discount, coupon, and tax
+                    - name: dailyAmount
+                      type: object
+                      description: Contains information about the product price per day
+                      children:
+                        - name: origin
+                          type: string | (float data)
+                          description: Original amount of the item before discounts and taxes
+                        - name: amountForDowngrade
+                          type: string | (float data)
+                          description: Amount for performing downgrade
+                        - name: amountForUpgrade
+                          type: string | (float data)
+                          description: Amount for performing upgrade
+                        - name: discountPercent
+                          type: string | (float data)
+                          description: Discount percentage applied to the initial amount
+                        - name: discount
+                          type: string | (float data)
+                          description: Total discount amount applied to the initial amount
+                        - name: amountWithDiscount
+                          type: string | (float data)
+                          description: Final amount after the discount is applied
+                        - name: couponPercent
+                          type: string | (float data)
+                          description: Percentage of the discount applied from the coupon
+                        - name: couponCode
+                          type: string | null
+                          description: Coupon code used for the additional discount
+                        - name: coupon
+                          type: string | (float data)
+                          description: Total discount amount from the coupon
+                        - name: amountWithDiscountAndCoupon
+                          type: string | (float data)
+                          description: Final amount after both the discount and the coupon are applied
+                        - name: taxPercent
+                          type: string | (float data)
+                          description: Tax percentage applied to the final amount
+                        - name: tax
+                          type: string | (float data)
+                          description: Total tax amount applied to the final amount
+                        - name: amountWithDiscountAndCouponAndTax
+                          type: string | (float data)
+                          description: Final amount after applying the discount, coupon, and tax
+                    - name: weeklyAmount
+                      type: object
+                      description: Contains information about the product price per week
+                      children:
+                        - name: origin
+                          type: string | (float data)
+                          description: Original amount of the item before discounts and taxes
+                        - name: amountForDowngrade
+                          type: string | (float data)
+                          description: Amount for performing downgrade
+                        - name: amountForUpgrade
+                          type: string | (float data)
+                          description: Amount for performing upgrade
+                        - name: discountPercent
+                          type: string | (float data)
+                          description: Discount percentage applied to the initial amount
+                        - name: discount
+                          type: string | (float data)
+                          description: Total discount amount applied to the initial amount
+                        - name: amountWithDiscount
+                          type: string | (float data)
+                          description: Final amount after the discount is applied
+                        - name: couponPercent
+                          type: string | (float data)
+                          description: Percentage of the discount applied from the coupon
+                        - name: couponCode
+                          type: string | null
+                          description: Coupon code used for the additional discount
+                        - name: coupon
+                          type: string | (float data)
+                          description: Total discount amount from the coupon
+                        - name: amountWithDiscountAndCoupon
+                          type: string | (float data)
+                          description: Final amount after both the discount and the coupon are applied
+                        - name: taxPercent
+                          type: string | (float data)
+                          description: Tax percentage applied to the final amount
+                        - name: tax
+                          type: string | (float data)
+                          description: Total tax amount applied to the final amount
+                        - name: amountWithDiscountAndCouponAndTax
+                          type: string | (float data)
+                          description: Final amount after applying the discount, coupon, and tax
+                    - name: monthlyAmount
+                      type: object
+                      description: Contains information about the product price per month
+                      children:
+                        - name: origin
+                          type: string | (float data)
+                          description: Original amount of the item before discounts and taxes
+                        - name: amountForDowngrade
+                          type: string | (float data)
+                          description: Amount for performing downgrade
+                        - name: amountForUpgrade
+                          type: string | (float data)
+                          description: Amount for performing upgrade
+                        - name: discountPercent
+                          type: string | (float data)
+                          description: Discount percentage applied to the initial amount
+                        - name: discount
+                          type: string | (float data)
+                          description: Total discount amount applied to the initial amount
+                        - name: amountWithDiscount
+                          type: string | (float data)
+                          description: Final amount after the discount is applied
+                        - name: couponPercent
+                          type: string | (float data)
+                          description: Percentage of the discount applied from the coupon
+                        - name: couponCode
+                          type: string | null
+                          description: Coupon code used for the additional discount
+                        - name: coupon
+                          type: string | (float data)
+                          description: Total discount amount from the coupon
+                        - name: amountWithDiscountAndCoupon
+                          type: string | (float data)
+                          description: Final amount after both the discount and the coupon are applied
+                        - name: taxPercent
+                          type: string | (float data)
+                          description: Tax percentage applied to the final amount
+                        - name: tax
+                          type: string | (float data)
+                          description: Total tax amount applied to the final amount
+                        - name: amountWithDiscountAndCouponAndTax
+                          type: string | (float data)
+                          description: Final amount after applying the discount, coupon, and tax
       - name: meta
         type: object
         description: Provides metadata about the response
-      - name: type
-        type: string
-        description: Data type
+        children:
+          - name: type
+            type: string
+            description: Data type
 blocks:
   - type: info
     title: Errors and interpretation

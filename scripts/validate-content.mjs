@@ -166,10 +166,12 @@ function validateMarkdownImages(root, source, filePath, label, location) {
   }
 }
 
-function validateSchemaNode(value, filePath, label, location) {
+function validateSchemaNode(value, filePath, label, location, options = {}) {
   if (!isRecord(value)) {
     contentError(label, filePath, `${location} must be an object.`);
   }
+
+  const requireRequired = options.requireRequired ?? true;
 
   requireString(value, "type", filePath, label);
 
@@ -179,16 +181,16 @@ function validateSchemaNode(value, filePath, label, location) {
         contentError(label, filePath, `${location}.children[${index}] must be an object.`);
       }
 
-      if (typeof child.required !== "boolean") {
+      if (requireRequired && typeof child.required !== "boolean") {
         contentError(label, filePath, `${location}.children[${index}].required must be a boolean.`);
       }
 
-      validateSchemaNode(child, filePath, label, `${location}.children[${index}]`);
+      validateSchemaNode(child, filePath, label, `${location}.children[${index}]`, options);
     });
   }
 
   if (value.items !== undefined) {
-    validateSchemaNode(value.items, filePath, label, `${location}.items`);
+    validateSchemaNode(value.items, filePath, label, `${location}.items`, options);
   }
 }
 
@@ -233,6 +235,9 @@ function validateResponses(value, filePath, label) {
       requireString(parameter, "name", filePath, label);
       requireString(parameter, "type", filePath, label);
       requireString(parameter, "description", filePath, label);
+      validateSchemaNode(parameter, filePath, label, `responses[${index}].parameters[${parameterIndex}]`, {
+        requireRequired: false,
+      });
     });
   });
 }
