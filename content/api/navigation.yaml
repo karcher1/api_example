@@ -1,0 +1,14 @@
+sections:
+  - title: Users
+    id: users
+    defaultOpen: true
+    items:
+      - title: Create user
+        slug: create-user
+      - title: Get user
+        slug: get-user
+
+  - title: Payments
+    id: payments
+    defaultOpen: true
+    items: []

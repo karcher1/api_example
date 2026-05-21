@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import { Header, type HeaderNavItem } from "@/components/Header";
 import { getFirstEndpointHref } from "@/lib/openapi";
-import { getContentPages } from "@/lib/pages";
+import { getFirstContentPageHref } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "API Docs",
-  description: "Static API documentation generated from OpenAPI.",
+  description: "Static API documentation generated from YAML content files.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -14,13 +14,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     {
       label: "API Reference",
       href: getFirstEndpointHref(),
-      match: "/reference",
+      match: "/api",
     },
-    ...getContentPages().map((page) => ({
-      label: page.title,
-      href: `/${page.slug}`,
-      match: `/${page.slug}`,
-    })),
+    {
+      label: "Articles",
+      href: getFirstContentPageHref(),
+      match: "/docs",
+    },
   ];
 
   return (

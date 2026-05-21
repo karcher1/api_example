@@ -1,0 +1,22 @@
+slug: introduction
+title: Introduction
+description: Overview of the documentation platform.
+
+content: |
+  # Introduction
+
+  This section contains informational articles, guides, tutorials, and explanations.
+
+  Articles support **bold text**, *italic text*, `inline code`, links, lists, images, and code examples.
+
+  Example link to API Reference: [Create user](/api/create-user).
+
+  ```bash
+  curl https://api.example.com/v1/users
+  ```
+
+blocks:
+  - type: info
+    title: Content-driven docs
+    content: >
+      Articles are managed through YAML/content files and do not require application code changes.

@@ -11,6 +11,9 @@ interface EndpointNavProps {
   nodes: NavNode[];
   activeHref: string;
   title?: string;
+  ariaLabel?: string;
+  storageKey?: string;
+  showSupport?: boolean;
   onNavigate?: () => void;
 }
 
@@ -23,14 +26,26 @@ interface NodeProps {
   onNavigate?: () => void;
 }
 
-function collectOpenNodeIds(nodes: NavNode[], activeHref: string): Set<string> {
+function collectDefaultOpenNodeIds(nodes: NavNode[]): Set<string> {
   const open = new Set<string>();
 
-  function visit(node: NavNode): boolean {
+  function visit(node: NavNode) {
     if (node.defaultOpen) {
       open.add(node.id);
     }
 
+    node.children.forEach((child) => visit(child));
+  }
+
+  nodes.forEach(visit);
+
+  return open;
+}
+
+function collectActiveOpenNodeIds(nodes: NavNode[], activeHref: string): Set<string> {
+  const open = new Set<string>();
+
+  function visit(node: NavNode): boolean {
     const containsActiveChild = node.children.some((child) => visit(child));
 
     if (containsActiveChild) {
@@ -40,9 +55,37 @@ function collectOpenNodeIds(nodes: NavNode[], activeHref: string): Set<string> {
     return node.href === activeHref || containsActiveChild;
   }
 
-  nodes.forEach((node) => visit(node));
+  nodes.forEach(visit);
 
   return open;
+}
+
+function readStoredOpenNodeIds(storageKey: string): Set<string> | undefined {
+  try {
+    const stored = window.localStorage.getItem(storageKey);
+
+    if (!stored) {
+      return undefined;
+    }
+
+    const parsed = JSON.parse(stored);
+
+    if (!Array.isArray(parsed)) {
+      return undefined;
+    }
+
+    return new Set(parsed.filter((item): item is string => typeof item === "string"));
+  } catch {
+    return undefined;
+  }
+}
+
+function writeStoredOpenNodeIds(storageKey: string, expanded: Set<string>) {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(Array.from(expanded)));
+  } catch {
+    // localStorage can be unavailable in private browsing or restricted embeds.
+  }
 }
 
 function EndpointNavNode({
@@ -106,19 +149,38 @@ function EndpointNavNode({
   );
 }
 
-export function EndpointNav({ nodes, activeHref, title = "Endpoints", onNavigate }: EndpointNavProps) {
-  const openByDefault = useMemo(() => collectOpenNodeIds(nodes, activeHref), [nodes, activeHref]);
+export function EndpointNav({
+  nodes,
+  activeHref,
+  title = "Endpoints",
+  ariaLabel = "Endpoint navigation",
+  storageKey = `endpoint-nav:${title}`,
+  showSupport = true,
+  onNavigate,
+}: EndpointNavProps) {
+  const defaultOpenIds = useMemo(() => collectDefaultOpenNodeIds(nodes), [nodes]);
+  const activeOpenIds = useMemo(() => collectActiveOpenNodeIds(nodes, activeHref), [nodes, activeHref]);
+  const openByDefault = useMemo(() => new Set([...defaultOpenIds, ...activeOpenIds]), [activeOpenIds, defaultOpenIds]);
   const [expanded, setExpanded] = useState(openByDefault);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setExpanded((current) => {
-      const next = new Set(current);
+    const stored = readStoredOpenNodeIds(storageKey);
+    const next = new Set(stored ?? defaultOpenIds);
 
-      openByDefault.forEach((id) => next.add(id));
+    activeOpenIds.forEach((id) => next.add(id));
 
-      return next;
-    });
-  }, [openByDefault]);
+    setExpanded(next);
+    setHydrated(true);
+  }, [activeOpenIds, defaultOpenIds, storageKey]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    writeStoredOpenNodeIds(storageKey, expanded);
+  }, [expanded, hydrated, storageKey]);
 
   function toggle(id: string) {
     setExpanded((current) => {
@@ -139,7 +201,7 @@ export function EndpointNav({ nodes, activeHref, title = "Endpoints", onNavigate
       <div className="endpoint-nav-heading">
         <span>{title}</span>
       </div>
-      <nav className="endpoint-nav" aria-label="Endpoint navigation">
+      <nav className="endpoint-nav" aria-label={ariaLabel}>
         {nodes.map((node) => (
           <EndpointNavNode
             key={node.id}
@@ -152,19 +214,28 @@ export function EndpointNav({ nodes, activeHref, title = "Endpoints", onNavigate
           />
         ))}
       </nav>
-      <div className="endpoint-support-card">
-        <span>Need help?</span>
-        <p>Contact our support team for integration questions.</p>
-        <button type="button">
-          <Headphones size={14} aria-hidden="true" />
-          Contact Support
-        </button>
-      </div>
+      {showSupport ? (
+        <div className="endpoint-support-card">
+          <span>Need help?</span>
+          <p>Contact our support team for integration questions.</p>
+          <button type="button">
+            <Headphones size={14} aria-hidden="true" />
+            Contact Support
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-export function EndpointNavDrawer({ nodes, activeHref, title = "Endpoints" }: EndpointNavProps) {
+export function EndpointNavDrawer({
+  nodes,
+  activeHref,
+  title = "Endpoints",
+  ariaLabel = "Endpoint navigation",
+  storageKey,
+  showSupport,
+}: EndpointNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -175,7 +246,7 @@ export function EndpointNavDrawer({ nodes, activeHref, title = "Endpoints" }: En
         {title}
       </button>
       {open ? (
-        <div className="mobile-nav-overlay" role="dialog" aria-modal="true" aria-label="Endpoint navigation">
+        <div className="mobile-nav-overlay" role="dialog" aria-modal="true" aria-label={ariaLabel}>
           <button type="button" className="mobile-nav-backdrop" onClick={() => setOpen(false)} aria-label="Close navigation" />
           <div className="mobile-nav-panel">
             <div className="mobile-nav-header">
@@ -184,7 +255,15 @@ export function EndpointNavDrawer({ nodes, activeHref, title = "Endpoints" }: En
                 <X size={18} />
               </button>
             </div>
-            <EndpointNav nodes={nodes} activeHref={pathname || activeHref} title={title} onNavigate={() => setOpen(false)} />
+            <EndpointNav
+              nodes={nodes}
+              activeHref={pathname || activeHref}
+              title={title}
+              ariaLabel={ariaLabel}
+              storageKey={storageKey}
+              showSupport={showSupport}
+              onNavigate={() => setOpen(false)}
+            />
           </div>
         </div>
       ) : null}

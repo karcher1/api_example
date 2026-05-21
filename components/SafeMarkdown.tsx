@@ -8,7 +8,7 @@ type InlineNode = string | JSX.Element;
 
 function renderInline(text: string, keyPrefix: string): InlineNode[] {
   const nodes: InlineNode[] = [];
-  const pattern = /(`[^`]+`|\[([^\]]+)\]\(([^)]+)\))/g;
+  const pattern = /(!\[([^\]]*)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*|\[([^\]]+)\]\(([^)]+)\))/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let index = 0;
@@ -20,15 +20,35 @@ function renderInline(text: string, keyPrefix: string): InlineNode[] {
 
     const token = match[0];
 
-    if (token.startsWith("`")) {
+    if (token.startsWith("![")) {
+      const alt = match[2] ?? "";
+      const src = match[3] ?? "";
+
+      nodes.push(
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="mdx-image" src={src} alt={alt} key={`${keyPrefix}-image-${index}`} />,
+      );
+    } else if (token.startsWith("`")) {
       nodes.push(
         <code className="mdx-code" key={`${keyPrefix}-code-${index}`}>
-          {token.slice(1, -1)}
+          {match[4] ?? token.slice(1, -1)}
         </code>,
       );
+    } else if (token.startsWith("**")) {
+      nodes.push(
+        <strong key={`${keyPrefix}-strong-${index}`}>
+          {match[5] ?? token.slice(2, -2)}
+        </strong>,
+      );
+    } else if (token.startsWith("*")) {
+      nodes.push(
+        <em key={`${keyPrefix}-em-${index}`}>
+          {match[6] ?? token.slice(1, -1)}
+        </em>,
+      );
     } else {
-      const label = match[2] ?? "";
-      const href = match[3] ?? "";
+      const label = match[7] ?? "";
+      const href = match[8] ?? "";
 
       nodes.push(
         href.startsWith("/") ? (

@@ -1,0 +1,74 @@
+slug: get-user
+title: Get user
+description: >
+  Returns information about a single user by ID.
+method: GET
+path: /v1/users/{userId}
+status: stable
+
+headerParameters:
+  - name: Authorization
+    type: string
+    required: true
+    description: >
+      Bearer token. Format: `Bearer <token>`.
+
+pathParameters:
+  - name: userId
+    type: string
+    required: true
+    description: Unique user identifier.
+
+queryParameters: []
+requestBodyParameters: []
+
+responses:
+  - status: 200
+    description: Successful response.
+    parameters:
+      - name: id
+        type: string
+        description: Unique user identifier.
+      - name: email
+        type: string
+        description: User email address.
+      - name: createdAt
+        type: string
+        description: Creation date in ISO 8601 format.
+
+  - status: 404
+    description: User not found.
+    parameters:
+      - name: error
+        type: string
+        description: Error message.
+
+blocks:
+  - type: info
+    title: Cache behavior
+    content: >
+      This endpoint may return cached data for a short period of time.
+
+requestExamples:
+  - label: cURL
+    language: bash
+    code: |
+      curl "https://api.example.com/v1/users/usr_123" \
+        -H "Authorization: Bearer TOKEN"
+
+responseExamples:
+  - label: 200 Success
+    language: json
+    code: |
+      {
+        "id": "usr_123",
+        "email": "user@example.com",
+        "createdAt": "2026-01-01T00:00:00Z"
+      }
+
+  - label: 404 Not Found
+    language: json
+    code: |
+      {
+        "error": "User not found"
+      }

@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { slugify } from "@/lib/openapi";
 import type {
   AutoSectionId,
   DocsBlockPlacement,
@@ -7,6 +8,7 @@ import type {
   EndpointParameter,
   ParameterLocation,
   ResponseDoc,
+  ResponseParameter,
   SchemaNode,
 } from "@/lib/openapi";
 import { getResponseStatusTone } from "@/lib/examples";
@@ -36,13 +38,6 @@ const DEFAULT_SECTION_ORDER: AutoSectionId[] = [
   "request-body",
   "responses",
 ];
-const STATUS_LABELS = {
-  stable: "Stable",
-  beta: "Beta",
-  deprecated: "Deprecated",
-  draft: "Draft",
-};
-
 function parameterTypeLabel(parameter: EndpointParameter): string {
   const schema = parameter.schema;
 
@@ -55,6 +50,14 @@ function parameterTypeLabel(parameter: EndpointParameter): string {
     schema.format,
     schema.nullable ? "nullable" : undefined,
   ].filter(Boolean).join(" | ");
+}
+
+function formatStatusLabel(status: string): string {
+  return status
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function formatValue(value: unknown): string {
@@ -104,7 +107,7 @@ function ParametersList({ parameters }: { parameters: EndpointParameter[] }) {
                 <code>{parameter.name}</code>
                 <span>{parameterTypeLabel(parameter)}</span>
               </div>
-              <p>{parameter.description ?? "No description provided."}</p>
+              <SafeMarkdown source={parameter.description ?? "No description provided."} />
               {chips.length > 0 ? (
                 <div className="parameter-meta-list">
                   {chips.map((chip) => (
@@ -182,9 +185,9 @@ function OverviewSection({ endpoint }: EndpointContentProps) {
           <code>{endpoint.path}</code>
         </div>
         {endpoint.docs.status ? (
-          <div className={`overview-status overview-status-${endpoint.docs.status}`}>
+          <div className={`overview-status overview-status-${slugify(endpoint.docs.status)}`}>
             <span className="overview-status-dot" aria-hidden="true" />
-            <span>{STATUS_LABELS[endpoint.docs.status]}</span>
+            <span>{formatStatusLabel(endpoint.docs.status)}</span>
           </div>
         ) : null}
       </div>
@@ -225,22 +228,25 @@ function RequestBodySection({ endpoint }: EndpointContentProps) {
   );
 }
 
-function ResponseSchema({ response }: { response: ResponseDoc }) {
-  if (!response.content.length) {
-    return <p className="empty-state">This response has no documented body.</p>;
+function ResponseParameters({ parameters }: { parameters: ResponseParameter[] }) {
+  if (!parameters.length) {
+    return <p className="empty-state">This response has no documented fields.</p>;
   }
 
-  const content = response.content[0];
-
   return (
-    <SchemaTable
-      schema={content.schema}
-      rootLabel={`response ${response.status}`}
-      variant="fieldList"
-      chrome="embedded"
-      initialExpansion="none"
-      controlMode="inline-toggle"
-    />
+    <div className="parameter-list">
+      {parameters.map((parameter) => (
+        <article className="parameter-row" key={`${parameter.name}-${parameter.type}`}>
+          <div className="parameter-row-main">
+            <div className="parameter-row-heading">
+              <code>{parameter.name}</code>
+              <span>{parameter.type}</span>
+            </div>
+            <SafeMarkdown source={parameter.description ?? "No description provided."} />
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -255,7 +261,7 @@ function ResponseCard({ response }: { response: ResponseDoc }) {
         <span>{response.description ?? "Response"}</span>
       </summary>
       <div className="response-doc-content">
-        <ResponseSchema response={response} />
+        <ResponseParameters parameters={response.parameters} />
       </div>
     </details>
   );
@@ -303,7 +309,7 @@ export function EndpointContent({ endpoint }: EndpointContentProps) {
     <article className="endpoint-content">
       <header className="endpoint-hero">
         <h1>{endpoint.title}</h1>
-        {endpoint.description ? <p>{endpoint.description}</p> : null}
+        {endpoint.description ? <SafeMarkdown source={endpoint.description} /> : null}
       </header>
 
       <DocsBlocks endpoint={endpoint} placement="hero-after-description" />

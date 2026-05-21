@@ -1,0 +1,14 @@
+sections:
+  - title: Getting Started
+    id: getting-started
+    defaultOpen: true
+    items:
+      - title: Introduction
+        slug: introduction
+      - title: Authentication
+        slug: authentication
+
+  - title: Guides
+    id: guides
+    defaultOpen: true
+    items: []

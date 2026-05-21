@@ -10,13 +10,10 @@ export const HTTP_METHODS = [
   "delete",
   "options",
   "head",
-  "trace",
 ] as const;
 
 export type HttpMethod = (typeof HTTP_METHODS)[number];
-
 export type ParameterLocation = "path" | "query" | "header" | "cookie";
-export type DocsStatus = "stable" | "beta" | "deprecated" | "draft";
 export type DocsNoticeTone = "info" | "warning" | "danger" | "success" | "neutral";
 export type AutoSectionId =
   | "overview"
@@ -37,14 +34,7 @@ export interface EndpointCodeExample {
   id: string;
   label: string;
   language: string;
-  value: unknown;
-}
-
-export interface EndpointContentExample {
-  id: string;
-  label: string;
-  description?: string;
-  value: unknown;
+  value: string;
 }
 
 export interface EndpointDocBlock {
@@ -59,10 +49,11 @@ export interface EndpointDocBlock {
 }
 
 export interface EndpointDocs {
-  status?: DocsStatus;
+  status?: string;
   sectionOrder: AutoSectionId[];
   blocks: EndpointDocBlock[];
   requestExamples: EndpointCodeExample[];
+  responseExamples: EndpointCodeExample[];
 }
 
 export interface SchemaNode {
@@ -97,11 +88,25 @@ export interface EndpointParameter {
   example?: unknown;
 }
 
+interface RequestBodyParameter {
+  name: string;
+  required: boolean;
+  description?: string;
+  schema?: SchemaNode;
+  example?: unknown;
+}
+
+export interface ResponseParameter {
+  name: string;
+  type: string;
+  description?: string;
+}
+
 export interface BodyContent {
   contentType: string;
   schema?: SchemaNode;
   example?: unknown;
-  examples: EndpointContentExample[];
+  examples: unknown[];
 }
 
 export interface RequestBodyDoc {
@@ -113,6 +118,7 @@ export interface RequestBodyDoc {
 export interface ResponseDoc {
   status: string;
   description?: string;
+  parameters: ResponseParameter[];
   content: BodyContent[];
 }
 
@@ -123,7 +129,6 @@ export interface EndpointDoc {
   href: string;
   method: HttpMethod;
   path: string;
-  serverUrl?: string;
   tag: string;
   tagSlug: string;
   operationId?: string;
@@ -153,52 +158,60 @@ export interface NavNode {
 
 type UnknownRecord = Record<string, unknown>;
 
-const OPENAPI_PATH = path.join(process.cwd(), "content", "openapi.yaml");
-const REFERENCE_NAV_PATH = path.join(process.cwd(), "content", "reference-nav.yaml");
-const METHOD_ORDER = new Map(HTTP_METHODS.map((method, index) => [method, index]));
-const DOCS_STATUSES: DocsStatus[] = ["stable", "beta", "deprecated", "draft"];
-const DOCS_TONES: DocsNoticeTone[] = ["info", "warning", "danger", "success", "neutral"];
-const DOCS_BLOCK_TYPES: DocsBlockType[] = ["text", "notice", "code"];
-const AUTO_SECTION_IDS: AutoSectionId[] = [
+const API_ROOT = path.join(process.cwd(), "content", "api");
+const API_NAVIGATION_PATH = path.join(API_ROOT, "navigation.yaml");
+const API_ENDPOINTS_DIR = path.join(API_ROOT, "endpoints");
+const DEFAULT_SECTION_ORDER: AutoSectionId[] = [
   "overview",
   "header-parameters",
   "path-parameters",
   "query-parameters",
-  "cookie-parameters",
   "request-body",
   "responses",
 ];
-const DOCS_PLACEMENTS: DocsBlockPlacement[] = [
-  "hero-after-description",
-  "end",
-  ...AUTO_SECTION_IDS.flatMap((section) => [`before:${section}`, `after:${section}`] as DocsBlockPlacement[]),
-];
-
-let documentCache: UnknownRecord | undefined;
-let endpointCache: EndpointDoc[] | undefined;
+const KNOWN_BLOCK_TONES = new Set(["note", "info", "warning", "danger", "tip"]);
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isHttpMethod(value: string): value is HttpMethod {
-  return HTTP_METHODS.includes(value as HttpMethod);
+function asRecord(value: unknown): UnknownRecord {
+  return isRecord(value) ? value : {};
 }
 
 function asString(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : fallback;
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  return fallback;
 }
 
 function asBoolean(value: unknown, fallback = false): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
 
-function asNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+function readYamlObject(filePath: string, label: string): UnknownRecord {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`${label} was not found at ${filePath}.`);
+  }
+
+  const file = fs.readFileSync(filePath, "utf8");
+  const parsed = parse(file);
+
+  if (!isRecord(parsed)) {
+    throw new Error(`${label} must be a YAML object at ${filePath}.`);
+  }
+
+  return parsed;
 }
 
-function asRecord(value: unknown): UnknownRecord {
-  return isRecord(value) ? value : {};
+function contentError(filePath: string, message: string): never {
+  throw new Error(`Invalid API content at ${filePath}: ${message}`);
 }
 
 export function slugify(value: string): string {
@@ -212,701 +225,374 @@ export function slugify(value: string): string {
   return slug || "untitled";
 }
 
-function pointerPart(value: string): string {
-  return value.replace(/~1/g, "/").replace(/~0/g, "~");
-}
+function methodFromContent(value: unknown, filePath: string): HttpMethod {
+  const method = asString(value).toLowerCase();
 
-function readJsonPointer(document: UnknownRecord, ref: string): unknown {
-  if (!ref.startsWith("#/")) {
-    throw new Error(`Only local OpenAPI refs are supported: ${ref}`);
+  if (!HTTP_METHODS.includes(method as HttpMethod)) {
+    contentError(filePath, `method must be one of ${HTTP_METHODS.map((item) => item.toUpperCase()).join(", ")}.`);
   }
 
-  return ref
-    .slice(2)
-    .split("/")
-    .map(pointerPart)
-    .reduce<unknown>((current, part) => {
-      if (!isRecord(current)) {
-        return undefined;
-      }
-
-      return current[part];
-    }, document);
+  return method as HttpMethod;
 }
 
-function resolveObject(value: unknown, document: UnknownRecord, seen = new Set<string>()): UnknownRecord {
-  if (!isRecord(value)) {
-    return {};
+function requireString(record: UnknownRecord, field: string, filePath: string): string {
+  const value = asString(record[field]).trim();
+
+  if (!value) {
+    contentError(filePath, `${field} is required and must be a non-empty string.`);
   }
 
-  const ref = asString(value.$ref);
-  if (!ref) {
-    return value;
-  }
-
-  if (seen.has(ref)) {
-    return {};
-  }
-
-  seen.add(ref);
-  const target = resolveObject(readJsonPointer(document, ref), document, seen);
-  const { $ref: _ref, ...overrides } = value;
-
-  return { ...target, ...overrides };
+  return value;
 }
 
-function mergeSchemaRecords(base: UnknownRecord, next: UnknownRecord): UnknownRecord {
-  const merged: UnknownRecord = { ...base, ...next };
+function optionalString(record: UnknownRecord, field: string): string | undefined {
+  const value = asString(record[field]).trim();
 
-  if (isRecord(base.properties) || isRecord(next.properties)) {
-    merged.properties = {
-      ...asRecord(base.properties),
-      ...asRecord(next.properties),
-    };
+  return value || undefined;
+}
+
+function ensureArray(value: unknown, field: string, filePath: string): unknown[] {
+  if (value === undefined || value === null) {
+    return [];
   }
 
-  const required = [
-    ...(Array.isArray(base.required) ? base.required : []),
-    ...(Array.isArray(next.required) ? next.required : []),
-  ].filter((item): item is string => typeof item === "string");
-
-  if (required.length > 0) {
-    merged.required = Array.from(new Set(required));
+  if (!Array.isArray(value)) {
+    contentError(filePath, `${field} must be an array when provided.`);
   }
 
-  return merged;
+  return value;
 }
 
-function normalizeSchemaObject(
-  schema: unknown,
-  document: UnknownRecord,
-  seen = new Set<string>(),
-): UnknownRecord {
-  const resolved = resolveObject(schema, document, seen);
-
-  if (!Array.isArray(resolved.allOf)) {
-    return resolved;
-  }
-
-  const allOfMerged = resolved.allOf
-    .map((item) => normalizeSchemaObject(item, document, new Set(seen)))
-    .reduce<UnknownRecord>(mergeSchemaRecords, {});
-
-  const { allOf: _allOf, ...rest } = resolved;
-
-  return mergeSchemaRecords(allOfMerged, rest);
-}
-
-function inferSchemaType(schema: UnknownRecord): string {
-  if (typeof schema.type === "string") {
-    return schema.type;
-  }
-
-  if (isRecord(schema.properties) || schema.additionalProperties) {
-    return "object";
-  }
-
-  if (schema.items) {
-    return "array";
-  }
-
-  if (Array.isArray(schema.oneOf)) {
-    return "oneOf";
-  }
-
-  if (Array.isArray(schema.anyOf)) {
-    return "anyOf";
-  }
-
-  return "unknown";
-}
-
-function schemaEnum(schema: UnknownRecord): string[] | undefined {
-  if (!Array.isArray(schema.enum)) {
-    return undefined;
-  }
-
-  return schema.enum.map(String);
-}
-
-function isDocsStatus(value: unknown): value is DocsStatus {
-  return typeof value === "string" && DOCS_STATUSES.includes(value as DocsStatus);
-}
-
-function isDocsTone(value: unknown): value is DocsNoticeTone {
-  return typeof value === "string" && DOCS_TONES.includes(value as DocsNoticeTone);
-}
-
-function isDocsBlockType(value: unknown): value is DocsBlockType {
-  return typeof value === "string" && DOCS_BLOCK_TYPES.includes(value as DocsBlockType);
-}
-
-function isAutoSectionId(value: unknown): value is AutoSectionId {
-  return typeof value === "string" && AUTO_SECTION_IDS.includes(value as AutoSectionId);
-}
-
-function isDocsPlacement(value: unknown): value is DocsBlockPlacement {
-  return typeof value === "string" && DOCS_PLACEMENTS.includes(value as DocsBlockPlacement);
-}
-
-function exampleLabel(id: string, example: UnknownRecord): string {
-  return asString(example.summary) || asString(example.title) || id;
-}
-
-export function toSchemaNode(
-  name: string | undefined,
-  schema: unknown,
-  document = getOpenApiDocument(),
+function parseSchemaNode(
+  record: UnknownRecord,
+  filePath: string,
+  location: string,
   required = false,
-  depth = 0,
-  seen = new Set<string>(),
 ): SchemaNode {
-  if (depth > 10) {
-    return {
-      name,
-      type: "object",
-      required,
-      description: "Nested schema truncated to avoid a circular reference.",
-    };
-  }
-
-  const normalized = normalizeSchemaObject(schema, document, seen);
-  const type = inferSchemaType(normalized);
-  const requiredProperties = new Set(
-    Array.isArray(normalized.required)
-      ? normalized.required.filter((item): item is string => typeof item === "string")
-      : [],
-  );
-  const variantsSource = Array.isArray(normalized.oneOf)
-    ? normalized.oneOf
-    : Array.isArray(normalized.anyOf)
-      ? normalized.anyOf
-      : undefined;
-
+  const name = optionalString(record, "name");
+  const type = requireString(record, "type", filePath);
+  const children = ensureArray(record.children, `${location}.children`, filePath);
   const node: SchemaNode = {
     name,
     type,
-    format: asString(normalized.format) || undefined,
     required,
-    nullable: normalized.nullable === true,
-    description: asString(normalized.description) || undefined,
-    enum: schemaEnum(normalized),
-    example: normalized.example,
-    default: normalized.default,
-    minimum: asNumber(normalized.minimum),
-    maximum: asNumber(normalized.maximum),
-    minLength: asNumber(normalized.minLength),
-    maxLength: asNumber(normalized.maxLength),
-    pattern: asString(normalized.pattern) || undefined,
-    minItems: asNumber(normalized.minItems),
-    maxItems: asNumber(normalized.maxItems),
+    description: optionalString(record, "description"),
+    example: record.example,
+    default: record.default,
   };
 
-  if (isRecord(normalized.properties)) {
-    node.properties = Object.entries(normalized.properties).map(([propertyName, propertySchema]) =>
-      toSchemaNode(
-        propertyName,
-        propertySchema,
-        document,
-        requiredProperties.has(propertyName),
-        depth + 1,
-        new Set(seen),
-      ),
-    );
+  if (type === "array" && isRecord(record.items)) {
+    node.items = parseSchemaNode(record.items, filePath, `${location}.items`);
   }
 
-  if (normalized.items) {
-    node.items = toSchemaNode(undefined, normalized.items, document, false, depth + 1, new Set(seen));
-  }
+  if (children.length > 0) {
+    node.properties = children.map((child, index) => {
+      if (!isRecord(child)) {
+        contentError(filePath, `${location}.children[${index}] must be an object.`);
+      }
 
-  if (variantsSource) {
-    node.variants = variantsSource.map((variant, index) =>
-      toSchemaNode(`Option ${index + 1}`, variant, document, false, depth + 1, new Set(seen)),
-    );
-  }
-
-  if (normalized.additionalProperties && normalized.additionalProperties !== true) {
-    node.additionalProperties = toSchemaNode(
-      "additionalProperty",
-      normalized.additionalProperties,
-      document,
-      false,
-      depth + 1,
-      new Set(seen),
-    );
+      return parseSchemaNode(
+        child,
+        filePath,
+        `${location}.children[${index}]`,
+        asBoolean(child.required),
+      );
+    });
   }
 
   return node;
 }
 
-function exampleScalar(type: string, format?: unknown): unknown {
-  if (type === "integer") {
-    return 42;
+function parseParameterRecord(value: unknown, field: string, index: number, filePath: string): RequestBodyParameter {
+  if (!isRecord(value)) {
+    contentError(filePath, `${field}[${index}] must be an object.`);
   }
 
-  if (type === "number") {
-    return 42.5;
+  if (typeof value.required !== "boolean") {
+    contentError(filePath, `${field}[${index}].required must be a boolean.`);
   }
 
-  if (type === "boolean") {
-    return true;
-  }
+  const name = requireString(value, "name", filePath);
+  const description = requireString(value, "description", filePath);
+  const schema = parseSchemaNode(value, filePath, `${field}[${index}]`, value.required);
 
-  if (format === "date-time") {
-    return "2026-05-01T12:00:00Z";
-  }
-
-  if (format === "date") {
-    return "2026-05-01";
-  }
-
-  if (format === "email") {
-    return "user@example.com";
-  }
-
-  if (format === "uuid") {
-    return "018f9f3e-4c10-7a2a-9d2c-32b30f7f28a4";
-  }
-
-  return "string";
+  return {
+    name,
+    required: value.required,
+    description,
+    schema,
+    example: value.example,
+  };
 }
 
-function exampleFromSchema(
-  schema: unknown,
-  document: UnknownRecord,
-  depth = 0,
-  seen = new Set<string>(),
-): unknown {
-  if (depth > 6) {
+function parseRequestBodyParameterGroup(value: unknown, field: string, filePath: string): RequestBodyParameter[] {
+  return ensureArray(value, field, filePath).map((parameterValue, index) =>
+    parseParameterRecord(parameterValue, field, index, filePath),
+  );
+}
+
+function parseParameterGroup(
+  value: unknown,
+  field: string,
+  location: ParameterLocation,
+  filePath: string,
+): EndpointParameter[] {
+  return ensureArray(value, field, filePath).map((parameterValue, index) => {
+    const parameter = parseParameterRecord(parameterValue, field, index, filePath);
+
+    return {
+      name: parameter.name,
+      location,
+      required: parameter.required,
+      description: parameter.description,
+      schema: parameter.schema,
+      example: parameter.example,
+    };
+  });
+}
+
+function requestBodySchema(parameters: RequestBodyParameter[]): SchemaNode | undefined {
+  if (!parameters.length) {
     return undefined;
   }
 
-  const normalized = normalizeSchemaObject(schema, document, seen);
+  return {
+    name: "body",
+    type: "object",
+    required: true,
+    properties: parameters.map((parameter) => ({
+      name: parameter.name,
+      type: parameter.schema?.type ?? "unknown",
+      required: parameter.required,
+      description: parameter.description,
+      example: parameter.example,
+      default: parameter.schema?.default,
+      properties: parameter.schema?.properties,
+      items: parameter.schema?.items,
+    })),
+  };
+}
 
-  if (normalized.example !== undefined) {
-    return normalized.example;
-  }
-
-  if (normalized.default !== undefined) {
-    return normalized.default;
-  }
-
-  if (Array.isArray(normalized.enum) && normalized.enum.length > 0) {
-    return normalized.enum[0];
-  }
-
-  const type = inferSchemaType(normalized);
-
-  if (type === "object") {
-    const sample: UnknownRecord = {};
-
-    if (isRecord(normalized.properties)) {
-      Object.entries(normalized.properties).forEach(([propertyName, propertySchema]) => {
-        sample[propertyName] = exampleFromSchema(propertySchema, document, depth + 1, new Set(seen));
-      });
+function parseResponses(value: unknown, filePath: string): ResponseDoc[] {
+  return ensureArray(value, "responses", filePath).map((responseValue, index) => {
+    if (!isRecord(responseValue)) {
+      contentError(filePath, `responses[${index}] must be an object.`);
     }
 
-    return sample;
-  }
+    const status = requireString(responseValue, "status", filePath);
+    const description = requireString(responseValue, "description", filePath);
+    const parameters = ensureArray(responseValue.parameters, `responses[${index}].parameters`, filePath).map(
+      (parameterValue, parameterIndex) => {
+        if (!isRecord(parameterValue)) {
+          contentError(filePath, `responses[${index}].parameters[${parameterIndex}] must be an object.`);
+        }
 
-  if (type === "array") {
-    return [exampleFromSchema(normalized.items, document, depth + 1, new Set(seen))];
-  }
-
-  if (Array.isArray(normalized.oneOf) && normalized.oneOf.length > 0) {
-    return exampleFromSchema(normalized.oneOf[0], document, depth + 1, new Set(seen));
-  }
-
-  if (Array.isArray(normalized.anyOf) && normalized.anyOf.length > 0) {
-    return exampleFromSchema(normalized.anyOf[0], document, depth + 1, new Set(seen));
-  }
-
-  return exampleScalar(type, normalized.format);
-}
-
-function readExplicitExamples(mediaType: UnknownRecord, document: UnknownRecord): EndpointContentExample[] {
-  const examples: EndpointContentExample[] = [];
-
-  if (mediaType.example !== undefined) {
-    examples.push({
-      id: "default",
-      label: "Default",
-      value: mediaType.example,
-    });
-  }
-
-  if (isRecord(mediaType.examples)) {
-    Object.entries(mediaType.examples).forEach(([id, exampleValue]) => {
-      const resolved = resolveObject(exampleValue, document);
-      const value = resolved.value ?? exampleValue;
-
-      examples.push({
-        id,
-        label: exampleLabel(id, resolved),
-        description: asString(resolved.description) || undefined,
-        value,
-      });
-    });
-  }
-
-  return examples;
-}
-
-function readExample(mediaType: UnknownRecord, schema: unknown, document: UnknownRecord): unknown {
-  const explicitExamples = readExplicitExamples(mediaType, document);
-  const firstExplicit = explicitExamples[0];
-
-  if (firstExplicit) {
-    return firstExplicit.value;
-  }
-
-  if (schema !== undefined) {
-    return exampleFromSchema(schema, document);
-  }
-
-  return undefined;
-}
-
-function parseBodyContent(content: unknown, document: UnknownRecord): BodyContent[] {
-  if (!isRecord(content)) {
-    return [];
-  }
-
-  return Object.entries(content).map(([contentType, mediaTypeValue]) => {
-    const mediaType = resolveObject(mediaTypeValue, document);
-    const schema = mediaType.schema;
-
-    return {
-      contentType,
-      schema: schema ? toSchemaNode("body", schema, document, true) : undefined,
-      example: readExample(mediaType, schema, document),
-      examples: readExplicitExamples(mediaType, document),
-    };
-  });
-}
-
-function parseDocsBlocks(value: unknown): EndpointDocBlock[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((blockValue, index): EndpointDocBlock | undefined => {
-      const block = asRecord(blockValue);
-      const type = isDocsBlockType(block.type) ? block.type : undefined;
-
-      if (!type) {
-        return undefined;
-      }
-
-      const title = asString(block.title) || undefined;
-      const body = asString(block.body) || undefined;
-      const id = asString(block.id) || slugify(title || `${type}-${index + 1}`);
-
-      return {
-        id,
-        type,
-        placement: isDocsPlacement(block.placement) ? block.placement : "end",
-        title,
-        body,
-        tone: isDocsTone(block.tone) ? block.tone : "info",
-        language: asString(block.language) || undefined,
-        value: block.value,
-      };
-    })
-    .filter((block): block is EndpointDocBlock => Boolean(block));
-}
-
-function parseRequestExamples(value: unknown): EndpointCodeExample[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((exampleValue, index): EndpointCodeExample | undefined => {
-      const example = asRecord(exampleValue);
-      const label = asString(example.label) || asString(example.id) || `Example ${index + 1}`;
-      const value = example.value;
-
-      if (value === undefined) {
-        return undefined;
-      }
-
-      return {
-        id: asString(example.id) || slugify(label),
-        label,
-        language: asString(example.language) || asString(example.id) || "text",
-        value,
-      };
-    })
-    .filter((example): example is EndpointCodeExample => Boolean(example));
-}
-
-function parseSectionOrder(value: unknown): AutoSectionId[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter(isAutoSectionId);
-}
-
-function parseEndpointDocs(value: unknown): EndpointDocs {
-  const docs = asRecord(value);
-
-  return {
-    status: isDocsStatus(docs.status) ? docs.status : undefined,
-    sectionOrder: parseSectionOrder(docs.sectionOrder),
-    blocks: parseDocsBlocks(docs.blocks),
-    requestExamples: parseRequestExamples(docs.requestExamples),
-  };
-}
-
-function parseParameters(
-  pathParameters: unknown,
-  operationParameters: unknown,
-  document: UnknownRecord,
-): EndpointParameter[] {
-  const parameters = [
-    ...(Array.isArray(pathParameters) ? pathParameters : []),
-    ...(Array.isArray(operationParameters) ? operationParameters : []),
-  ];
-
-  return parameters.map((parameterValue) => {
-    const parameter = resolveObject(parameterValue, document);
-    const location = asString(parameter.in, "query") as ParameterLocation;
-    const schema = parameter.schema;
-
-    return {
-      name: asString(parameter.name, "parameter"),
-      location,
-      required: asBoolean(parameter.required, location === "path"),
-      description: asString(parameter.description) || undefined,
-      schema: schema ? toSchemaNode(undefined, schema, document) : undefined,
-      example: parameter.example ?? (schema ? exampleFromSchema(schema, document) : undefined),
-    };
-  });
-}
-
-function parseRequestBody(requestBodyValue: unknown, document: UnknownRecord): RequestBodyDoc | undefined {
-  if (!requestBodyValue) {
-    return undefined;
-  }
-
-  const requestBody = resolveObject(requestBodyValue, document);
-  const content = parseBodyContent(requestBody.content, document);
-
-  return {
-    required: asBoolean(requestBody.required),
-    description: asString(requestBody.description) || undefined,
-    content,
-  };
-}
-
-function parseResponses(responsesValue: unknown, document: UnknownRecord): ResponseDoc[] {
-  if (!isRecord(responsesValue)) {
-    return [];
-  }
-
-  return Object.entries(responsesValue).map(([status, responseValue]) => {
-    const response = resolveObject(responseValue, document);
+        return {
+          name: requireString(parameterValue, "name", filePath),
+          type: requireString(parameterValue, "type", filePath),
+          description: requireString(parameterValue, "description", filePath),
+        };
+      },
+    );
+    const schema: SchemaNode | undefined = parameters.length
+      ? {
+          name: `response ${status}`,
+          type: "object",
+          properties: parameters.map((parameter) => ({
+            name: parameter.name,
+            type: parameter.type,
+            description: parameter.description,
+          })),
+        }
+      : undefined;
 
     return {
       status,
-      description: asString(response.description) || undefined,
-      content: parseBodyContent(response.content, document),
+      description,
+      parameters,
+      content: schema
+        ? [
+            {
+              contentType: "application/json",
+              schema,
+              examples: [],
+            },
+          ]
+        : [],
     };
   });
 }
 
-function getTagOrder(document: UnknownRecord): Map<string, number> {
-  const tags = Array.isArray(document.tags) ? document.tags : [];
+function blockTone(type: string): DocsNoticeTone {
+  if (type === "warning" || type === "danger" || type === "info") {
+    return type;
+  }
 
-  return new Map(
-    tags
-      .map((tag, index) => [asString(asRecord(tag).name), index] as const)
-      .filter(([tag]) => tag.length > 0),
+  if (type === "tip") {
+    return "success";
+  }
+
+  return "neutral";
+}
+
+function parseBlocks(value: unknown, filePath: string): EndpointDocBlock[] {
+  return ensureArray(value, "blocks", filePath).map((blockValue, index) => {
+    if (!isRecord(blockValue)) {
+      contentError(filePath, `blocks[${index}] must be an object.`);
+    }
+
+    const type = requireString(blockValue, "type", filePath);
+    const title = optionalString(blockValue, "title");
+    const body = requireString(blockValue, "content", filePath);
+
+    return {
+      id: slugify(title || `${type}-${index + 1}`),
+      type: "notice",
+      placement: "end",
+      title,
+      body,
+      tone: blockTone(type),
+    };
+  });
+}
+
+function parseExamples(value: unknown, field: string, filePath: string): EndpointCodeExample[] {
+  return ensureArray(value, field, filePath).map((exampleValue, index) => {
+    if (!isRecord(exampleValue)) {
+      contentError(filePath, `${field}[${index}] must be an object.`);
+    }
+
+    const label = requireString(exampleValue, "label", filePath);
+
+    return {
+      id: slugify(label),
+      label,
+      language: requireString(exampleValue, "language", filePath),
+      value: requireString(exampleValue, "code", filePath),
+    };
+  });
+}
+
+function endpointFilePaths(): string[] {
+  if (!fs.existsSync(API_ENDPOINTS_DIR)) {
+    throw new Error(`API endpoints directory was not found at ${API_ENDPOINTS_DIR}.`);
+  }
+
+  return fs
+    .readdirSync(API_ENDPOINTS_DIR)
+    .filter((file) => file.endsWith(".yaml") || file.endsWith(".yml"))
+    .sort()
+    .map((file) => path.join(API_ENDPOINTS_DIR, file));
+}
+
+function endpointFromFile(filePath: string): EndpointDoc {
+  const document = readYamlObject(filePath, "API endpoint file");
+  const slug = requireString(document, "slug", filePath);
+  const title = requireString(document, "title", filePath);
+  const description = requireString(document, "description", filePath);
+  const method = methodFromContent(document.method, filePath);
+  const endpointPath = requireString(document, "path", filePath);
+  const status = requireString(document, "status", filePath);
+
+  if (!endpointPath.startsWith("/")) {
+    contentError(filePath, "path must start with /.");
+  }
+
+  const headerParameters = parseParameterGroup(document.headerParameters, "headerParameters", "header", filePath);
+  const pathParameters = parseParameterGroup(document.pathParameters, "pathParameters", "path", filePath);
+  const queryParameters = parseParameterGroup(document.queryParameters, "queryParameters", "query", filePath);
+  const requestBodyParameters = parseRequestBodyParameterGroup(
+    document.requestBodyParameters,
+    "requestBodyParameters",
+    filePath,
   );
-}
+  const requestBodySchemaValue = requestBodySchema(requestBodyParameters);
+  const requestBody = requestBodySchemaValue
+    ? {
+        required: requestBodyParameters.some((parameter) => parameter.required),
+        content: [
+          {
+            contentType: "application/json",
+            schema: requestBodySchemaValue,
+            examples: [],
+          },
+        ],
+      }
+    : undefined;
+  const responses = parseResponses(document.responses, filePath);
+  const requestExamples = parseExamples(document.requestExamples, "requestExamples", filePath);
+  const responseExamples = parseExamples(document.responseExamples, "responseExamples", filePath);
 
-function firstServerUrl(serversValue: unknown): string | undefined {
-  if (!Array.isArray(serversValue)) {
-    return undefined;
-  }
-
-  const firstServer = serversValue.find(isRecord);
-  const url = firstServer ? asString(firstServer.url) : "";
-
-  return url || undefined;
-}
-
-function endpointServerUrl(
-  document: UnknownRecord,
-  pathItem: UnknownRecord,
-  operation: UnknownRecord,
-): string | undefined {
-  return (
-    firstServerUrl(operation.servers) ??
-    firstServerUrl(pathItem.servers) ??
-    firstServerUrl(document.servers)
-  );
-}
-
-export function getOpenApiDocument(): UnknownRecord {
-  if (documentCache) {
-    return documentCache;
-  }
-
-  if (!fs.existsSync(OPENAPI_PATH)) {
-    throw new Error(`OpenAPI file was not found at ${OPENAPI_PATH}`);
-  }
-
-  const file = fs.readFileSync(OPENAPI_PATH, "utf8");
-  const parsed = parse(file);
-
-  if (!isRecord(parsed)) {
-    throw new Error("OpenAPI document must be a YAML object.");
-  }
-
-  documentCache = parsed;
-
-  return documentCache;
+  return {
+    id: slug,
+    slug,
+    slugParts: [slug],
+    href: `/api/${slug}`,
+    method,
+    path: endpointPath,
+    tag: "API Reference",
+    tagSlug: "api",
+    operationId: slug,
+    summary: title,
+    title,
+    description,
+    docs: {
+      status,
+      sectionOrder: DEFAULT_SECTION_ORDER,
+      blocks: parseBlocks(document.blocks, filePath),
+      requestExamples,
+      responseExamples,
+    },
+    parameters: [...headerParameters, ...pathParameters, ...queryParameters],
+    requestBody,
+    responses,
+    examples: {
+      request: requestExamples[0]?.value,
+      responses: Object.fromEntries(responseExamples.map((example) => [example.label, example.value])),
+    },
+  };
 }
 
 export function getEndpoints(): EndpointDoc[] {
-  if (endpointCache) {
-    return endpointCache;
-  }
-
-  const document = getOpenApiDocument();
-  const paths = asRecord(document.paths);
-  const tagOrder = getTagOrder(document);
-  const usedSlugs = new Map<string, number>();
+  const seen = new Map<string, string>();
   const endpoints: EndpointDoc[] = [];
 
-  Object.entries(paths).forEach(([apiPath, pathItemValue]) => {
-    const pathItem = resolveObject(pathItemValue, document);
-    const pathParameters = pathItem.parameters;
+  endpointFilePaths().forEach((filePath) => {
+    const endpoint = endpointFromFile(filePath);
+    const existing = seen.get(endpoint.slug);
 
-    Object.entries(pathItem).forEach(([methodName, operationValue]) => {
-      if (!isHttpMethod(methodName)) {
-        return;
-      }
-
-      const operation = resolveObject(operationValue, document);
-      const operationTags = Array.isArray(operation.tags) ? operation.tags : [];
-      const tag = asString(operationTags[0], "General");
-      const tagSlug = slugify(tag);
-      const summary =
-        asString(operation.summary) || `${methodName.toUpperCase()} ${apiPath}`;
-      const docs = parseEndpointDocs(operation["x-docs"]);
-      const operationId = asString(operation.operationId) || undefined;
-      const baseSlug = slugify(operationId || summary || `${methodName}-${apiPath}`);
-      const slugKey = `${tagSlug}/${baseSlug}`;
-      const duplicateCount = usedSlugs.get(slugKey) ?? 0;
-      const slug = duplicateCount === 0 ? baseSlug : `${baseSlug}-${duplicateCount + 1}`;
-      const requestBody = parseRequestBody(operation.requestBody, document);
-      const responses = parseResponses(operation.responses, document);
-      const serverUrl = endpointServerUrl(document, pathItem, operation);
-      const firstRequestExample = requestBody?.content.find((item) => item.example !== undefined)?.example;
-      const responseExamples = responses.reduce<Record<string, unknown>>((examples, response) => {
-        const example = response.content.find((item) => item.example !== undefined)?.example;
-
-        if (example !== undefined) {
-          examples[response.status] = example;
-        }
-
-        return examples;
-      }, {});
-
-      usedSlugs.set(slugKey, duplicateCount + 1);
-
-      endpoints.push({
-        id: `${methodName}:${apiPath}`,
-        slug,
-        slugParts: [tagSlug, slug],
-        href: `/reference/${tagSlug}/${slug}`,
-        method: methodName,
-        path: apiPath,
-        serverUrl,
-        tag,
-        tagSlug,
-        operationId,
-        summary,
-        title: asString(asRecord(operation["x-docs"]).title) || summary,
-        docs,
-        description: asString(operation.description) || undefined,
-        parameters: parseParameters(pathParameters, operation.parameters, document),
-        requestBody,
-        responses,
-        examples: {
-          request: firstRequestExample,
-          responses: responseExamples,
-        },
-      });
-    });
-  });
-
-  endpointCache = endpoints.sort((a, b) => {
-    const tagDelta =
-      (tagOrder.get(a.tag) ?? Number.MAX_SAFE_INTEGER) -
-      (tagOrder.get(b.tag) ?? Number.MAX_SAFE_INTEGER);
-
-    if (tagDelta !== 0) {
-      return tagDelta;
+    if (existing) {
+      throw new Error(
+        `Duplicate API endpoint slug "${endpoint.slug}" in ${existing} and ${filePath}.`,
+      );
     }
 
-    const pathDelta = a.path.localeCompare(b.path);
-
-    if (pathDelta !== 0) {
-      return pathDelta;
-    }
-
-    return (METHOD_ORDER.get(a.method) ?? 0) - (METHOD_ORDER.get(b.method) ?? 0);
+    seen.set(endpoint.slug, filePath);
+    endpoints.push(endpoint);
   });
 
-  return endpointCache;
+  return endpoints;
 }
 
 export function getEndpointBySlug(slugParts: string[]): EndpointDoc | undefined {
-  return getEndpoints().find((endpoint) => endpoint.slugParts.join("/") === slugParts.join("/"));
+  const slug = slugParts[slugParts.length - 1];
+
+  return getEndpoints().find((endpoint) => endpoint.slug === slug);
 }
 
-export function getEndpointStaticParams(): Array<{ slug: string[] }> {
-  return getEndpoints().map((endpoint) => ({ slug: endpoint.slugParts }));
+export function getEndpointStaticParams(): Array<{ slug: string }> {
+  return getEndpoints().map((endpoint) => ({ slug: endpoint.slug }));
 }
 
-export function getFirstEndpointHref(): string {
-  return getEndpoints()[0]?.href ?? "/guides";
-}
-
-function referenceNavError(message: string): never {
-  throw new Error(`Invalid reference navigation at ${REFERENCE_NAV_PATH}: ${message}`);
-}
-
-function readReferenceNavDocument(): UnknownRecord {
-  if (!fs.existsSync(REFERENCE_NAV_PATH)) {
-    referenceNavError("content/reference-nav.yaml was not found.");
-  }
-
-  const file = fs.readFileSync(REFERENCE_NAV_PATH, "utf8");
-  const parsed = parse(file);
-
-  if (!isRecord(parsed)) {
-    referenceNavError("Expected a YAML object with a title and items array.");
-  }
-
-  return parsed;
-}
-
-function endpointDescription(endpoint: EndpointDoc): string {
-  return `${endpoint.method.toUpperCase()} ${endpoint.path}`;
+function navError(message: string): never {
+  throw new Error(`Invalid API navigation at ${API_NAVIGATION_PATH}: ${message}`);
 }
 
 function endpointNavNode(endpoint: EndpointDoc, label?: string): NavNode {
   return {
-    id: endpoint.id,
+    id: `endpoint:${endpoint.slug}`,
     type: "endpoint",
-    label: label || endpoint.summary,
+    label: label || endpoint.title,
     href: endpoint.href,
     method: endpoint.method,
     path: endpoint.path,
@@ -914,148 +600,115 @@ function endpointNavNode(endpoint: EndpointDoc, label?: string): NavNode {
   };
 }
 
-function endpointsByOperationId(endpoints: EndpointDoc[]): Map<string, EndpointDoc> {
-  const byOperationId = new Map<string, EndpointDoc>();
-
-  endpoints.forEach((endpoint) => {
-    if (!endpoint.operationId) {
-      return;
-    }
-
-    const existing = byOperationId.get(endpoint.operationId);
-
-    if (existing) {
-      throw new Error(
-        `Duplicate operationId "${endpoint.operationId}" in ${OPENAPI_PATH}: ` +
-          `${endpointDescription(existing)} and ${endpointDescription(endpoint)}.`,
-      );
-    }
-
-    byOperationId.set(endpoint.operationId, endpoint);
-  });
-
-  return byOperationId;
-}
-
-function parseReferenceNavItems(
+function parseNavItems(
   value: unknown,
-  endpointByOperationId: Map<string, EndpointDoc>,
-  placedOperationIds: Set<string>,
+  endpointsBySlug: Map<string, EndpointDoc>,
+  placedSlugs: Set<string>,
   groupIds: Set<string>,
   location: string,
 ): NavNode[] {
   if (!Array.isArray(value)) {
-    referenceNavError(`${location} must be an array.`);
+    navError(`${location} must be an array.`);
   }
 
   return value.map((itemValue, index) => {
     const itemLocation = `${location}[${index}]`;
 
     if (!isRecord(itemValue)) {
-      referenceNavError(`${itemLocation} must be an object.`);
+      navError(`${itemLocation} must be an object.`);
     }
 
-    const type = asString(itemValue.type);
+    const children = itemValue.items;
+    const slug = asString(itemValue.slug).trim();
 
-    if (type === "group") {
-      const id = asString(itemValue.id);
-      const label = asString(itemValue.label);
-
-      if (!id) {
-        referenceNavError(`${itemLocation}.id is required for group items.`);
-      }
-
-      if (groupIds.has(id)) {
-        referenceNavError(`Group id "${id}" is used more than once.`);
-      }
-
-      if (!label) {
-        referenceNavError(`${itemLocation}.label is required for group items.`);
-      }
-
-      groupIds.add(id);
-
-      return {
-        id,
-        type: "group",
-        label,
-        defaultOpen: asBoolean(itemValue.defaultOpen),
-        children: parseReferenceNavItems(
-          itemValue.children,
-          endpointByOperationId,
-          placedOperationIds,
-          groupIds,
-          `${itemLocation}.children`,
-        ),
-      };
-    }
-
-    if (type === "endpoint") {
-      const operationId = asString(itemValue.operationId);
-
-      if (!operationId) {
-        referenceNavError(`${itemLocation}.operationId is required for endpoint items.`);
-      }
-
-      const endpoint = endpointByOperationId.get(operationId);
+    if (slug) {
+      const endpoint = endpointsBySlug.get(slug);
 
       if (!endpoint) {
-        referenceNavError(`No endpoint with operationId "${operationId}" exists in content/openapi.yaml.`);
+        navError(`${itemLocation}.slug references missing endpoint "${slug}".`);
       }
 
-      if (placedOperationIds.has(operationId)) {
-        referenceNavError(`Endpoint operationId "${operationId}" is listed more than once.`);
+      if (placedSlugs.has(slug)) {
+        navError(`Endpoint slug "${slug}" is listed more than once in navigation.`);
       }
 
-      placedOperationIds.add(operationId);
+      placedSlugs.add(slug);
 
-      return endpointNavNode(endpoint, asString(itemValue.label) || undefined);
+      return endpointNavNode(endpoint, optionalString(itemValue, "title"));
     }
 
-    referenceNavError(`${itemLocation}.type must be either "group" or "endpoint".`);
+    const id = requireString(itemValue, "id", API_NAVIGATION_PATH);
+    const label = requireString(itemValue, "title", API_NAVIGATION_PATH);
+
+    if (groupIds.has(id)) {
+      navError(`Group id "${id}" is used more than once.`);
+    }
+
+    groupIds.add(id);
+
+    return {
+      id,
+      type: "group",
+      label,
+      defaultOpen: itemValue.defaultOpen !== false,
+      children: parseNavItems(children, endpointsBySlug, placedSlugs, groupIds, `${itemLocation}.items`),
+    };
   });
 }
 
-function withUnplacedEndpoints(nodes: NavNode[], endpoints: EndpointDoc[], placedOperationIds: Set<string>): NavNode[] {
-  const unplacedEndpoints = endpoints.filter(
-    (endpoint) => !endpoint.operationId || !placedOperationIds.has(endpoint.operationId),
-  );
+function readNavigationDocument(): UnknownRecord {
+  const document = readYamlObject(API_NAVIGATION_PATH, "API navigation file");
 
-  if (unplacedEndpoints.length === 0) {
-    return nodes;
+  if (!Array.isArray(document.sections)) {
+    navError("sections must be an array.");
   }
 
-  return [
-    ...nodes,
-    {
-      id: "auto:other-endpoints",
-      type: "group",
-      label: "Other endpoints",
-      defaultOpen: true,
-      children: unplacedEndpoints.map((endpoint) => endpointNavNode(endpoint)),
-    },
-  ];
+  return document;
+}
+
+function endpointsBySlug(endpoints: EndpointDoc[]): Map<string, EndpointDoc> {
+  return new Map(endpoints.map((endpoint) => [endpoint.slug, endpoint]));
+}
+
+function firstEndpointInNavigation(nodes: NavNode[]): NavNode | undefined {
+  for (const node of nodes) {
+    if (node.type === "endpoint") {
+      return node;
+    }
+
+    const child = firstEndpointInNavigation(node.children);
+
+    if (child) {
+      return child;
+    }
+  }
+
+  return undefined;
 }
 
 export function getEndpointNavigationTitle(): string {
-  const document = readReferenceNavDocument();
+  const document = readNavigationDocument();
 
-  return asString(document.title, "Endpoints") || "Endpoints";
+  return optionalString(document, "title") ?? "API Reference";
 }
 
 export function getEndpointNavigation(): NavNode[] {
   const endpoints = getEndpoints();
-  const document = readReferenceNavDocument();
-  const endpointByOperationId = endpointsByOperationId(endpoints);
-  const placedOperationIds = new Set<string>();
+  const document = readNavigationDocument();
+  const placedSlugs = new Set<string>();
   const groupIds = new Set<string>();
-  const nodes = parseReferenceNavItems(
-    document.items,
-    endpointByOperationId,
-    placedOperationIds,
-    groupIds,
-    "items",
-  );
 
-  return withUnplacedEndpoints(nodes, endpoints, placedOperationIds);
+  return parseNavItems(document.sections, endpointsBySlug(endpoints), placedSlugs, groupIds, "sections");
+}
+
+export function getFirstEndpointHref(): string {
+  const navigationFirst = firstEndpointInNavigation(getEndpointNavigation());
+
+  if (navigationFirst?.href) {
+    return navigationFirst.href;
+  }
+
+  const endpoint = getEndpoints()[0];
+
+  return endpoint?.href ?? "/";
 }

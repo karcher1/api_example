@@ -8,7 +8,6 @@ const METHOD_STYLES: Record<HttpMethod, string> = {
   delete: "border-rose-200 bg-rose-50 text-rose-700",
   options: "border-slate-200 bg-slate-50 text-slate-700",
   head: "border-slate-200 bg-slate-50 text-slate-700",
-  trace: "border-slate-200 bg-slate-50 text-slate-700",
 };
 
 interface MethodBadgeProps {

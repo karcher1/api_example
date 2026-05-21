@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EndpointCodeExample } from "@/lib/openapi";
 import type { ResponseExample } from "@/lib/examples";
 import { CodeBlock } from "@/components/CodeBlock";
@@ -47,9 +47,7 @@ function ExampleSelect({ ariaLabel, value, options, onChange }: ExampleSelectPro
 
 export function TabbedExamples({ requestExamples, responseExamples }: TabbedExamplesProps) {
   const [activeRequestId, setActiveRequestId] = useState(requestExamples[0]?.id);
-  const [activeResponseId, setActiveResponseId] = useState(
-    responseExamples.find((example) => example.status.startsWith("2"))?.id ?? responseExamples[0]?.id,
-  );
+  const [activeResponseId, setActiveResponseId] = useState(responseExamples[0]?.id);
   const activeRequest = requestExamples.find((example) => example.id === activeRequestId) ?? requestExamples[0];
   const activeResponse = responseExamples.find((example) => example.id === activeResponseId) ?? responseExamples[0];
   const requestOptions = requestExamples.map((example) => ({
@@ -58,8 +56,16 @@ export function TabbedExamples({ requestExamples, responseExamples }: TabbedExam
   }));
   const responseOptions = responseExamples.map((example) => ({
     id: example.id,
-    label: example.status === example.label ? example.status : `${example.status} ${example.label}`,
+    label: example.label,
   }));
+
+  useEffect(() => {
+    setActiveRequestId(requestExamples[0]?.id);
+  }, [requestExamples]);
+
+  useEffect(() => {
+    setActiveResponseId(responseExamples[0]?.id);
+  }, [responseExamples]);
 
   return (
     <div className="right-panel examples-panel">
@@ -75,7 +81,11 @@ export function TabbedExamples({ requestExamples, responseExamples }: TabbedExam
             onChange={setActiveRequestId}
           />
         </div>
-        {activeRequest ? <CodeBlock value={activeRequest.value} language={activeRequest.language} /> : null}
+        {activeRequest ? (
+          <CodeBlock value={activeRequest.value} language={activeRequest.language} />
+        ) : (
+          <p className="empty-state">No request example documented.</p>
+        )}
       </section>
 
       <section className="example-card">
@@ -90,8 +100,8 @@ export function TabbedExamples({ requestExamples, responseExamples }: TabbedExam
             onChange={setActiveResponseId}
           />
         </div>
-        {activeResponse?.example !== undefined ? (
-          <CodeBlock value={activeResponse.example} language="json" />
+        {activeResponse ? (
+          <CodeBlock value={activeResponse.value} language={activeResponse.language} />
         ) : (
           <p className="empty-state">No response example documented.</p>
         )}
