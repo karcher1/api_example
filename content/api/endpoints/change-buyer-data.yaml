@@ -1,0 +1,117 @@
+slug: change-buyer-data
+title: Change buyer data
+description: The endpoint changes the buyer data if necessary. Currently, the endpoint is used only to change the email.
+method: PATCH
+path: /api/v2/buyers/{buyerId}
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: "Unique identifier of buyer in the system Standard: uuid."
+queryParameters: []
+requestBodyParameters:
+  - name: email
+    type: string
+    required: true
+    description: Buyer's new email
+responses:
+  - status: "204"
+    description: Successful response without a response body.
+    parameters: []
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>'
+        'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "email": "test@test.com"
+      }';
+      $request = new Request('PATCH', 'https://pay-sandbox.billerbase.com/api/v2/buyers/000229c8-e3b7-480e-a482-4408f7b969b8', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location --request PATCH 'https://pay-sandbox.billerbase.com/api/v2/buyers/000229c8-e3b7-480e-a482-4408f7b969b8' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>'
+      --header 'Content-Type: application/json' \
+      --data-raw '{
+        "email": "test@test.com"
+      }'
+  - label: JSON
+    language: json
+    code: |-
+      {
+        "email": "test@test.com"
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'PATCH',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/000229c8-e3b7-480e-a482-4408f7b969b8',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          "email": "test@test.com"
+        })
+
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
+responseExamples: []

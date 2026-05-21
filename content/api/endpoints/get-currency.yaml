@@ -1,0 +1,61 @@
+slug: get-currency
+title: Get currency by location
+description: This endpoint returns currency that corresponds to the buyer's country.
+method: GET
+path: /api/v3/geoip/currency
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters: []
+queryParameters:
+  - name: countryCode
+    type: string
+    required: true
+    description: "Country code Standard: ISO 3166-1 alpha-2."
+  - name: merchant
+    type: string
+    required: true
+    description: Valid merchant name
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: recommendedCurrency
+        type: string
+        description: Recommended currency for the specified country
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples: []
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "recommendedCurrency": "USD"
+      }

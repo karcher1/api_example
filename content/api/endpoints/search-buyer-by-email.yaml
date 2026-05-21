@@ -1,0 +1,122 @@
+slug: search-buyer-by-email
+title: Search buyer by email
+description: Endpoint is used to search for a buyer by email and merchant code, and returns buyerId in response.
+method: GET
+path: /api/v2/buyers/email/{email}
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: email
+    type: string
+    required: true
+    description: Buyer email
+queryParameters: []
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: object
+        description: Contains information of the found buyer
+      - name: buyerId
+        type: string
+        description: Unique identifier of buyer in the system
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '';
+      $request = new Request('GET', 'https://pay-sandbox.billerbase.com/api/v2/buyers/email/test@test.test', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v2/buyers/email/test@test.test' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json'
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'GET',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/email/test@test.test',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+
+        }
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "buyerId": "6642ea47-568c-4f12-bc85-dc750f5a140e"
+        },
+        "meta": {
+          "type": "entity"
+        }
+      }

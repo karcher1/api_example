@@ -1,0 +1,129 @@
+slug: get-geo-info
+title: Get buyer's info by IP
+description: The endpoint is used to obtain location information based on the IP address. Its purpose is to enable the system to adapt payment flows, currencies, local payment methods, and the interface display according to the user’s country.
+method: GET
+path: /api/v3/geoip/info
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters: []
+queryParameters:
+  - name: ip
+    type: string
+    required: true
+    description: "Buyer's IP Standard: IPv4 | IPv6."
+  - name: merchant
+    type: string
+    required: true
+    description: Valid merchant name
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: type
+        type: string
+        description: Source/type of the geo data
+      - name: iso2Code
+        type: string
+        description: Two-letter country ISO code
+      - name: recommendedCurrency
+        type: string
+        description: Recommended currency ISO code for the location
+      - name: possibleVatPercent
+        type: integer
+        description: "Possible VAT percentage for the country/region. NOTE: Will be removed in future iterations"
+      - name: city
+        type: object
+        description: Object with information about the city
+      - name: name
+        type: string
+        description: Name of the city
+      - name: subdivision
+        type: object
+        description: Object describing the first-level administrative region (state/province)
+      - name: name
+        type: string
+        description: Name of the subdivision
+      - name: isoCode
+        type: string
+        description: Subdivision code
+      - name: location
+        type: object
+        description: Object holding detailed geographic and postal information
+      - name: latitude
+        type: float
+        description: Latitude coordinate of the location (decimal degrees)
+      - name: longitude
+        type: float
+        description: Longitude coordinate of the location (decimal degrees)
+      - name: timezone
+        type: string
+        description: IANA time zone identifier for the location
+      - name: postalCode
+        type: string
+        description: Postal/ZIP code for the location
+      - name: continent
+        type: object
+        description: Object with information about the continent
+      - name: name
+        type: string
+        description: Name of the continent
+      - name: isoCode
+        type: string
+        description: Continent code
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples: []
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+          "type": "maxmind",
+          "iso2Code": "NL",
+          "recommendedCurrency": "EUR",
+          "possibleVatPercent": 21,
+          "city": {
+              "name": "Amsterdam"
+          },
+          "subdivision": {
+              "name": "North Holland",
+              "isoCode": "NH"
+          },
+          "location": {
+              "latitude": 52.3759,
+              "longitude": 4.8975,
+              "timezone": "Europe/Amsterdam",
+              "postalCode": "1012"
+          },
+          "continent": {
+              "name": "Europe",
+              "isoCode": "EU"
+          }
+      }

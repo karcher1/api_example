@@ -1,0 +1,150 @@
+slug: one-time-payment
+title: One-time payment
+description: Intended for generating a checkout URL for a one-time payment (one-time payment) without linking it to products.
+method: POST
+path: /api/v3/initials/one-time/url
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+  - name: x-google-analytics-client-id
+    type: string
+    required: false
+    description: client identifier for Google Analytics
+pathParameters: []
+queryParameters: []
+requestBodyParameters:
+  - name: returnUrl
+    type: string
+    required: true
+    description: "The full URL of the merchant page to which the user will be redirected after a successful payment. NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta. These placeholders will be automatically replaced with the corresponding values from the request."
+  - name: price
+    type: object
+    required: true
+    description: Product information for purchase
+  - name: currency
+    type: string
+    required: true
+    description: "The currency in which the payment will be made. Standard: ISO 4217 Alphabetic."
+  - name: amount
+    type: string
+    required: true
+    description: Order amount without taxes, not tied to the price catalog on the billing side
+  - name: withTax
+    type: bool
+    required: false
+    description: Include tax or not
+  - name: buyer
+    type: object
+    required: true
+    description: Information about the buyer trying to make the payment. When generating orders from the Shop, the transfer of this key is MANDATORY
+  - name: email
+    type: string
+    required: true
+    description: Buyer email to which the purchased product will be linked. Required to establish a connection between previously made payments and a buyer, to connect to an existing account.
+  - name: locale
+    type: string
+    required: true
+    description: "Localization language Standard: ISO 639 set 1."
+  - name: metaData
+    type: object
+    required: false
+    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
+  - name: Attributes for metaData are dynamic
+    type: string | array | object
+    required: false
+    description: Contains transmitted metadata
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: object
+        description: Contains information related to the created order
+      - name: url
+        type: string
+        description: Link to the newly created order
+      - name: params
+        type: object
+        description: Contains concise information about the newly created order
+      - name: metaData
+        type: object
+        description: Represents the transmitted internal meta-information
+      - name: Attributes for metaData are dynamic
+        type: string | array | object
+        description: Contains transmitted metadata
+      - name: sequence
+        type: string
+        description: Internal user ID (values will always be null)
+      - name: discount
+        type: integer
+        description: The discount applied to the initial cost of the product (values will always be null)
+      - name: coupon
+        type: string
+        description: The coupon discount applied to the initial cost of the product. (values will always be null)
+      - name: googleAnalyticsClientId
+        type: string
+        description: Transmitted client ID for google-analytics (values will always be null)
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+blocks:
+  - type: info
+    title: Purpose
+    content: |-
+      1. Creates a one-time payment for any merchant.
+      2. Allows the merchant to provide any price and currency.
+      3. Creates an order and an order-product with autocharge disabled.
+  - type: info
+    title: Merchant requirements
+    content: 1. Must have at least one product with an English translation.
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples: []
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "url": "https://some.url/AHL4y8iW",
+          "params": {
+            "metaData": {
+              "foo": "bar"
+            },
+            "sequence": "null",
+            "discount": "null",
+            "coupon": "null",
+            "googleAnalyticsClientId": "null"
+          }
+        },
+        "meta": {
+          "type": "entity"
+        }
+      }

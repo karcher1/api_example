@@ -97,11 +97,11 @@ function groupedParameters(parameters: EndpointParameter[]) {
 function ParametersList({ parameters }: { parameters: EndpointParameter[] }) {
   return (
     <div className="parameter-list">
-      {parameters.map((parameter) => {
+      {parameters.map((parameter, index) => {
         const chips = schemaMetaChips(parameter.schema);
 
         return (
-          <article className="parameter-row" key={`${parameter.location}-${parameter.name}`}>
+          <article className="parameter-row" key={`${parameter.location}-${parameter.name}-${index}`}>
             <div className="parameter-row-main">
               <div className="parameter-row-heading">
                 <code>{parameter.name}</code>
@@ -235,8 +235,8 @@ function ResponseParameters({ parameters }: { parameters: ResponseParameter[] })
 
   return (
     <div className="parameter-list">
-      {parameters.map((parameter) => (
-        <article className="parameter-row" key={`${parameter.name}-${parameter.type}`}>
+      {parameters.map((parameter, index) => (
+        <article className="parameter-row" key={`${parameter.name}-${parameter.type}-${index}`}>
           <div className="parameter-row-main">
             <div className="parameter-row-heading">
               <code>{parameter.name}</code>

@@ -1,0 +1,139 @@
+slug: get-buyers-charge-methods
+title: Get buyer's charge methods
+description: This the endpoint is necessary to receive all payment methods for the selected buyer.
+method: GET
+path: /api/v2/buyers/{buyerId}/charge-methods
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: "Unique identifier of buyer in the system Standard: uuid."
+queryParameters: []
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: array of objects
+        description: An array of objects that contains information related to each of the payment methods of a particular bayer
+      - name: paymentMethodType
+        type: string
+        description: Payment method type
+      - name: chargeMethodId
+        type: string
+        description: Unique payment method identifier
+      - name: paymentMethodIdentifier
+        type: string
+        description: Disguised presentation of payment method data
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+      - name: offset
+        type: integer
+        description: Shift in number of entities from the starting point
+      - name: total
+        type: integer
+        description: Total amount of entities
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $request = new Request('GET', 'https://pay-sandbox.billerbase.com/api/v2/buyers/9b9de689-a64f-4231-bec8-d3f20edd04e4/charge-methods', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location --request GET 'https://pay-sandbox.billerbase.com/api/v2/buyers/9b9de689-a64f-4231-bec8-d3f20edd04e4/charge-methods' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json'
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'GET',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/9b9de689-a64f-4231-bec8-d3f20edd04e4/charge-methods',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+
+        }
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+          "data": [
+              {
+                  "paymentMethodType": "card",
+                  "paymentMethodIdentifier": "**** **** **** 4444",
+                  "chargeMethodId": "d23ed15a-4c1e-409e-b26e-7966a2f66168"
+              }
+          ],
+          "meta": {
+              "type": "collection",
+              "total": 1,
+              "offset": 0
+          }
+      }

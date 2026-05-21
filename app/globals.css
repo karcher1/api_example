@@ -2088,9 +2088,11 @@ button.schema-tree-node-point:focus-visible {
 
   .docs-grid {
     display: block;
+    width: 100%;
     height: auto;
     min-height: calc(100vh - var(--header-height));
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: visible;
     padding: 16px 18px 52px;
   }
 
@@ -2119,12 +2121,17 @@ button.schema-tree-node-point:focus-visible {
   }
 
   .endpoint-content {
+    width: 100%;
+    min-width: 0;
     max-width: var(--content-measure);
     margin: 0 auto;
   }
 
   .main-column {
+    width: 100%;
+    min-width: 0;
     height: auto;
+    max-width: 100%;
     overflow: visible;
     padding: 0;
   }
@@ -2134,6 +2141,9 @@ button.schema-tree-node-point:focus-visible {
   }
 
   .mobile-right-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     display: block;
     margin-top: 34px;
     border-top: 1px solid rgb(var(--color-line));
@@ -2141,9 +2151,18 @@ button.schema-tree-node-point:focus-visible {
   }
 
   .mobile-right-panel .right-panel {
+    min-width: 0;
+    max-width: 100%;
     min-height: auto;
     border: 0;
     border-radius: 0;
+  }
+
+  .mobile-right-panel .examples-panel,
+  .mobile-right-panel .example-card,
+  .mobile-right-panel .code-frame {
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -2166,17 +2185,33 @@ button.schema-tree-node-point:focus-visible {
 
   .endpoint-hero,
   .static-page-header {
+    max-width: 100%;
     padding-bottom: 24px;
   }
 
   .endpoint-hero p,
   .static-page-header p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
     font-size: 15.5px;
     line-height: 1.7;
   }
 
   .endpoint-content {
     gap: 34px;
+  }
+
+  .site-header {
+    overflow-x: hidden;
+  }
+
+  .site-header-inner {
+    gap: 12px;
+    padding: 0 18px;
+  }
+
+  .top-nav-link {
+    padding: 0 10px;
   }
 
   .docs-section h2,
@@ -2267,6 +2302,8 @@ button.schema-tree-node-point:focus-visible {
   }
 
   .overview-path {
+    width: 100%;
+    min-width: 0;
     flex: 1 1 100%;
     align-items: center;
     border-radius: 10px;

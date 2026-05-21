@@ -1,0 +1,146 @@
+slug: disable-token
+title: Disable token
+description: This endpoint allows you to deactivate a specific payment method token belonging to the buyer. Deactivation makes it impossible to further use the token for future transactions.
+method: PUT
+path: /api/v3/buyers/{buyerId}/disable-token
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: "Unique identifier of buyer in the system Standard: uuid."
+queryParameters: []
+requestBodyParameters:
+  - name: chargeMethodTokenId
+    type: integer
+    required: false
+    description: Payment method token identifier
+responses:
+  - status: "204"
+    description: Successful response without a response body.
+    parameters: []
+  - status: "400"
+    description: Error response.
+    parameters: []
+  - status: "422"
+    description: Error response.
+    parameters: []
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "chargeMethodTokenId": 630
+      }';
+      $request = new Request('PUT', 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location --request PUT 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "chargeMethodTokenId": 630
+      }'
+  - label: JSON
+    language: json
+    code: |-
+      {
+          "chargeMethodTokenId": 630
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'PUT',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          "chargeMethodTokenId": 630
+        })
+
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
+responseExamples:
+  - label: "400"
+    language: json
+    code: |-
+      {
+        "uuid": "6642ea47-568c-4f12-bc85-dc750f5a140e",
+        "code": 3000,
+        "message": "Malformed request syntax.",
+        "traceId": "082d86c339533af07c14252afcecc7bd"
+      }
+  - label: "422"
+    language: json
+    code: |-
+      {
+        "code": 0,
+        "message": "Malformed request syntax.",
+        "traceId": "082d86c339533af07c14252afcecc7bd",
+        "errors": [
+          {
+            "field": "coupon",
+            "title": "Coupon not found."
+          }
+        ]
+      }

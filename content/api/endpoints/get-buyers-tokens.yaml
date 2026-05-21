@@ -1,0 +1,190 @@
+slug: get-buyers-tokens
+title: Get buyer's tokens
+description: This endpoint returns a list of all tokens associated with the buyer. Includes detailed information about each token and payment method.
+method: GET
+path: /api/v3/buyers/{buyerId}/tokens
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: "Unique ID of buyer in the system Standard: uuid."
+queryParameters: []
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: array of objects
+        description: An array of payment methods with tokens
+      - name: id
+        type: string
+        description: Unique payment method identifier
+      - name: paymentMethodType
+        type: string
+        description: Payment method type
+      - name: paymentMethodIdentifier
+        type: string
+        description: Payment method identifier
+      - name: value
+        type: string
+        description: Additional information about the payment method
+      - name: tokens
+        type: array of objects
+        description: An array of tokens associated with the payment method
+      - name: id
+        type: string
+        description: Token identifier
+      - name: provider
+        type: string
+        description: "Payment provider (eg: braintree)"
+      - name: mid
+        type: string
+        description: Provider mid for which payment was made
+      - name: isEnabled
+        type: bool
+        description: Token activity status
+      - name: bin
+        type: string
+        description: BIN number of the card
+      - name: chargeId
+        type: string
+        description: Transaction identifier
+      - name: email
+        type: string
+        description: Token-related email
+      - name: createdAt
+        type: string
+        description: Date of creation of the token
+      - name: updatedAt
+        type: string
+        description: Date of last update of token
+      - name: successfullyUsedAt
+        type: string
+        description: Date of last successful use of the token
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+      - name: offset
+        type: integer
+        description: Shift in number of entities from the starting point
+      - name: total
+        type: integer
+        description: Total amount of entities
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $request = new Request('GET', 'https://pay-sandbox.billerbase.com/api/v3/buyers/9d51eace-eba6-455d-9037-bb2f76c2c85b/tokens', $headers);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v3/buyers/9d51eace-eba6-455d-9037-bb2f76c2c85b/tokens' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json'
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'GET',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9d51eace-eba6-455d-9037-bb2f76c2c85b/tokens',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+
+        }
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+          "data": [
+              {
+                  "id": "6a6d2f1a-cc44-4779-a937-147494fb9e69",
+                  "value": "5032",
+                  "paymentMethodType": "card",
+                  "paymentMethodIdentifier": "461fb87dfb1336593ae416e9ca6b8a1652c4262d6ea8b694acfe1c873013ddb1124e23cbb02ef1c7af5717b1b649476ff633c1fa63f2190aec215ae0c0818849",
+                  "tokens": [
+                      {
+                          "id": 1163866,
+                          "provider": "safecharge",
+                          "mid": "default",
+                          "bin": "400002",
+                          "email": "qa.auto+st+olkgqsehap@test.com",
+                          "isEnabled": true,
+                          "chargeId": "1ead2740-e000-4805-bdcb-13d0dedda2e2",
+                          "createdAt": "2024-10-24 06:32:54",
+                          "updatedAt": "2024-10-24 08:23:21",
+                          "successfullyUsedAt": "2024-10-24 06:32:54"
+                      }
+                  ]
+              }
+          ],
+          "meta": {
+              "type": "collection",
+              "total": 1,
+              "offset": 0
+          }
+      }

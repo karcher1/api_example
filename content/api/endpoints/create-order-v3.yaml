@@ -1,0 +1,213 @@
+slug: create-order-v3
+title: Create initial order
+description: This endpoint is designed to create orders on the Billing side to further process a payment to purchase a product or service.
+method: POST
+path: /api/v3/initials/url
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+  - name: x-google-analytics-client-id
+    type: string
+    required: false
+    description: client identifier for Google Analytics
+pathParameters: []
+queryParameters: []
+requestBodyParameters:
+  - name: isMobile
+    type: bool
+    required: true
+    description: Indicates whether the checkout flow is initiated from a mobile device
+  - name: currency
+    type: string
+    required: false
+    description: "Currency code used for the payment Standard: ISO 4217 Alphabetic."
+  - name: discount
+    type: float
+    required: false
+    description: "Application of the discount (% value) to the initial cost of the product Standard: min: 0.01, max: 99.99."
+  - name: sequence
+    type: string
+    required: false
+    description: Internal user ID
+  - name: metaData
+    type: object
+    required: false
+    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
+  - name: Attributes for metaData are dynamic
+    type: string | array | object
+    required: false
+    description: Contains transmitted metadata
+  - name: buyerMeta
+    type: object
+    required: false
+    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
+  - name: Attributes for metaData are dynamic
+    type: string | array | object
+    required: false
+    description: Contains transmitted metadata
+  - name: returnUrl
+    type: string
+    required: true
+    description: "The full URL of the merchant page to which the user will be redirected after a successful payment. NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta. These placeholders will be automatically replaced with the corresponding values from the request."
+  - name: products
+    type: array of objects
+    required: true
+    description: Product information for purchase
+  - name: productCode
+    type: string
+    required: true
+    description: Product code to buy
+  - name: couponCode
+    type: string
+    required: false
+    description: Coupon code applied to the specific product
+  - name: quantity
+    type: integer
+    required: false
+    description: Number of product units included in the order
+  - name: customPrice
+    type: float
+    required: false
+    description: Custom product price that overrides the default price
+  - name: autoChargeStatus
+    type: bool
+    required: false
+    description: Specifies autocharge settings for the product. If null is transmitted, the autocharge will be displayed according to the precheck_autocharge_config setting.
+  - name: buyer
+    type: object
+    required: false
+    description: Information about the buyer trying to make the payment. When generating orders from the Shop, the transfer of this key is MANDATORY
+  - name: email
+    type: string
+    required: false
+    description: Buyer email to which the purchased product will be linked. Required to establish a connection between previously made payments and a buyer, to connect to an existing account.
+  - name: locale
+    type: string
+    required: false
+    description: "Localization language Standard: ISO 639 set 1."
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: object
+        description: Contains information related to the created order
+      - name: url
+        type: string
+        description: Link to the newly created order
+      - name: params
+        type: object
+        description: Contains concise information about the newly created order
+      - name: metaData
+        type: object
+        description: Represents the transmitted internal meta-information
+      - name: Attributes for metaData are dynamic
+        type: string | array | object
+        description: Contains transmitted metadata
+      - name: sequence
+        type: string
+        description: Internal user ID
+      - name: discount
+        type: integer
+        description: The discount applied to the initial cost of the product
+      - name: coupon
+        type: string
+        description: The coupon discount applied to the initial cost of the product. If a discount was applied to the initial price of the product, then the coupon is applied to the price including the discount.
+      - name: googleAnalyticsClientId
+        type: string
+        description: Transmitted client ID for google-analytics
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+  - status: "404"
+    description: Error response.
+    parameters: []
+  - status: "422"
+    description: Error response.
+    parameters: []
+  - status: "500"
+    description: Error response.
+    parameters: []
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples: []
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "url": "https://some.url/jw1fe2Mz",
+          "params": {
+            "metaData": {
+              "foo": "bar"
+            },
+            "sequence": "123456123456123456",
+            "discount": 15,
+            "coupon": "123456",
+            "googleAnalyticsClientId": "GA1.3.1034945594.1649316099"
+          }
+        },
+        "meta": {
+          "type": "entity"
+        }
+      }
+  - label: "404"
+    language: json
+    code: |-
+      {
+        "uuid": "3070b9cd-dd52-43eb-bd69-45f27b2d3e92",
+        "code": "3000",
+        "message": "Malformed request syntax.",
+        "traceId": "082d86c339533af07c14252afcecc7bd"
+      }
+  - label: "422"
+    language: json
+    code: |-
+      {
+        "code": "0",
+        "message": "Malformed request syntax.",
+        "traceId": "082d86c339533af07c14252afcecc7bd",
+        "errors": [
+          {
+            "field": "coupon",
+            "title": "Coupon not found."
+          }
+        ]
+      }
+  - label: "500"
+    language: json
+    code: |-
+      {
+        "code": "0",
+        "message": "Short exception description.",
+        "traceId": "082d86c339533af07c14252afcecc7bd"
+      }

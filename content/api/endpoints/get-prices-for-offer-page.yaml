@@ -1,0 +1,457 @@
+slug: get-prices-for-offer-page
+title: Get prices for Offer page
+description: This endpoint is used to retrieve product prices for the Offer page. The prices returned in the response can be calculated per product on a per-day, per-week, or per-month basis.
+method: POST
+path: /api/v3/products/shop-prices
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters: []
+queryParameters: []
+requestBodyParameters:
+  - name: currency
+    type: string
+    required: false
+    description: "The currency in which the prices should be returned Standard: ISO 4217 Alphabetic."
+  - name: products
+    type: array of objects
+    required: true
+    description: An array of data about actions performed on the subscription(s)
+  - name: productCode
+    type: string
+    required: false
+    description: Product code of the item to be purchased
+  - name: couponCode
+    type: string
+    required: false
+    description: Coupon code to be applied
+  - name: discount
+    type: string | (float data)
+    required: false
+    description: Discount percentage to be applied
+  - name: priceCalculationType
+    type: object
+    required: false
+    description: "Controls how price information for the product is displayed: per day, week, or month"
+  - name: dailyAmount
+    type: bool
+    required: false
+    description: Includes information on product prices by day
+  - name: weeklyAmount
+    type: bool
+    required: false
+    description: Includes information on product prices by week
+  - name: monthlyAmount
+    type: bool
+    required: false
+    description: Includes information on product prices by month
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: object
+        description: Contains information related to the order
+      - name: currency
+        type: string
+        description: Currency code
+      - name: tax
+        type: object
+        description: "Contains information about the tax type applied to the subscription product, including the tax type and the country where this tax is applied. Note: If there is no tax information in the database, the response will contain the value null"
+      - name: type
+        type: string | null
+        description: Type of tax
+      - name: country
+        type: string | null
+        description: Country code for which the tax is applied
+      - name: products
+        type: object
+        description: Represents detailed information about the product and prices
+      - name: id
+        type: string
+        description: Unique product identifier
+      - name: code
+        type: string
+        description: Product code
+      - name: name
+        type: string
+        description: Product name in the EN locale
+      - name: nameByLocale
+        type: string
+        description: Product name in the buyer's locale
+      - name: durationDays
+        type: integer
+        description: Product duration in days
+      - name: durationWeeks
+        type: integer
+        description: Product duration in weeks
+      - name: durationMonth
+        type: integer
+        description: Product duration in months
+      - name: currentDurationDays
+        type: integer
+        description: Actual duration of the current subscription (including the trial period). For trial products, currentDurationDays < durationDays. For non-trial products, the values are equal.
+      - name: availableForPurchase
+        type: bool
+        description: Availability for purchase
+      - name: availableForShop
+        type: bool
+        description: Availability for purchase in the Offer page
+      - name: availableForControlPanel
+        type: bool
+        description: Availability for purchase in the CP
+      - name: availableForAutocharge
+        type: bool
+        description: Autocharge availability
+      - name: isTrial
+        type: bool
+        description: Indicates whether the product is a trial version
+      - name: prices
+        type: object
+        description: Contains detailed price information for the product with a breakdown
+      - name: amount
+        type: object
+        description: Contains information about the full price of the product
+      - name: origin
+        type: string | (float data)
+        description: Original amount of the item before discounts and taxes
+      - name: amountForDowngrade
+        type: string | (float data)
+        description: Amount for performing downgrade
+      - name: amountForUpgrade
+        type: string | (float data)
+        description: Amount for performing upgrade
+      - name: discountPercent
+        type: string | (float data)
+        description: Discount percentage applied to the initial amount
+      - name: discount
+        type: string | (float data)
+        description: Total discount amount applied to the initial amount
+      - name: amountWithDiscount
+        type: string | (float data)
+        description: Final amount after the discount is applied
+      - name: couponPercent
+        type: string | (float data)
+        description: Percentage of the discount applied from the coupon
+      - name: couponCode
+        type: string | null
+        description: Coupon code used for the additional discount
+      - name: coupon
+        type: string | (float data)
+        description: Total discount amount from the coupon
+      - name: amountWithDiscountAndCoupon
+        type: string | (float data)
+        description: Final amount after both the discount and the coupon are applied
+      - name: taxPercent
+        type: string | (float data)
+        description: Tax percentage applied to the final amount
+      - name: tax
+        type: string | (float data)
+        description: Total tax amount applied to the final amount
+      - name: amountWithDiscountAndCouponAndTax
+        type: string | (float data)
+        description: Final amount after applying the discount, coupon, and tax
+      - name: dailyAmount
+        type: object
+        description: Contains information about the product price per day
+      - name: origin
+        type: string | (float data)
+        description: Original amount of the item before discounts and taxes
+      - name: discountPercent
+        type: string | (float data)
+        description: Discount percentage applied to the initial amount
+      - name: discount
+        type: string | (float data)
+        description: Total discount amount applied to the initial amount
+      - name: amountWithDiscount
+        type: string | (float data)
+        description: Final amount after the discount is applied
+      - name: couponPercent
+        type: string | (float data)
+        description: Percentage of the discount applied from the coupon
+      - name: couponCode
+        type: string | null
+        description: Coupon code used for the additional discount
+      - name: coupon
+        type: string | (float data)
+        description: Total discount amount from the coupon
+      - name: amountWithDiscountAndCoupon
+        type: string | (float data)
+        description: Final amount after both the discount and the coupon are applied
+      - name: taxPercent
+        type: string | (float data)
+        description: Tax percentage applied to the final amount
+      - name: tax
+        type: string | (float data)
+        description: Total tax amount applied to the final amount
+      - name: amountWithDiscountAndCouponAndTax
+        type: string | (float data)
+        description: Final amount after applying the discount, coupon, and tax
+      - name: amountForDowngrade
+        type: string | (float data)
+        description: Amount for performing downgrade
+      - name: amountForUpgrade
+        type: string | (float data)
+        description: Amount for performing upgrade
+      - name: weeklyAmount
+        type: object
+        description: Contains information about the product price per week
+      - name: origin
+        type: string | (float data)
+        description: Original amount of the item before discounts and taxes
+      - name: discountPercent
+        type: string | (float data)
+        description: Discount percentage applied to the initial amount
+      - name: discount
+        type: string | (float data)
+        description: Total discount amount applied to the initial amount
+      - name: amountWithDiscount
+        type: string | (float data)
+        description: Final amount after the discount is applied
+      - name: couponPercent
+        type: string | (float data)
+        description: Percentage of the discount applied from the coupon
+      - name: couponCode
+        type: string | null
+        description: Coupon code used for the additional discount
+      - name: coupon
+        type: string | (float data)
+        description: Total discount amount from the coupon
+      - name: amountWithDiscountAndCoupon
+        type: string | (float data)
+        description: Final amount after both the discount and the coupon are applied
+      - name: taxPercent
+        type: string | (float data)
+        description: Tax percentage applied to the final amount
+      - name: tax
+        type: string | (float data)
+        description: Total tax amount applied to the final amount
+      - name: amountWithDiscountAndCouponAndTax
+        type: string | (float data)
+        description: Final amount after applying the discount, coupon, and tax
+      - name: amountForDowngrade
+        type: string | (float data)
+        description: Amount for performing downgrade
+      - name: amountForUpgrade
+        type: string | (float data)
+        description: Amount for performing upgrade
+      - name: monthlyAmount
+        type: object
+        description: Contains information about the product price per month
+      - name: origin
+        type: string | (float data)
+        description: Original amount of the item before discounts and taxes
+      - name: discountPercent
+        type: string | (float data)
+        description: Discount percentage applied to the initial amount
+      - name: discount
+        type: string | (float data)
+        description: Total discount amount applied to the initial amount
+      - name: amountWithDiscount
+        type: string | (float data)
+        description: Final amount after the discount is applied
+      - name: couponPercent
+        type: string | (float data)
+        description: Percentage of the discount applied from the coupon
+      - name: couponCode
+        type: string | null
+        description: Coupon code used for the additional discount
+      - name: coupon
+        type: string | (float data)
+        description: Total discount amount from the coupon
+      - name: amountWithDiscountAndCoupon
+        type: string | (float data)
+        description: Final amount after both the discount and the coupon are applied
+      - name: taxPercent
+        type: string | (float data)
+        description: Tax percentage applied to the final amount
+      - name: tax
+        type: string | (float data)
+        description: Total tax amount applied to the final amount
+      - name: amountWithDiscountAndCouponAndTax
+        type: string | (float data)
+        description: Final amount after applying the discount, coupon, and tax
+      - name: amountForDowngrade
+        type: string | (float data)
+        description: Amount for performing downgrade
+      - name: amountForUpgrade
+        type: string | (float data)
+        description: Amount for performing upgrade
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples: []
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+          "data": {
+              "currency": "EUR",
+              "tax": {
+                  "type": "vat",
+                  "country": "sk"
+              },
+              "products": [
+                  {
+                      "nameByLocale": "Test 1-Month Basic Subscription",
+                      "durationDays": 28,
+                      "durationWeeks": 4,
+                      "durationMonths": 1,
+                      "availableForPurchase": true,
+                      "availableForShop": true,
+                      "availableForControlPanel": true,
+                      "availableForAutocharge": true,
+                      "isTrial": false,
+                      "id": "c4bc3816-e0bd-4655-af32-54d355e47430",
+                      "code": "TEST",
+                      "name": "Test 1-Month Basic Subscription",
+                      "prices": {
+                          "amount": {
+                              "origin": "26.99",
+                              "discountPercent": "30.00",
+                              "discount": "8.10",
+                              "amountWithDiscount": "18.89",
+                              "couponPercent": "50.00",
+                              "couponCode": "SRC50OFF",
+                              "coupon": "9.45",
+                              "amountWithDiscountAndCoupon": "9.44",
+                              "taxPercent": "20.00",
+                              "tax": "1.89",
+                              "amountWithDiscountAndCouponAndTax": "11.33"
+                          },
+                          "monthlyAmount": {
+                              "origin": "26.99",
+                              "discountPercent": "30.00",
+                              "discount": "8.10",
+                              "amountWithDiscount": "18.89",
+                              "couponPercent": "50.00",
+                              "couponCode": "SRC50OFF",
+                              "coupon": "9.45",
+                              "amountWithDiscountAndCoupon": "9.44",
+                              "taxPercent": "20.00",
+                              "tax": "1.89",
+                              "amountWithDiscountAndCouponAndTax": "11.33"
+                          }
+                      }
+                  },
+                  {
+                      "nameByLocale": "Test 1-Month Premium Subscription",
+                      "durationDays": 28,
+                      "durationWeeks": 4,
+                      "durationMonths": 1,
+                      "availableForPurchase": true,
+                      "availableForShop": true,
+                      "availableForControlPanel": true,
+                      "availableForAutocharge": true,
+                      "isTrial": false,
+                      "id": "d1f19524-df4b-4096-8490-2ede064344e7",
+                      "code": "TEST2",
+                      "name": "Test 1-Month Premium Subscription",
+                      "prices": {
+                          "amount": {
+                              "origin": "59.99",
+                              "discountPercent": "20.00",
+                              "discount": "12.00",
+                              "amountWithDiscount": "47.99",
+                              "couponPercent": "0.00",
+                              "couponCode": null,
+                              "coupon": "0.00",
+                              "amountWithDiscountAndCoupon": "47.99",
+                              "taxPercent": "20.00",
+                              "tax": "9.60",
+                              "amountWithDiscountAndCouponAndTax": "57.59"
+                          },
+                          "weeklyAmount": {
+                              "origin": "15.00",
+                              "discountPercent": "20.00",
+                              "discount": "3.00",
+                              "amountWithDiscount": "12.00",
+                              "couponPercent": "0.00",
+                              "couponCode": null,
+                              "coupon": "0.00",
+                              "amountWithDiscountAndCoupon": "12.00",
+                              "taxPercent": "20.00",
+                              "tax": "2.40",
+                              "amountWithDiscountAndCouponAndTax": "14.40"
+                          }
+                      }
+                  },
+                  {
+                      "nameByLocale": "Test 3-Month Premium Subscription",
+                      "durationDays": 84,
+                      "durationWeeks": 12,
+                      "durationMonths": 3,
+                      "availableForPurchase": true,
+                      "availableForShop": true,
+                      "availableForControlPanel": true,
+                      "availableForAutocharge": true,
+                      "isTrial": false,
+                      "id": "60d862e2-67ef-486d-83c4-5e0328fc6fe8",
+                      "code": "TEST3",
+                      "name": "Test 3-Month Premium Subscription",
+                      "prices": {
+                          "amount": {
+                              "origin": "100.99",
+                              "discountPercent": "0.00",
+                              "discount": "0.00",
+                              "amountWithDiscount": "100.99",
+                              "couponPercent": "0.00",
+                              "couponCode": null,
+                              "coupon": "0.00",
+                              "amountWithDiscountAndCoupon": "100.99",
+                              "taxPercent": "20.00",
+                              "tax": "20.20",
+                              "amountWithDiscountAndCouponAndTax": "121.19"
+                          },
+                          "weeklyAmount": {
+                              "origin": "8.42",
+                              "discountPercent": "0.00",
+                              "discount": "0.00",
+                              "amountWithDiscount": "8.42",
+                              "couponPercent": "0.00",
+                              "couponCode": null,
+                              "coupon": "0.00",
+                              "amountWithDiscountAndCoupon": "8.42",
+                              "taxPercent": "20.00",
+                              "tax": "1.68",
+                              "amountWithDiscountAndCouponAndTax": "10.10"
+                          }
+                      }
+                  }
+              ]
+          },
+          "meta": {
+            "type": "entity"
+          }
+      }

@@ -1,14 +1,47 @@
 sections:
-  - title: Users
-    id: users
+  - title: Buyers
+    id: buyers
     defaultOpen: true
     items:
-      - title: Create user
-        slug: create-user
-
-  - title: User lookup
-    id: user-lookup
+      - title: Enable token
+        slug: enable-token
+      - title: Disable token
+        slug: disable-token
+      - title: Get buyer's tokens
+        slug: get-buyers-tokens
+      - title: Create buyer
+        slug: create-buyer
+      - title: Search buyer by email
+        slug: search-buyer-by-email
+      - title: Change buyer data
+        slug: change-buyer-data
+      - title: Get buyer's charge methods
+        slug: get-buyers-charge-methods
+      - title: Get charge history
+        slug: get-charge-history
+  - title: Extra info
+    id: extra-info
     defaultOpen: true
     items:
-      - title: Get user
-        slug: get-user
+      - title: Search by BIN
+        slug: search-by-bin
+      - title: Geo info by IP
+        slug: get-geo-info
+      - title: Currency by location
+        slug: get-currency
+  - title: Products
+    id: products
+    defaultOpen: true
+    items:
+      - title: Prices for Offer page
+        slug: get-prices-for-offer-page
+  - title: Checkout page
+    id: checkout-page
+    defaultOpen: true
+    items:
+      - title: Create order
+        slug: create-order
+      - title: One-time payment
+        slug: one-time-payment
+      - title: Create bundle order
+        slug: create-order-v3

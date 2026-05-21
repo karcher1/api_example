@@ -1,0 +1,116 @@
+slug: search-by-bin
+title: Search by BIN
+description: This endpoint allows you to get detailed information about the bank card based on the BIN number. Returns a specified 6 or 8 significant BIN number of the card, brand data, card type, risk segment level and other parameters
+method: GET
+path: /api/v3/cardbin/{bin}/find
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: bin
+    type: string
+    required: true
+    description: "BIN number of the card to search Standard: 8 digits."
+queryParameters: []
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: object
+        description: Contains card information
+      - name: bin
+        type: string
+        description: BIN number of the card (6 or 8 significant)
+      - name: brand
+        type: string
+        description: Card brand (eg VISA, MasterCard)
+      - name: issuer
+        type: string
+        description: Card issuing bank
+      - name: cardLevel
+        type: string
+        description: Card level (eg Platinum)
+      - name: cardType
+        type: string
+        description: Card type (Credit/Debit)
+      - name: isoCountryName
+        type: string
+        description: Issuer's country
+      - name: riskSegments
+        type: object
+        description: Gives information about the risk segment of the card
+      - name: all
+        type: string
+        description: General risk segment without binding to payment type
+      - name: autocharge
+        type: string
+        description: Risk segment for autocharge payment type
+      - name: initial
+        type: string
+        description: Risk segment for initial payment type
+      - name: oneclick
+        type: string
+        description: Risk segment for oneclick payment type
+      - name: isoATwo
+        type: string
+        description: ISO 3166-1 alpha-2 country code
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples: []
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "riskSegments": {
+            "all": "white",
+            "autocharge": "white",
+            "initial": "white",
+            "oneclick": "white"
+          },
+          "cardType": "CREDIT",
+          "cardLevel": "CLASSIC",
+          "isoCountryName": "United Kingdom",
+          "isoATwo": "GB",
+          "bin": "424242",
+          "brand": "VISA",
+          "issuer": "STRIPE PAYMENTS UK LTD"
+        },
+        "meta": {
+          "type": "entity"
+        }
+      }

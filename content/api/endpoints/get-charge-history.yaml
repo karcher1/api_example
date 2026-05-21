@@ -1,0 +1,778 @@
+slug: get-charge-history
+title: Get charge history
+description: This API endpoint is required to retrieve the list of a specific buyer’s payment history and products.
+method: GET
+path: /api/v3/buyers/{buyerId}/charge/history
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
+  - name: x-source
+    type: string
+    required: true
+    description: pass the value shop
+  - name: x-id
+    type: string
+    required: true
+    description: merchant name
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: "Unique identifier of the buyer in the system Standard: uuid."
+queryParameters:
+  - name: orderIds
+    type: array
+    required: false
+    description: Unique order identifiers
+  - name: limit
+    type: integer
+    required: false
+    description: The maximum number of items returned in a single request
+  - name: offset
+    type: integer
+    required: false
+    description: The offset that indicates how many items will be skipped
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Successful response.
+    parameters:
+      - name: data
+        type: array of objects
+        description: An array of orders and their payments. Each item contains full information about a single order.
+      - name: orderId
+        type: string
+        description: Unique order identifier
+      - name: type
+        type: string
+        description: Order type (e.g., checkout, oneclick, etc.).
+      - name: currency
+        type: string
+        description: Order currency code
+      - name: subbrand
+        type: string | null
+        description: Sub-brand name, if available
+      - name: createdAt
+        type: string
+        description: Order creation date and time
+      - name: charges
+        type: array of objects
+        description: A list of charges associated with the order
+      - name: chargeId
+        type: string
+        description: A unique charge identifier in the system
+      - name: providerTransaction
+        type: string | null
+        description: The charge identifier on the provider side
+      - name: has3ds
+        type: bool
+        description: Indicates whether 3DS was used during the charge.
+      - name: amountInUsd
+        type: string
+        description: The transaction amount equivalent in USD which includes discount, coupon and tax
+      - name: createdAt
+        type: string
+        description: The charge creation date and time
+      - name: descriptor
+        type: string
+        description: The payment descriptor
+      - name: provider
+        type: string
+        description: The provider name used for the charge
+      - name: mid
+        type: string
+        description: The provider MID name used for the charge
+      - name: target
+        type: string
+        description: The charge target (original, cascade, etc.)
+      - name: status
+        type: string
+        description: The charge status (settled, declined, deferred)
+      - name: amount
+        type: string
+        description: Provider code
+      - name: code
+        type: string
+        description: The charge amount in the order currency which includes discount, coupon and tax
+      - name: billingInfo
+        type: object
+        description: Buyer details
+      - name: firstName
+        type: string
+        description: The payment method holder’s first name
+      - name: lastName
+        type: string
+        description: The payment method holder’s last name
+      - name: ipAddress
+        type: string
+        description: The buyer’s IP address
+      - name: fingerprint
+        type: string
+        description: Browser/device fingerprint
+      - name: personalIdValue
+        type: string
+        description: The value of the identity document
+      - name: personalIdType
+        type: string
+        description: The identity document type (e.g., CPF)
+      - name: country
+        type: string
+        description: The buyer’s two-letter country code
+      - name: city
+        type: string
+        description: The buyer’s city
+      - name: zip
+        type: string | null
+        description: Postal code
+      - name: state
+        type: string | null
+        description: Region / state
+      - name: street
+        type: string | null
+        description: Street address (street and building number)
+      - name: paymentMethod
+        type: object
+        description: Information about the payment method used
+      - name: type
+        type: string
+        description: The payment method type (e.g., card, boleto_flash)
+      - name: data
+        type: object | null
+        description: Additional payment method data
+      - name: bin
+        type: string
+        description: The first 6 digits of the card (BIN)
+      - name: lastFourDigits
+        type: string
+        description: The last 4 digits of the card
+      - name: brand
+        type: string
+        description: The card payment network (e.g., Visa, Mastercard)
+      - name: issuer
+        type: string | null
+        description: The card issuing bank
+      - name: cardType
+        type: string
+        description: The card type (CREDIT, DEBIT, etc.)
+      - name: cardLevel
+        type: string | null
+        description: The card level
+      - name: isoCountryName
+        type: string
+        description: The issuer country name
+      - name: isoATwo
+        type: string
+        description: The issuer’s two-letter country code
+      - name: email
+        type: string
+        description: Buyer email
+      - name: riskSegments
+        type: array of objects
+        description: Risk segments for the payment method
+      - name: type
+        type: string
+        description: The risk segment type (e.g., autocharge, initial, etc.)
+      - name: riskSegment
+        type: string
+        description: The risk segment value (e.g., black, potential_high, etc.)
+      - name: products
+        type: array of objects
+        description: A list of products purchased in the order.
+      - name: durationDays
+        type: string
+        description: Product duration in days
+      - name: durationWeeks
+        type: string
+        description: Product duration in weeks
+      - name: durationMonths
+        type: string
+        description: Product duration in months
+      - name: isTrial
+        type: bool
+        description: Indicates whether the product is a trial
+      - name: availableForPurchase
+        type: bool
+        description: Availability for purchase
+      - name: availableForShop
+        type: bool
+        description: Availability for purchase in the Offer page
+      - name: availableForControlPanel
+        type: bool
+        description: Availability for purchase in the CP
+      - name: availableForAutocharge
+        type: bool
+        description: Autocharge availability
+      - name: actionType
+        type: string
+        description: Type of action (initial, oneclick etc)
+      - name: id
+        type: string
+        description: Unique product identifier
+      - name: code
+        type: string
+        description: Product code
+      - name: name
+        type: string
+        description: Product name in the EN locale
+      - name: quantity
+        type: string
+        description: The product quantity
+      - name: prices
+        type: object
+        description: Product price breakdown
+      - name: origin
+        type: |-
+          string
+          (float data)
+        description: Original amount of the item before discounts and taxes
+      - name: originAmountWithTax
+        type: |-
+          string
+          (float data)
+        description: Original item amount including tax
+      - name: discountPercent
+        type: |-
+          string
+          (float data)
+        description: Discount percentage applied to the original amount
+      - name: discount
+        type: |-
+          string
+          (float data)
+        description: Total discount amount applied to the original amount
+      - name: amountWithDiscount
+        type: |-
+          string
+          (float data)
+        description: Final amount after the discount is applied
+      - name: couponPercent
+        type: |-
+          string
+          (float data)
+        description: Percentage of the discount applied from the coupon
+      - name: couponCode
+        type: string | null
+        description: Coupon code used for the additional discount
+      - name: coupon
+        type: |-
+          string
+          (float data)
+        description: Total discount amount from the coupon
+      - name: amountWithDiscountAndCoupon
+        type: |-
+          string
+          (float data)
+        description: Final amount after both the discount and the coupon are applied
+      - name: taxPercent
+        type: |-
+          string
+          (float data)
+        description: Tax percentage applied to the final amount
+      - name: tax
+        type: |-
+          string
+          (float data)
+        description: Total tax amount applied to the final amount
+      - name: amountWithDiscountAndCouponAndTax
+        type: |-
+          string
+          (float data)
+        description: Final amount after applying the discount, coupon, and tax
+      - name: totalUsd
+        type: |-
+          string
+          (float data)
+        description: Total price in USD
+      - name: totalPrices
+        type: object
+        description: Total prices for the order.
+      - name: amountWithDiscount
+        type: |-
+          string
+          (float data)
+        description: Final amount after the discount is applied
+      - name: amountWithDiscountAndCoupon
+        type: |-
+          string
+          (float data)
+        description: Final amount after both the discount and the coupon are applied
+      - name: amountWithDiscountAndCouponAndTax
+        type: |-
+          string
+          (float data)
+        description: Final amount after applying the discount, coupon, and tax
+      - name: amountWithDiscountAndCouponAndTaxInUsd
+        type: |-
+          string
+          (float data)
+        description: Final amount after applying the discount, coupon, and tax in USD
+      - name: origin
+        type: |-
+          string
+          (float data)
+        description: Original amount of the item before discounts and taxes
+      - name: discount
+        type: |-
+          string
+          (float data)
+        description: Total discount amount applied to the original amount
+      - name: coupon
+        type: |-
+          string
+          (float data)
+        description: Total discount amount from the coupon
+      - name: tax
+        type: |-
+          string
+          (float data)
+        description: Total tax amount
+      - name: metaData
+        type: object
+        description: Charge meta data
+      - name: meta
+        type: object
+        description: Provides metadata about the response
+      - name: type
+        type: string
+        description: Data type
+      - name: offset
+        type: integer
+        description: Shift in number of entities from the starting point
+      - name: total
+        type: integer
+        description: Total amount of entities
+  - status: "404"
+    description: Error response.
+    parameters: []
+blocks:
+  - type: info
+    title: Errors and interpretation
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "chargeMethodTokenId": 630
+      }';
+      $request = new Request('PUT', 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location --request PUT 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "chargeMethodTokenId": 630
+      }'
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'GET',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9a6a307e-1ea0-44b7-a915-9a98f8cbe3ab/charge/history',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+
+        }
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": [
+          {
+            "orderId": "jNSKICR8",
+            "createdAt": "2024-12-27 15:21:59",
+            "charges": [
+              {
+                "chargeId": "c087af3a-a8b7-412d-97a1-a2a251ca37a9",
+                "providerTransaction": "c087af3a-a8b7-412d-97a1-a2a251ca37a9",
+                "has3ds": false,
+                "code": "3000",
+                "amountInUsd": "20.19",
+                "createdAt": "2024-12-27 15:22:48",
+                "billingInfo": {
+                  "firstName": "Test",
+                  "lastName": "Test",
+                  "ipAddress": "95.168.166.12",
+                  "fingerprint": "c953d90647b9830385532faa65c641d8",
+                  "personalIdValue": "123.456.789-09",
+                  "personalIdType": "CPF",
+                  "country": "br",
+                  "city": "",
+                  "zip": null,
+                  "state": null,
+                  "street": null
+                },
+                "paymentMethod": {
+                  "type": "boleto_flash",
+                  "data": null
+                },
+                "descriptor": "PB*mspy, PORTO ALEGRE",
+                "provider": "pagbrasil",
+                "mid": "pagbrasil_apm_ms_boleto",
+                "target": "original",
+                "status": "deferred",
+                "amount": "125.30"
+              },
+              {
+                "chargeId": "917a9447-8608-46be-9e4f-b6806f745396",
+                "providerTransaction": null,
+                "has3ds": false,
+                "amountInUsd": "20.19",
+                "createdAt": "2024-12-27 16:28:50",
+                "billingInfo": {
+                  "firstName": "Test",
+                  "lastName": "Test",
+                  "ipAddress": "95.168.166.12",
+                  "fingerprint": "c953d90647b9830385532faa65c641d8",
+                  "personalIdValue": "123.456.789-09",
+                  "personalIdType": "CPF",
+                  "country": "br",
+                  "city": "",
+                  "zip": "42700-000",
+                  "state": null,
+                  "street": null
+                },
+                "paymentMethod": {
+                  "type": "card",
+                  "data": {
+                    "bin": "433046",
+                    "lastFourDigits": "7758",
+                    "brand": "visa",
+                    "riskSegments": [
+                      {
+                        "type": "autocharge",
+                        "riskSegment": "black"
+                      },
+                      {
+                        "type": "initial",
+                        "riskSegment": "potential_high"
+                      },
+                      {
+                        "type": "oneclick",
+                        "riskSegment": "potential_high"
+                      },
+                      {
+                        "type": "all",
+                        "riskSegment": "potential_high"
+                      }
+                    ],
+                    "issuer": null,
+                    "cardType": "CREDIT",
+                    "cardLevel": null,
+                    "isoCountryName": "United States Of America",
+                    "isoATwo": "US"
+                  }
+                },
+                "descriptor": "DL*mSpy Mobile App",
+                "provider": "dlocal",
+                "mid": "default",
+                "target": "original",
+                "status": "declined",
+                "amount": "125.30"
+              },
+              {
+                "chargeId": "66b078cd-abb6-42dc-bba4-5f502c691aec",
+                "providerTransaction": "pay_ogzqum3zzbyurfdirgh3bzijvq",
+                "has3ds": false,
+                "amountInUsd": "20.19",
+                "createdAt": "2024-12-27 16:28:50",
+                "billingInfo": {
+                  "firstName": "Pavlo",
+                  "lastName": "Pav",
+                  "ipAddress": "95.168.166.12",
+                  "fingerprint": "c953d90647b9830385532faa65c641d8",
+                  "personalIdValue": "123.456.789-09",
+                  "personalIdType": "CPF",
+                  "country": "br",
+                  "city": "",
+                  "zip": "42700-000",
+                  "state": null,
+                  "street": null
+                },
+                "paymentMethod": {
+                  "type": "card",
+                  "data": {
+                    "bin": "433046",
+                    "lastFourDigits": "7758",
+                    "brand": "visa",
+                    "riskSegments": [
+                      {
+                        "type": "autocharge",
+                        "riskSegment": "black"
+                      },
+                      {
+                        "type": "initial",
+                        "riskSegment": "potential_high"
+                      },
+                      {
+                        "type": "oneclick",
+                        "riskSegment": "potential_high"
+                      },
+                      {
+                        "type": "all",
+                        "riskSegment": "potential_high"
+                      }
+                    ],
+                    "issuer": null,
+                    "cardType": "CREDIT",
+                    "cardLevel": null,
+                    "isoCountryName": "United States Of America",
+                    "isoATwo": "US"
+                  }
+                },
+                "descriptor": "msp-bill.info",
+                "provider": "checkout_com",
+                "mid": "checkout_chkt_ms",
+                "target": "cascade",
+                "status": "settled",
+                "amount": "125.30"
+              }
+            ],
+            "products": [
+              {
+                "durationDays": "28",
+                "durationWeeks": "4",
+                "durationMonths": "1",
+                "isTrial": false,
+                "availableForPurchase": true,
+                "availableForShop": true,
+                "availableForControlPanel": true,
+                "availableForAutocharge": true,
+                "actionType": "initial",
+                "id": "9731cd46-9879-4912-b4ac-3eca867bd188",
+                "code": "Test",
+                "name": "Test 1-Month Premium Subscription",
+                "quantity": "1",
+                "prices": {
+                  "originAmountWithTax": "179.00",
+                  "discountPercent": "30.00",
+                  "amountWithDiscount": "125.30",
+                  "couponPercent": "0.00",
+                  "couponCode": null,
+                  "amountWithDiscountAndCoupon": "125.30",
+                  "taxPercent": "0.00",
+                  "amountWithDiscountAndCouponAndTax": "125.30",
+                  "totalUsd": "20.19",
+                  "origin": "179.00",
+                  "discount": "53.70",
+                  "coupon": "0.00",
+                  "tax": "0.00"
+                }
+              }
+            ],
+            "totalPrices": {
+              "amountWithDiscount": "125.30",
+              "amountWithDiscountAndCoupon": "125.30",
+              "amountWithDiscountAndCouponAndTax": "125.30",
+              "amountWithDiscountAndCouponAndTaxInUsd": "20.19",
+              "origin": "179.00",
+              "discount": "53.70",
+              "coupon": "0.00",
+              "tax": "0.00"
+            },
+            "type": "checkout",
+            "currency": "BRL",
+            "subbrand": null
+          },
+          {
+            "orderId": "ki4sF2WI",
+            "createdAt": "2024-12-27 16:29:08",
+            "charges": [
+              {
+                "chargeId": "b460fe38-ed9e-4ef5-96d9-5844505afd4f",
+                "providerTransaction": "pay_imd2xbzsx54uzn5poem7su4jdu",
+                "has3ds": false,
+                "amountInUsd": "21.62",
+                "createdAt": "2024-12-27 16:29:08",
+                "billingInfo": {
+                  "firstName": "Pavlo",
+                  "lastName": "Pav",
+                  "ipAddress": "95.168.166.12",
+                  "fingerprint": "c953d90647b9830385532faa65c641d8",
+                  "personalIdValue": "123.456.789-09",
+                  "personalIdType": "CPF",
+                  "country": "br",
+                  "city": "",
+                  "zip": "42700-000",
+                  "state": null,
+                  "street": null
+                },
+                "paymentMethod": {
+                  "type": "card",
+                  "data": {
+                    "bin": "433046",
+                    "lastFourDigits": "7758",
+                    "brand": "visa",
+                    "riskSegments": [
+                      {
+                        "type": "autocharge",
+                        "riskSegment": "black"
+                      },
+                      {
+                        "type": "initial",
+                        "riskSegment": "potential_high"
+                      },
+                      {
+                        "type": "oneclick",
+                        "riskSegment": "potential_high"
+                      },
+                      {
+                        "type": "all",
+                        "riskSegment": "potential_high"
+                      }
+                    ],
+                    "issuer": null,
+                    "cardType": "CREDIT",
+                    "cardLevel": null,
+                    "isoCountryName": "United States Of America",
+                    "isoATwo": "US"
+                  }
+                },
+                "descriptor": "msp-bill.info",
+                "provider": "checkout_com",
+                "mid": "checkout_chkt_ms",
+                "target": "original",
+                "status": "settled",
+                "amount": "134.20"
+              }
+            ],
+            "products": [
+              {
+                "durationDays": "0",
+                "durationWeeks": "0",
+                "durationMonths": "0",
+                "isTrial": false,
+                "availableForPurchase": true,
+                "availableForShop": true,
+                "availableForControlPanel": true,
+                "availableForAutocharge": false,
+                "actionType": "crossSale",
+                "id": "e84bc293-d89c-403e-ac46-702f6fa3322a",
+                "code": "Test",
+                "name": "Test",
+                "quantity": "1",
+                "prices": {
+                  "originAmountWithTax": "119.00",
+                  "discountPercent": "20.00",
+                  "amountWithDiscount": "95.20",
+                  "couponPercent": "0.00",
+                  "couponCode": null,
+                  "amountWithDiscountAndCoupon": "95.20",
+                  "taxPercent": "0.00",
+                  "amountWithDiscountAndCouponAndTax": "95.20",
+                  "totalUsd": "15.34",
+                  "origin": "119.00",
+                  "discount": "23.80",
+                  "coupon": "0.00",
+                  "tax": "0.00"
+                }
+              },
+              {
+                "durationDays": "35",
+                "durationWeeks": "4",
+                "durationMonths": "1",
+                "isTrial": false,
+                "availableForPurchase": true,
+                "availableForShop": false,
+                "availableForControlPanel": true,
+                "availableForAutocharge": true,
+                "actionType": "crossSale",
+                "id": "bd829cd2-ad63-4993-9ffb-d24e95fd1162",
+                "code": "Test",
+                "name": "Test",
+                "quantity": "1",
+                "prices": {
+                  "originAmountWithTax": "39.00",
+                  "discountPercent": "0.00",
+                  "amountWithDiscount": "39.00",
+                  "couponPercent": "0.00",
+                  "couponCode": null,
+                  "amountWithDiscountAndCoupon": "39.00",
+                  "taxPercent": "0.00",
+                  "amountWithDiscountAndCouponAndTax": "39.00",
+                  "totalUsd": "6.28",
+                  "origin": "39.00",
+                  "discount": "0.00",
+                  "coupon": "0.00",
+                  "tax": "0.00"
+                }
+              }
+            ],
+            "totalPrices": {
+              "amountWithDiscount": "134.20",
+              "amountWithDiscountAndCoupon": "134.20",
+              "amountWithDiscountAndCouponAndTax": "134.20",
+              "amountWithDiscountAndCouponAndTaxInUsd": "21.62",
+              "origin": "158.00",
+              "discount": "23.80",
+              "coupon": "0.00",
+              "tax": "0.00"
+            },
+            "type": "oneclick",
+            "currency": "BRL",
+            "subbrand": null
+          }
+        ],
+        "meta": {
+          "type": "collection",
+          "total": 2,
+          "offset": 0
+        }
+      }
+  - label: "404"
+    language: json
+    code: |-
+      {
+        "uuid": "3070b9cd-dd52-43eb-bd69-45f27b2d3e92",
+        "code": 3000,
+        "message": "Malformed request syntax.",
+        "traceId": "082d86c339533af07c14252afcecc7bd"
+      }
