@@ -111,6 +111,12 @@ sections:
 
 The endpoint should appear in the API Reference navigation and render as a page.
 
+You can validate content without running a full build:
+
+```bash
+npm run validate:content
+```
+
 ---
 
 # 3. How to move an API endpoint to another section
@@ -125,10 +131,6 @@ Move the item from one section to another:
 
 ```yaml
 sections:
-  - title: Users
-    id: users
-    items: []
-
   - title: Admin
     id: admin
     items:
@@ -137,6 +139,8 @@ sections:
 ```
 
 No endpoint YAML file or application code should need to change.
+
+Navigation groups must contain at least one item. If moving an endpoint leaves a section empty, remove that section from `navigation.yaml`.
 
 ---
 
@@ -312,6 +316,12 @@ sections:
 
 The article should appear in the articles navigation and render as a page.
 
+You can validate content without running a full build:
+
+```bash
+npm run validate:content
+```
+
 ---
 
 # 9. How to add images to articles
@@ -332,7 +342,7 @@ blocks:
     caption: Authentication flow
 ```
 
-The implementation may support one or both options depending on the current project structure.
+Both options are supported. Local image paths must be absolute public paths, for example `/images/auth-flow.png`, and the file must exist under `public/`.
 
 ---
 

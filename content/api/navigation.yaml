@@ -5,10 +5,10 @@ sections:
     items:
       - title: Create user
         slug: create-user
+
+  - title: User lookup
+    id: user-lookup
+    defaultOpen: true
+    items:
       - title: Get user
         slug: get-user
-
-  - title: Payments
-    id: payments
-    defaultOpen: true
-    items: []

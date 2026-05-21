@@ -161,6 +161,7 @@ type UnknownRecord = Record<string, unknown>;
 const API_ROOT = path.join(process.cwd(), "content", "api");
 const API_NAVIGATION_PATH = path.join(API_ROOT, "navigation.yaml");
 const API_ENDPOINTS_DIR = path.join(API_ROOT, "endpoints");
+const PUBLIC_ROOT = path.join(process.cwd(), "public");
 const DEFAULT_SECTION_ORDER: AutoSectionId[] = [
   "overview",
   "header-parameters",
@@ -212,6 +213,52 @@ function readYamlObject(filePath: string, label: string): UnknownRecord {
 
 function contentError(filePath: string, message: string): never {
   throw new Error(`Invalid API content at ${filePath}: ${message}`);
+}
+
+function fileSlug(filePath: string): string {
+  return path.basename(filePath).replace(/\.ya?ml$/i, "");
+}
+
+function validateSlugMatchesFile(slug: string, filePath: string) {
+  const expected = fileSlug(filePath);
+
+  if (slug !== expected) {
+    contentError(filePath, `slug "${slug}" must match filename "${expected}".`);
+  }
+}
+
+function validateLocalPublicAssetSrc(src: string, filePath: string, location: string) {
+  if (/^[a-z][a-z\d+.-]*:/i.test(src) || src.startsWith("//")) {
+    return;
+  }
+
+  if (!src.startsWith("/")) {
+    contentError(filePath, `${location} references local image "${src}". Use an absolute public path like /images/example.png.`);
+  }
+
+  const publicPath = path.normalize(path.join(PUBLIC_ROOT, src.replace(/^\/+/, "")));
+  const publicRootWithSeparator = `${PUBLIC_ROOT}${path.sep}`;
+
+  if (publicPath !== PUBLIC_ROOT && !publicPath.startsWith(publicRootWithSeparator)) {
+    contentError(filePath, `${location} must stay inside the public directory.`);
+  }
+
+  if (!fs.existsSync(publicPath)) {
+    contentError(filePath, `${location} references missing public asset "${src}" (expected ${publicPath}).`);
+  }
+}
+
+function validateMarkdownLocalImageSrcs(source: string | undefined, filePath: string, location: string) {
+  if (!source) {
+    return;
+  }
+
+  const imagePattern = /!\[[^\]]*]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = imagePattern.exec(source)) !== null) {
+    validateLocalPublicAssetSrc(match[1] ?? "", filePath, `${location} Markdown image`);
+  }
 }
 
 export function slugify(value: string): string {
@@ -445,6 +492,8 @@ function parseBlocks(value: unknown, filePath: string): EndpointDocBlock[] {
     const title = optionalString(blockValue, "title");
     const body = requireString(blockValue, "content", filePath);
 
+    validateMarkdownLocalImageSrcs(body, filePath, `blocks[${index}].content`);
+
     return {
       id: slugify(title || `${type}-${index + 1}`),
       type: "notice",
@@ -457,15 +506,33 @@ function parseBlocks(value: unknown, filePath: string): EndpointDocBlock[] {
 }
 
 function parseExamples(value: unknown, field: string, filePath: string): EndpointCodeExample[] {
+  const seenLabels = new Map<string, number>();
+  const seenIds = new Map<string, string>();
+
   return ensureArray(value, field, filePath).map((exampleValue, index) => {
     if (!isRecord(exampleValue)) {
       contentError(filePath, `${field}[${index}] must be an object.`);
     }
 
     const label = requireString(exampleValue, "label", filePath);
+    const normalizedLabel = label.toLowerCase();
+    const id = slugify(label);
+    const previousLabelIndex = seenLabels.get(normalizedLabel);
+    const previousIdLabel = seenIds.get(id);
+
+    if (previousLabelIndex !== undefined) {
+      contentError(filePath, `${field}[${index}].label duplicates ${field}[${previousLabelIndex}].label.`);
+    }
+
+    if (previousIdLabel) {
+      contentError(filePath, `${field}[${index}].label "${label}" generates duplicate selector id "${id}" with "${previousIdLabel}".`);
+    }
+
+    seenLabels.set(normalizedLabel, index);
+    seenIds.set(id, label);
 
     return {
-      id: slugify(label),
+      id,
       label,
       language: requireString(exampleValue, "language", filePath),
       value: requireString(exampleValue, "code", filePath),
@@ -493,6 +560,9 @@ function endpointFromFile(filePath: string): EndpointDoc {
   const method = methodFromContent(document.method, filePath);
   const endpointPath = requireString(document, "path", filePath);
   const status = requireString(document, "status", filePath);
+
+  validateSlugMatchesFile(slug, filePath);
+  validateMarkdownLocalImageSrcs(description, filePath, "description");
 
   if (!endpointPath.startsWith("/")) {
     contentError(filePath, "path must start with /.");
@@ -611,6 +681,10 @@ function parseNavItems(
     navError(`${location} must be an array.`);
   }
 
+  if (value.length === 0) {
+    navError(`${location} must contain at least one item.`);
+  }
+
   return value.map((itemValue, index) => {
     const itemLocation = `${location}[${index}]`;
 
@@ -622,6 +696,10 @@ function parseNavItems(
     const slug = asString(itemValue.slug).trim();
 
     if (slug) {
+      if (itemValue.items !== undefined) {
+        navError(`${itemLocation} cannot define both slug and items.`);
+      }
+
       const endpoint = endpointsBySlug.get(slug);
 
       if (!endpoint) {
@@ -661,6 +739,10 @@ function readNavigationDocument(): UnknownRecord {
 
   if (!Array.isArray(document.sections)) {
     navError("sections must be an array.");
+  }
+
+  if (document.sections.length === 0) {
+    navError("sections must contain at least one section.");
   }
 
   return document;

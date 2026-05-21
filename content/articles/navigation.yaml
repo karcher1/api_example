@@ -5,10 +5,10 @@ sections:
     items:
       - title: Introduction
         slug: introduction
+
+  - title: Security
+    id: security
+    defaultOpen: true
+    items:
       - title: Authentication
         slug: authentication
-
-  - title: Guides
-    id: guides
-    defaultOpen: true
-    items: []

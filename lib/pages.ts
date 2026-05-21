@@ -77,6 +77,18 @@ function navError(message: string): never {
   throw new Error(`Invalid article navigation at ${ARTICLES_NAVIGATION_PATH}: ${message}`);
 }
 
+function fileSlug(filePath: string): string {
+  return path.basename(filePath).replace(/\.ya?ml$/i, "");
+}
+
+function validateSlugMatchesFile(slug: string, filePath: string) {
+  const expected = fileSlug(filePath);
+
+  if (slug !== expected) {
+    contentError(filePath, `slug "${slug}" must match filename "${expected}".`);
+  }
+}
+
 function requireString(record: UnknownRecord, field: string, filePath: string): string {
   const value = asString(record[field]).trim();
 
@@ -106,14 +118,18 @@ function ensureArray(value: unknown, field: string, filePath: string): unknown[]
 }
 
 function validateLocalImageSrc(src: string, filePath: string, location: string) {
-  if (!src.startsWith("/") || src.startsWith("//")) {
+  if (/^[a-z][a-z\d+.-]*:/i.test(src) || src.startsWith("//")) {
     return;
+  }
+
+  if (!src.startsWith("/")) {
+    contentError(filePath, `${location}.src references local image "${src}". Use an absolute public path like /images/example.png.`);
   }
 
   const publicPath = path.normalize(path.join(PUBLIC_ROOT, src.replace(/^\/+/, "")));
   const publicRootWithSeparator = `${PUBLIC_ROOT}${path.sep}`;
 
-  if (!publicPath.startsWith(publicRootWithSeparator)) {
+  if (publicPath !== PUBLIC_ROOT && !publicPath.startsWith(publicRootWithSeparator)) {
     contentError(filePath, `${location}.src must stay inside the public directory.`);
   }
 
@@ -122,6 +138,19 @@ function validateLocalImageSrc(src: string, filePath: string, location: string) 
       filePath,
       `${location}.src references missing public asset "${src}" (expected ${publicPath}).`,
     );
+  }
+}
+
+function validateMarkdownLocalImageSrcs(source: string | undefined, filePath: string, location: string) {
+  if (!source) {
+    return;
+  }
+
+  const imagePattern = /!\[[^\]]*]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = imagePattern.exec(source)) !== null) {
+    validateLocalImageSrc(match[1] ?? "", filePath, `${location} Markdown image`);
   }
 }
 
@@ -165,6 +194,8 @@ function parseBlocks(value: unknown, filePath: string): ArticleBlock[] {
       validateLocalImageSrc(src, filePath, `blocks[${index}]`);
     }
 
+    validateMarkdownLocalImageSrcs(content, filePath, `blocks[${index}].content`);
+
     return {
       id: slugify(title || `${type}-${index + 1}`),
       type,
@@ -184,6 +215,9 @@ function pageFromFile(filePath: string): ContentPage {
   const slug = requireString(document, "slug", filePath);
   const title = requireString(document, "title", filePath);
   const body = requireString(document, "content", filePath);
+
+  validateSlugMatchesFile(slug, filePath);
+  validateMarkdownLocalImageSrcs(body, filePath, "content");
 
   return {
     slug,
@@ -233,6 +267,10 @@ function readNavigationDocument(): UnknownRecord {
     navError("sections must be an array.");
   }
 
+  if (document.sections.length === 0) {
+    navError("sections must contain at least one section.");
+  }
+
   return document;
 }
 
@@ -261,6 +299,10 @@ function parseNavItems(
     navError(`${location} must be an array.`);
   }
 
+  if (value.length === 0) {
+    navError(`${location} must contain at least one item.`);
+  }
+
   return value.map((itemValue, index) => {
     const itemLocation = `${location}[${index}]`;
 
@@ -271,6 +313,10 @@ function parseNavItems(
     const slug = asString(itemValue.slug).trim();
 
     if (slug) {
+      if (itemValue.items !== undefined) {
+        navError(`${itemLocation} cannot define both slug and items.`);
+      }
+
       const page = pageBySlug.get(slug);
 
       if (!page) {

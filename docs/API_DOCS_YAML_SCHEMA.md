@@ -69,6 +69,8 @@ Rules:
 - `items` contains endpoints.
 - `slug` must match an endpoint content file or endpoint slug.
 - Order in YAML is the order in the UI.
+- Navigation groups must contain at least one item.
+- A navigation item must not define both `slug` and nested `items`.
 
 Nested groups can be supported if needed:
 
@@ -408,6 +410,8 @@ Rules:
 - `slug` must match an article content file or article slug.
 - Order in YAML is the order in the UI.
 - `defaultOpen` controls initial expanded state.
+- Navigation groups must contain at least one item.
+- A navigation item must not define both `slug` and nested `items`.
 
 ---
 
@@ -516,6 +520,10 @@ The implementation should validate:
 - invalid response example arrays;
 - invalid article content;
 - invalid or missing navigation sections.
+- content `slug` values that do not match their YAML filename;
+- duplicate request/response example labels or selector IDs;
+- local Markdown image paths that do not point to existing files in `public/`;
+- empty navigation groups.
 
 Required endpoint fields:
 
