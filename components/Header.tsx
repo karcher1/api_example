@@ -24,7 +24,7 @@ export function Header({ items }: HeaderProps) {
           <span className="brand-icon">
             <Sparkles size={19} strokeWidth={2.1} />
           </span>
-          <span className="brand-wordmark">Aurelia</span>
+          <span className="brand-wordmark">Billerix</span>
           <span className="brand-api-label">API</span>
         </Link>
         <nav className="top-nav" aria-label="Main navigation">

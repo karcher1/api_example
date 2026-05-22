@@ -282,7 +282,6 @@ function ResponseCard({ response }: { response: ResponseDoc }) {
             variant="fieldList"
             chrome="embedded"
             initialExpansion="default"
-            controlMode="inline-toggle"
             showRequiredState={false}
           />
         ) : (

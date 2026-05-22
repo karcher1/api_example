@@ -1444,56 +1444,6 @@ pre {
   box-shadow: none;
 }
 
-.schema-tree-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid rgb(var(--color-line));
-  background: linear-gradient(90deg, rgb(244 247 251), rgb(252 253 255));
-  padding: 9px 12px;
-}
-
-.schema-tree-toolbar > span {
-  color: rgb(var(--color-brand));
-  font-size: 12px;
-  font-weight: 760;
-  text-transform: uppercase;
-}
-
-.schema-tree-toolbar-actions-only {
-  justify-content: flex-end;
-}
-
-.schema-tree-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
-}
-
-.schema-tree-toolbar-actions-only .schema-tree-controls {
-  width: 100%;
-  justify-content: flex-end;
-}
-
-.schema-tree-control {
-  min-height: 26px;
-  border: 1px solid rgb(var(--color-line));
-  border-radius: 8px;
-  background: rgb(255 255 255 / 0.78);
-  color: rgb(var(--color-brand));
-  cursor: pointer;
-  padding: 0 9px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.schema-tree-control:hover {
-  background: rgb(var(--color-muted));
-  color: rgb(var(--color-brand));
-}
-
 .schema-tree-list {
   display: flex;
   flex-direction: column;
@@ -1501,36 +1451,6 @@ pre {
 
 .schema-tree-wrap-embedded .schema-tree-list {
   background: transparent;
-}
-
-.schema-tree-inline-actions {
-  display: flex;
-  justify-content: flex-end;
-  border-bottom: 1px solid rgb(var(--color-line));
-  padding: 8px 14px;
-}
-
-.schema-tree-inline-control {
-  min-height: 28px;
-  border: 1px solid rgb(180 191 210);
-  border-radius: 8px;
-  background: rgb(248 250 253);
-  color: rgb(var(--color-brand));
-  cursor: pointer;
-  padding: 0 10px;
-  font-size: 12px;
-  font-weight: 730;
-}
-
-.schema-tree-inline-control:hover {
-  border-color: rgb(var(--color-brand) / 0.5);
-  background: rgb(var(--color-muted));
-  color: rgb(var(--color-brand));
-}
-
-.schema-tree-inline-control:focus-visible {
-  outline: 2px solid rgb(var(--color-brand) / 0.28);
-  outline-offset: 2px;
 }
 
 .schema-tree-node {
@@ -2244,23 +2164,6 @@ button.schema-tree-node-point:focus-visible {
   .schema-card-header {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .schema-tree-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .schema-tree-toolbar-actions-only {
-    align-items: stretch;
-  }
-
-  .schema-tree-controls {
-    justify-content: flex-start;
-  }
-
-  .schema-tree-toolbar-actions-only .schema-tree-controls {
-    justify-content: flex-end;
   }
 
   .schema-tree-item {

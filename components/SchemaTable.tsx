@@ -10,7 +10,6 @@ interface SchemaTableProps {
   variant?: "tree" | "fieldList";
   chrome?: "panel" | "embedded";
   initialExpansion?: "all" | "default" | "none";
-  controlMode?: "toolbar" | "inline-toggle" | "none";
   showRequiredState?: boolean;
 }
 
@@ -276,7 +275,6 @@ export function SchemaTable({
   variant = "tree",
   chrome = "panel",
   initialExpansion = "default",
-  controlMode = "toolbar",
   showRequiredState = true,
 }: SchemaTableProps) {
   const rootName = rootLabel || schema?.name || "body";
@@ -285,17 +283,10 @@ export function SchemaTable({
     () => (rootNode ? initialExpandedPaths(rootNode, initialExpansion) : new Set<string>()),
     [initialExpansion, rootNode],
   );
-  const allExpanded = useMemo(() => (rootNode ? collectExpandedPaths(rootNode, "root", 0, true) : new Set<string>()), [rootNode]);
   const [expanded, setExpanded] = useState(() => defaultExpanded);
   const rootChildren = useMemo(() => (rootNode ? childNodes(rootNode) : []), [rootNode]);
   const isFieldList = variant === "fieldList";
   const isEmbedded = chrome === "embedded";
-  const canBulkToggle = allExpanded.size > 0;
-  const allPathsExpanded = canBulkToggle && Array.from(allExpanded).every((path) => expanded.has(path));
-
-  function toggleAll() {
-    setExpanded(allPathsExpanded ? new Set<string>() : allExpanded);
-  }
 
   function toggle(path: string) {
     setExpanded((current) => {
@@ -323,26 +314,6 @@ export function SchemaTable({
         isEmbedded ? "schema-tree-wrap-embedded" : "",
       ].filter(Boolean).join(" ")}
     >
-      {controlMode === "toolbar" && !isEmbedded ? (
-        <div className={isFieldList ? "schema-tree-toolbar schema-tree-toolbar-actions-only" : "schema-tree-toolbar"}>
-          {isFieldList ? null : <span>Schema fields</span>}
-          <div className="schema-tree-controls" aria-label="Schema tree controls">
-            <button type="button" className="schema-tree-control" onClick={() => setExpanded(allExpanded)}>
-              Expand all
-            </button>
-            <button type="button" className="schema-tree-control" onClick={() => setExpanded(new Set<string>())}>
-              Collapse all
-            </button>
-          </div>
-        </div>
-      ) : null}
-      {controlMode === "inline-toggle" && canBulkToggle ? (
-        <div className="schema-tree-inline-actions">
-          <button type="button" className="schema-tree-inline-control" onClick={toggleAll}>
-            {allPathsExpanded ? "Свернуть всё" : "Развернуть всё"}
-          </button>
-        </div>
-      ) : null}
       <div className="schema-tree-list">
         {isFieldList ? (
           rootChildren.length > 0 ? (

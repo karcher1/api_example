@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
   <title id="title">Authentication flow</title>
-  <desc id="desc">A simple flow showing an application sending an authorization token to the Aurelia API and receiving a response.</desc>
+  <desc id="desc">A simple flow showing an application sending an authorization token to the Billerix API and receiving a response.</desc>
   <rect width="960" height="420" rx="24" fill="#f7f8fb"/>
   <rect x="56" y="86" width="218" height="248" rx="18" fill="#ffffff" stroke="#d8dee8" stroke-width="2"/>
   <rect x="371" y="86" width="218" height="248" rx="18" fill="#ffffff" stroke="#d8dee8" stroke-width="2"/>
@@ -13,7 +13,7 @@
   <path d="M778 154h34M795 137v34" fill="none" stroke="#9a5a18" stroke-width="7" stroke-linecap="round"/>
   <text x="165" y="228" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="#182230">Client app</text>
   <text x="480" y="228" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="#182230">Authorization</text>
-  <text x="795" y="228" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="#182230">Aurelia API</text>
+  <text x="795" y="228" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="700" fill="#182230">Billerix API</text>
   <text x="165" y="264" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="15" fill="#667085">Creates a signed request</text>
   <text x="480" y="264" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="15" fill="#667085">Adds Bearer token</text>
   <text x="795" y="264" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="15" fill="#667085">Validates and responds</text>
