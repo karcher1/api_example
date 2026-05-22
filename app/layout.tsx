@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Static API documentation generated from YAML content files.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const navItems: HeaderNavItem[] = [
     {

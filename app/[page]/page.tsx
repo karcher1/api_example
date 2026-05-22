@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getContentPage, getLegacyContentPageStaticParams } from "@/lib/pages";
+import { getContentPage } from "@/lib/pages";
 
 interface StaticPageProps {
   params: Promise<{
@@ -7,11 +7,7 @@ interface StaticPageProps {
   }>;
 }
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return getLegacyContentPageStaticParams();
-}
+export const dynamic = "force-dynamic";
 
 export default async function StaticPage({ params }: StaticPageProps) {
   const { page: pageSlug } = await params;

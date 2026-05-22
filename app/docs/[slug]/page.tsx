@@ -5,7 +5,6 @@ import {
   getContentNavigation,
   getContentNavigationTitle,
   getContentPage,
-  getContentPageStaticParams,
 } from "@/lib/pages";
 
 interface ArticlePageProps {
@@ -14,11 +13,7 @@ interface ArticlePageProps {
   }>;
 }
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return getContentPageStaticParams();
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;

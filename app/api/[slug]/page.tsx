@@ -5,7 +5,6 @@ import {
   getEndpointBySlug,
   getEndpointNavigation,
   getEndpointNavigationTitle,
-  getEndpointStaticParams,
 } from "@/lib/openapi";
 
 interface EndpointPageProps {
@@ -14,11 +13,7 @@ interface EndpointPageProps {
   }>;
 }
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return getEndpointStaticParams();
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: EndpointPageProps): Promise<Metadata> {
   const { slug } = await params;
