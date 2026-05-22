@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Headphones, Menu, X } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 import type { NavNode } from "@/lib/openapi";
 import { MethodBadge } from "@/components/MethodBadge";
 
@@ -13,7 +13,6 @@ interface EndpointNavProps {
   title?: string;
   ariaLabel?: string;
   storageKey?: string;
-  showSupport?: boolean;
   onNavigate?: () => void;
 }
 
@@ -155,7 +154,6 @@ export function EndpointNav({
   title = "Endpoints",
   ariaLabel = "Endpoint navigation",
   storageKey = `endpoint-nav:${title}`,
-  showSupport = true,
   onNavigate,
 }: EndpointNavProps) {
   const defaultOpenIds = useMemo(() => collectDefaultOpenNodeIds(nodes), [nodes]);
@@ -214,16 +212,6 @@ export function EndpointNav({
           />
         ))}
       </nav>
-      {showSupport ? (
-        <div className="endpoint-support-card">
-          <span>Need help?</span>
-          <p>Contact our support team for integration questions.</p>
-          <button type="button">
-            <Headphones size={14} aria-hidden="true" />
-            Contact Support
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -234,7 +222,6 @@ export function EndpointNavDrawer({
   title = "Endpoints",
   ariaLabel = "Endpoint navigation",
   storageKey,
-  showSupport,
 }: EndpointNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -261,7 +248,6 @@ export function EndpointNavDrawer({
               title={title}
               ariaLabel={ariaLabel}
               storageKey={storageKey}
-              showSupport={showSupport}
               onNavigate={() => setOpen(false)}
             />
           </div>

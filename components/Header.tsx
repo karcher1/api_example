@@ -44,11 +44,6 @@ export function Header({ items }: HeaderProps) {
             );
           })}
         </nav>
-        <div className="header-actions">
-          <button type="button" className="api-key-button">
-            Get API Key
-          </button>
-        </div>
       </div>
     </header>
   );

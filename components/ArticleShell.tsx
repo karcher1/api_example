@@ -18,7 +18,6 @@ export function ArticleShell({ page, navigation, navigationTitle = "Articles" }:
         title={navigationTitle}
         ariaLabel="Article navigation"
         storageKey={`article-nav:${navigationTitle}`}
-        showSupport={false}
       />
       <div className="articles-grid">
         <aside className="left-rail" aria-label="Article navigation">
@@ -28,7 +27,6 @@ export function ArticleShell({ page, navigation, navigationTitle = "Articles" }:
             title={navigationTitle}
             ariaLabel="Article navigation"
             storageKey={`article-nav:${navigationTitle}`}
-            showSupport={false}
           />
         </aside>
         <main className="main-column article-main-column">
