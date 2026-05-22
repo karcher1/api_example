@@ -19,6 +19,10 @@ sections:
         slug: get-buyers-charge-methods
       - title: Get charge history
         slug: get-charge-history
+      - title: Oneclick order creation.
+        slug: oneclick-order-creation
+      - title: Buyers order history
+        slug: buyers-order-history
   - title: Extra info
     id: extra-info
     defaultOpen: true
@@ -35,6 +39,10 @@ sections:
     items:
       - title: Prices for Offer page
         slug: get-prices-for-offer-page
+      - title: Get shop prices for bundles
+        slug: get-shop-prices-for-bundles
+      - title: Get product prices for purchase
+        slug: get-product-prices-for-purchase
   - title: Checkout page
     id: checkout-page
     defaultOpen: true
@@ -45,3 +53,81 @@ sections:
         slug: one-time-payment
       - title: Create bundle order
         slug: create-order-v3
+      - title: Create initial charge
+        slug: create-initial-charge
+  - title: Subscriptions
+    id: subscriptions
+    defaultOpen: true
+    items:
+      - title: Set token for subscription
+        slug: set-token-for-subscription
+      - title: Get all buyers subscriptions
+        slug: get-all-buyers-subscriptions
+      - title: Create manual subscription
+        slug: create-manual-subscription
+      - title: Get product prices for subscription upgrade
+        slug: get-product-prices-for-subscription-upgrade
+      - title: Manual upgrade subscription by staff
+        slug: manual-upgrade-subscription-by-staff
+      - title: Get product prices for subscription upgrade
+        slug: get-buyers-buyer-id-subscriptions-subscription-id-manual-renew
+      - title: Get product prices for subscription upgrade
+        slug: get-buyers-buyer-id-subscriptions-subscription-id-purchase
+      - title: Get product prices for subscription upgrade
+        slug: get-buyers-buyer-id-subscriptions-subscription-id-downgrade
+      - title: Manual downgrade subscription by staff
+        slug: manual-downgrade-subscription-by-staff
+      - title: Manual renew subscription
+        slug: manual-renew-subscription
+      - title: Disable subscription
+        slug: disable-subscription
+      - title: Freeze subscription
+        slug: freeze-subscription
+      - title: Suspend subscription
+        slug: suspend-subscription
+      - title: Unfreeze subscription
+        slug: unfreeze-subscription
+      - title: Change subscription's autocharge status
+        slug: change-subscription-s-autocharge-status
+      - title: Enable subscription's autocharge status
+        slug: enable-subscription-s-autocharge-status
+      - title: Disable subscription's autocharge status
+        slug: disable-subscription-s-autocharge-status
+      - title: Change subscription's expiration date
+        slug: change-subscription-s-expiration-date
+  - title: Order status
+    id: order-status
+    defaultOpen: true
+    items:
+      - title: Get order result, polling endpoint
+        slug: get-order-result-polling-endpoint
+  - title: Taxes
+    id: taxes
+    defaultOpen: true
+    items:
+      - title: Get tax type by country code
+        slug: get-tax-type-by-country-code
+  - title: System
+    id: system
+    defaultOpen: true
+    items:
+      - title: Checking the service's readiness for operation.
+        slug: checking-the-service-s-readiness-for-operation
+      - title: Check all necessary service relations.
+        slug: check-all-necessary-service-relations
+  - title: Bundles
+    id: bundles
+    defaultOpen: true
+    items:
+      - title: Oneclick bundle order creation
+        slug: oneclick-bundle-order-creation
+      - title: Get bundle product prices with taxes
+        slug: get-bundle-product-prices-with-taxes
+      - title: Create new Order by another-payment-method
+        slug: create-new-order-by-another-payment-method
+  - title: Get initial order data
+    id: get-initial-order-data
+    defaultOpen: true
+    items:
+      - title: Get initial order data
+        slug: get-initial-order-data

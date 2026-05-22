@@ -1,0 +1,237 @@
+slug: get-all-buyers-subscriptions
+title: Get all buyers subscriptions
+description: Get all buyers subscriptions
+method: GET
+path: /api/v2/buyers/{buyerId}/subscriptions
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
+queryParameters:
+  - name: limit
+    type: integer
+    required: false
+    description: No description provided in source.
+    default: 100
+  - name: offset
+    type: integer
+    required: false
+    description: No description provided in source.
+    default: 0
+  - name: ids
+    type: array
+    required: false
+    description: IDs of subscriptions
+    items:
+      type: string
+      required: false
+      description: No description provided in source.
+      format: uuid
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: List of buyers subscriptions
+    parameters:
+      - name: data
+        type: array
+        description: No description provided in source.
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: id
+              type: string
+              description: No description provided in source.
+              example: bb5403a2-8e20-44e9-a70c-55e6886b414e
+            - name: buyerId
+              type: string
+              description: No description provided in source.
+              example: 1615ba31-49d6-4c1a-8c13-b03231dfdba2
+            - name: startDate
+              type: string
+              description: No description provided in source.
+              example: 2024-01-12T12:55:48+00:00
+            - name: endDate
+              type: string
+              description: No description provided in source.
+              example: 2024-06-12T12:55:48+00:00
+            - name: status
+              type: string
+              description: No description provided in source.
+              example: active
+            - name: autoChargeStatus
+              type: boolean
+              description: No description provided in source.
+              example: "false"
+            - name: isManual
+              type: boolean
+              description: No description provided in source.
+              example: "true"
+            - name: isTokenized
+              type: boolean
+              description: Subscription has active token
+              example: "true"
+            - name: createdAt
+              type: string
+              description: No description provided in source.
+              example: 2024-01-12T12:56:10+00:00
+            - name: product
+              type: object
+              description: No description provided in source.
+              children:
+                - name: id
+                  type: string
+                  description: No description provided in source.
+                  format: uuid
+                  example: cf3755f7-9366-4963-b71c-038bb40f221c
+                - name: code
+                  type: string
+                  description: No description provided in source.
+                  example: TESTAH
+                - name: name
+                  type: string
+                  description: No description provided in source.
+                  example: mSpy 1-Month Premium Subscription
+                - name: durationDays
+                  type: integer
+                  description: No description provided in source.
+                  example: "28"
+                - name: durationWeeks
+                  type: integer
+                  description: No description provided in source.
+                  example: "4"
+                - name: durationMonths
+                  type: integer
+                  description: No description provided in source.
+                  example: "1"
+                - name: isTrial
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForPurchase
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForShop
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForControlPanel
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForAutocharge
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+            - name: statusInfo
+              type: array
+              description: No description provided in source.
+              items:
+                type: object
+                description: No description provided in source.
+                children:
+                  - name: status
+                    type: string
+                    description: No description provided in source.
+                    enum:
+                      - active
+                      - blocked
+                      - disabled
+                      - expired
+                      - suspended
+                    example: active
+                  - name: reason
+                    type: string
+                    description: No description provided in source.
+                    example: subscription_manual_freeze
+                  - name: createdAt
+                    type: string
+                    description: No description provided in source.
+                    example: 2024-11-25T12:26:56+00:00
+            - name: freezeDetails
+              type: object
+              description: No description provided in source.
+              nullable: true
+              children:
+                - name: frozenAt
+                  type: string
+                  description: No description provided in source.
+                  example: 2024-11-25T12:26:56+00:00
+                - name: unfreezeAt
+                  type: string
+                  description: No description provided in source.
+                  example: 2024-12-25T00:00:00+00:00
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: collection
+          - name: total
+            type: integer
+            description: No description provided in source.
+            nullable: true
+            example: "1"
+          - name: offset
+            type: integer
+            description: No description provided in source.
+            nullable: true
+            example: "0"
+  - status: "500"
+    description: Exception error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+blocks: []
+requestExamples: []
+responseExamples: []

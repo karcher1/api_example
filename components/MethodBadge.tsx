@@ -19,6 +19,8 @@ export function MethodBadge({ method, compact = false }: MethodBadgeProps) {
   return (
     <span
       className={[
+        "method-badge",
+        `method-badge-${method}`,
         "inline-flex shrink-0 items-center justify-center rounded border font-mono font-semibold uppercase tracking-normal",
         compact ? "h-5 min-w-10 px-1.5 text-[10px]" : "h-6 min-w-12 px-2 text-[11px]",
         METHOD_STYLES[method],

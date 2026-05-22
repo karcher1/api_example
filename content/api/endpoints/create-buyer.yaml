@@ -9,26 +9,32 @@ headerParameters:
     type: string
     required: true
     description: a public key that identifies the merchant account (there can be several for one merchant)
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
     description: is responsible for information about the buyer's IP address
+    example: 10.10.10.10
   - name: x-date
     type: string
     required: true
     description: is responsible for the date and time of sending the request
+    example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
     description: generated on the merchant side
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
 pathParameters: []
 queryParameters: []
 requestBodyParameters:
@@ -36,42 +42,62 @@ requestBodyParameters:
     type: string
     required: true
     description: Unique merchant code
+    example: mspy
   - name: email
     type: string
     required: true
     description: Buyer email
+    example: buyer-email@example.test
   - name: country
     type: string
     required: true
     description: "Country code Standard: ISO 3166-1 alpha-2."
+    example: US
   - name: zip
     type: string
     required: false
     description: Index
+    example: "01000"
   - name: state
     type: string
     required: false
     description: Region/state
+    example: NY
   - name: locale
     type: string
     required: false
     description: "Localization language Standard: ISO 639 set 1."
+    example: en
+  - name: buyerMeta
+    type: object
+    required: false
+    description: No description provided in source.
+    nullable: true
+    children:
+      - name: "{key}"
+        type: any
+        required: false
+        description: Dynamic property value.
 responses:
-  - status: "200"
-    description: Successful response.
+  - status: "201"
+    description: Buyer was successfully created
     parameters:
       - name: data
         type: object
         description: Contains basic information about buyer
-      - name: id
-        type: string
-        description: Unique identifier of buyer in the system
+        children:
+          - name: id
+            type: string
+            description: Unique identifier of buyer in the system
+            example: 0f84e398-1096-4c64-abf5-bc4b67b7d4f7
       - name: meta
         type: object
         description: Provides metadata about the response
-      - name: type
-        type: string
-        description: Data type
+        children:
+          - name: type
+            type: string
+            description: Data type
+            example: entity
 blocks:
   - type: info
     title: Errors and interpretation

@@ -9,356 +9,442 @@ headerParameters:
     type: string
     required: true
     description: a public key that identifies the merchant account (there can be several for one merchant)
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
     description: is responsible for information about the buyer's IP address
+    example: 10.10.10.10
   - name: x-date
     type: string
     required: true
     description: is responsible for the date and time of sending the request
+    example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
     description: generated on the merchant side
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
 pathParameters:
   - name: buyerId
     type: string
     required: true
     description: "Unique identifier of the buyer in the system Standard: uuid."
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
 queryParameters:
   - name: orderIds
     type: array
     required: false
     description: Unique order identifiers
+    items:
+      type: string
+      required: false
+      description: No description provided in source.
+      example: BQY81KUY
   - name: limit
     type: integer
     required: false
     description: The maximum number of items returned in a single request
+    default: 100
   - name: offset
     type: integer
     required: false
     description: The offset that indicates how many items will be skipped
+    default: 0
 requestBodyParameters: []
 responses:
   - status: "200"
     description: Successful response.
     parameters:
       - name: data
-        type: array of objects
-        description: An array of orders and their payments. Each item contains full information about a single order.
-      - name: orderId
-        type: string
-        description: Unique order identifier
-      - name: type
-        type: string
-        description: Order type (e.g., checkout, oneclick, etc.).
-      - name: currency
-        type: string
-        description: Order currency code
-      - name: subbrand
-        type: string | null
-        description: Sub-brand name, if available
-      - name: createdAt
-        type: string
-        description: Order creation date and time
-      - name: charges
-        type: array of objects
-        description: A list of charges associated with the order
-      - name: chargeId
-        type: string
-        description: A unique charge identifier in the system
-      - name: providerTransaction
-        type: string | null
-        description: The charge identifier on the provider side
-      - name: has3ds
-        type: bool
-        description: Indicates whether 3DS was used during the charge.
-      - name: amountInUsd
-        type: string
-        description: The transaction amount equivalent in USD which includes discount, coupon and tax
-      - name: createdAt
-        type: string
-        description: The charge creation date and time
-      - name: descriptor
-        type: string
-        description: The payment descriptor
-      - name: provider
-        type: string
-        description: The provider name used for the charge
-      - name: mid
-        type: string
-        description: The provider MID name used for the charge
-      - name: target
-        type: string
-        description: The charge target (original, cascade, etc.)
-      - name: status
-        type: string
-        description: The charge status (settled, declined, deferred)
-      - name: amount
-        type: string
-        description: Provider code
-      - name: code
-        type: string
-        description: The charge amount in the order currency which includes discount, coupon and tax
-      - name: billingInfo
-        type: object
-        description: Buyer details
-      - name: firstName
-        type: string
-        description: The payment method holder’s first name
-      - name: lastName
-        type: string
-        description: The payment method holder’s last name
-      - name: ipAddress
-        type: string
-        description: The buyer’s IP address
-      - name: fingerprint
-        type: string
-        description: Browser/device fingerprint
-      - name: personalIdValue
-        type: string
-        description: The value of the identity document
-      - name: personalIdType
-        type: string
-        description: The identity document type (e.g., CPF)
-      - name: country
-        type: string
-        description: The buyer’s two-letter country code
-      - name: city
-        type: string
-        description: The buyer’s city
-      - name: zip
-        type: string | null
-        description: Postal code
-      - name: state
-        type: string | null
-        description: Region / state
-      - name: street
-        type: string | null
-        description: Street address (street and building number)
-      - name: paymentMethod
-        type: object
-        description: Information about the payment method used
-      - name: type
-        type: string
-        description: The payment method type (e.g., card, boleto_flash)
-      - name: data
-        type: object | null
-        description: Additional payment method data
-      - name: bin
-        type: string
-        description: The first 6 digits of the card (BIN)
-      - name: lastFourDigits
-        type: string
-        description: The last 4 digits of the card
-      - name: brand
-        type: string
-        description: The card payment network (e.g., Visa, Mastercard)
-      - name: issuer
-        type: string | null
-        description: The card issuing bank
-      - name: cardType
-        type: string
-        description: The card type (CREDIT, DEBIT, etc.)
-      - name: cardLevel
-        type: string | null
-        description: The card level
-      - name: isoCountryName
-        type: string
-        description: The issuer country name
-      - name: isoATwo
-        type: string
-        description: The issuer’s two-letter country code
-      - name: email
-        type: string
-        description: Buyer email
-      - name: riskSegments
-        type: array of objects
-        description: Risk segments for the payment method
-      - name: type
-        type: string
-        description: The risk segment type (e.g., autocharge, initial, etc.)
-      - name: riskSegment
-        type: string
-        description: The risk segment value (e.g., black, potential_high, etc.)
-      - name: products
-        type: array of objects
-        description: A list of products purchased in the order.
-      - name: durationDays
-        type: string
-        description: Product duration in days
-      - name: durationWeeks
-        type: string
-        description: Product duration in weeks
-      - name: durationMonths
-        type: string
-        description: Product duration in months
-      - name: isTrial
-        type: bool
-        description: Indicates whether the product is a trial
-      - name: availableForPurchase
-        type: bool
-        description: Availability for purchase
-      - name: availableForShop
-        type: bool
-        description: Availability for purchase in the Offer page
-      - name: availableForControlPanel
-        type: bool
-        description: Availability for purchase in the CP
-      - name: availableForAutocharge
-        type: bool
-        description: Autocharge availability
-      - name: actionType
-        type: string
-        description: Type of action (initial, oneclick etc)
-      - name: id
-        type: string
-        description: Unique product identifier
-      - name: code
-        type: string
-        description: Product code
-      - name: name
-        type: string
-        description: Product name in the EN locale
-      - name: quantity
-        type: string
-        description: The product quantity
-      - name: prices
-        type: object
-        description: Product price breakdown
-      - name: origin
-        type: |-
-          string
-          (float data)
-        description: Original amount of the item before discounts and taxes
-      - name: originAmountWithTax
-        type: |-
-          string
-          (float data)
-        description: Original item amount including tax
-      - name: discountPercent
-        type: |-
-          string
-          (float data)
-        description: Discount percentage applied to the original amount
-      - name: discount
-        type: |-
-          string
-          (float data)
-        description: Total discount amount applied to the original amount
-      - name: amountWithDiscount
-        type: |-
-          string
-          (float data)
-        description: Final amount after the discount is applied
-      - name: couponPercent
-        type: |-
-          string
-          (float data)
-        description: Percentage of the discount applied from the coupon
-      - name: couponCode
-        type: string | null
-        description: Coupon code used for the additional discount
-      - name: coupon
-        type: |-
-          string
-          (float data)
-        description: Total discount amount from the coupon
-      - name: amountWithDiscountAndCoupon
-        type: |-
-          string
-          (float data)
-        description: Final amount after both the discount and the coupon are applied
-      - name: taxPercent
-        type: |-
-          string
-          (float data)
-        description: Tax percentage applied to the final amount
-      - name: tax
-        type: |-
-          string
-          (float data)
-        description: Total tax amount applied to the final amount
-      - name: amountWithDiscountAndCouponAndTax
-        type: |-
-          string
-          (float data)
-        description: Final amount after applying the discount, coupon, and tax
-      - name: totalUsd
-        type: |-
-          string
-          (float data)
-        description: Total price in USD
-      - name: totalPrices
-        type: object
-        description: Total prices for the order.
-      - name: amountWithDiscount
-        type: |-
-          string
-          (float data)
-        description: Final amount after the discount is applied
-      - name: amountWithDiscountAndCoupon
-        type: |-
-          string
-          (float data)
-        description: Final amount after both the discount and the coupon are applied
-      - name: amountWithDiscountAndCouponAndTax
-        type: |-
-          string
-          (float data)
-        description: Final amount after applying the discount, coupon, and tax
-      - name: amountWithDiscountAndCouponAndTaxInUsd
-        type: |-
-          string
-          (float data)
-        description: Final amount after applying the discount, coupon, and tax in USD
-      - name: origin
-        type: |-
-          string
-          (float data)
-        description: Original amount of the item before discounts and taxes
-      - name: discount
-        type: |-
-          string
-          (float data)
-        description: Total discount amount applied to the original amount
-      - name: coupon
-        type: |-
-          string
-          (float data)
-        description: Total discount amount from the coupon
-      - name: tax
-        type: |-
-          string
-          (float data)
-        description: Total tax amount
-      - name: metaData
-        type: object
-        description: Charge meta data
+        type: array
+        description: No description provided in source.
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: orderId
+              type: string
+              description: Unique order identifier
+            - name: orderUuid
+              type: string
+              description: No description provided in source.
+              format: uuid
+              nullable: true
+            - name: type
+              type: string
+              description: No description provided in source.
+            - name: createdAt
+              type: string
+              description: No description provided in source.
+              example: 2023-11-02 18:28:07
+            - name: currency
+              type: string
+              description: Order currency code
+              example: USD
+            - name: subbrand
+              type: string
+              description: Sub-brand name, if available
+              nullable: true
+            - name: charges
+              type: array
+              description: A list of charges associated with the order
+              items:
+                type: object
+                description: No description provided in source.
+                children:
+                  - name: chargeId
+                    type: string
+                    description: A unique charge identifier in the system
+                    format: uuid
+                    example: 79814af1-b0ab-4e5d-9221-924e5c330b03
+                  - name: providerTransaction
+                    type: string
+                    description: The charge identifier on the provider side
+                    nullable: true
+                    example: "1097184955"
+                  - name: provider
+                    type: string
+                    description: The provider name used for the charge
+                    nullable: true
+                    example: bluesnap_com
+                  - name: mid
+                    type: string
+                    description: The provider MID name used for the charge
+                    nullable: true
+                    example: default
+                  - name: target
+                    type: string
+                    description: The charge target (original, cascade, etc.)
+                    example: cascade
+                  - name: descriptor
+                    type: string
+                    description: The payment descriptor
+                    nullable: true
+                    example: BS*mSpy Mobile App
+                  - name: status
+                    type: string
+                    description: The charge status (settled, declined, deferred)
+                    example: settled
+                  - name: code
+                    type: string
+                    description: No description provided in source.
+                    nullable: true
+                    example: braintree.verified
+                  - name: has3ds
+                    type: boolean
+                    description: Indicates whether 3DS was used during the charge.
+                  - name: amount
+                    type: string
+                    description: Provider code
+                    example: "33.00"
+                  - name: amountInUsd
+                    type: string
+                    description: The transaction amount equivalent in USD which includes discount, coupon and tax
+                    example: "40.00"
+                  - name: createdAt
+                    type: string
+                    description: No description provided in source.
+                    example: 2023-11-07T06:47:49+00:00
+                  - name: billingInfo
+                    type: object
+                    description: Buyer details
+                    children:
+                      - name: firstName
+                        type: string
+                        description: The payment method holder’s first name
+                        example: AutoQa
+                      - name: lastName
+                        type: string
+                        description: The payment method holder’s last name
+                        example: Tester
+                      - name: country
+                        type: string
+                        description: The buyer’s two-letter country code
+                        example: us
+                      - name: city
+                        type: string
+                        description: The buyer’s city
+                        example: New York
+                      - name: ipAddress
+                        type: string
+                        description: The buyer’s IP address
+                        example: 10.22.3.1
+                      - name: fingerprint
+                        type: string
+                        description: Browser/device fingerprint
+                        example: b109f7ff5b76b11db49fb89985d35e13
+                      - name: personalIdValue
+                        type: string
+                        description: The value of the identity document
+                      - name: personalIdType
+                        type: string
+                        description: The identity document type (e.g., CPF)
+                      - name: zip
+                        type: string
+                        description: Postal code
+                        nullable: true
+                      - name: state
+                        type: string
+                        description: Region / state
+                        nullable: true
+                      - name: street
+                        type: string
+                        description: Street address (street and building number)
+                        nullable: true
+                  - name: paymentMethod
+                    type: object
+                    description: Information about the payment method used
+                    children:
+                      - name: type
+                        type: string
+                        description: Payment method type (e.g. card, pay_pal, apple_pay, google_pay)
+                        example: card
+                      - name: data
+                        type: object
+                        description: Provider-specific object. For type=card can include card metadata fields like bin, brand, lastFourDigits, riskSegments.
+                        nullable: true
+                        example:
+                          bin: "411111"
+                          brand: visa
+                          lastFourDigits: "1111"
+                        children:
+                          - name: bin
+                            type: string
+                            description: The first 6 digits of the card (BIN)
+                            nullable: true
+                          - name: brand
+                            type: string
+                            description: The card payment network (e.g., Visa, Mastercard)
+                            nullable: true
+                          - name: cardLevel
+                            type: string
+                            description: The card level
+                            nullable: true
+                          - name: cardType
+                            type: string
+                            description: The card type (CREDIT, DEBIT, etc.)
+                            nullable: true
+                          - name: email
+                            type: string
+                            description: Buyer email
+                            nullable: true
+                          - name: isoATwo
+                            type: string
+                            description: The issuer’s two-letter country code
+                            nullable: true
+                          - name: isoCountryName
+                            type: string
+                            description: The issuer country name
+                            nullable: true
+                          - name: issuer
+                            type: string
+                            description: The card issuing bank
+                            nullable: true
+                          - name: lastFourDigits
+                            type: string
+                            description: The last 4 digits of the card
+                            nullable: true
+                          - name: riskSegments
+                            type: array
+                            description: Risk segments for the payment method
+                            items:
+                              type: object
+                              description: No description provided in source.
+                              children:
+                                - name: type
+                                  type: string
+                                  description: No description provided in source.
+                                  nullable: true
+                                - name: riskSegment
+                                  type: string
+                                  description: The risk segment value (e.g., black, potential_high, etc.)
+                                  nullable: true
+                          - name: "{key}"
+                            type: any
+                            description: Dynamic property value.
+            - name: products
+              type: array
+              description: A list of products purchased in the order.
+              items:
+                type: object
+                description: No description provided in source.
+                children:
+                  - name: id
+                    type: string
+                    description: Unique product identifier
+                    format: uuid
+                    example: 79814af1-b0ab-4e5d-9221-924e5c330b03
+                  - name: orderUuid
+                    type: string
+                    description: Order UUID
+                    format: uuid
+                    nullable: true
+                  - name: code
+                    type: string
+                    description: Product code
+                    example: TESTAI
+                  - name: name
+                    type: string
+                    description: Product name in the EN locale
+                    example: mSpy 12-Month Premium Subscription
+                  - name: durationDays
+                    type: string
+                    description: Product duration in days
+                  - name: durationWeeks
+                    type: string
+                    description: Product duration in weeks
+                  - name: durationMonths
+                    type: string
+                    description: Product duration in months
+                  - name: availableForPurchase
+                    type: boolean
+                    description: Availability for purchase
+                  - name: availableForShop
+                    type: boolean
+                    description: Availability for purchase in the Offer page
+                  - name: availableForControlPanel
+                    type: boolean
+                    description: Availability for purchase in the CP
+                  - name: availableForAutocharge
+                    type: boolean
+                    description: Autocharge availability
+                  - name: isTrial
+                    type: boolean
+                    description: Indicates whether the product is a trial
+                  - name: quantity
+                    type: integer
+                    description: The product quantity
+                  - name: actionType
+                    type: string
+                    description: Type of action (initial, oneclick etc)
+                    example: renew
+                  - name: prices
+                    type: object
+                    description: Product price breakdown
+                    children:
+                      - name: origin
+                        type: string
+                        description: Original amount of the item before discounts and taxes
+                      - name: originAmountWithTax
+                        type: string
+                        description: Original item amount including tax
+                      - name: discountPercent
+                        type: string
+                        description: Discount percentage applied to the original amount
+                      - name: discount
+                        type: string
+                        description: Total discount amount applied to the original amount
+                      - name: amountWithDiscount
+                        type: string
+                        description: Final amount after the discount is applied
+                      - name: couponPercent
+                        type: string
+                        description: Percentage of the discount applied from the coupon
+                      - name: couponCode
+                        type: string
+                        description: Coupon code used for the additional discount
+                        nullable: true
+                      - name: coupon
+                        type: string
+                        description: Total discount amount from the coupon
+                      - name: amountWithDiscountAndCoupon
+                        type: string
+                        description: Final amount after both the discount and the coupon are applied
+                      - name: taxPercent
+                        type: string
+                        description: Tax percentage applied to the final amount
+                      - name: tax
+                        type: string
+                        description: Tax amount applied to the product
+                      - name: amountWithDiscountAndCouponAndTax
+                        type: string
+                        description: Final amount after applying the discount, coupon, and tax
+                      - name: totalUsd
+                        type: string
+                        description: Total price in USD
+            - name: totalPrices
+              type: object
+              description: Total prices for the order.
+              children:
+                - name: origin
+                  type: string
+                  description: Original amount of the item before discounts and taxes
+                - name: discount
+                  type: string
+                  description: Total discount amount applied to the original amount
+                - name: amountWithDiscount
+                  type: string
+                  description: Final amount after the discount is applied
+                - name: coupon
+                  type: string
+                  description: Total discount amount from the coupon
+                - name: amountWithDiscountAndCoupon
+                  type: string
+                  description: Final amount after both the discount and the coupon are applied
+                - name: tax
+                  type: string
+                  description: No description provided in source.
+                - name: amountWithDiscountAndCouponAndTax
+                  type: string
+                  description: Final amount after applying the discount, coupon, and tax
+                - name: amountWithDiscountAndCouponAndTaxInUsd
+                  type: string
+                  description: Final amount after applying the discount, coupon, and tax in USD
+            - name: metaData
+              type: object
+              description: Charge meta data
       - name: meta
         type: object
         description: Provides metadata about the response
-      - name: type
-        type: string
-        description: Data type
-      - name: offset
-        type: integer
-        description: Shift in number of entities from the starting point
-      - name: total
-        type: integer
-        description: Total amount of entities
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: collection
+          - name: total
+            type: integer
+            description: Total amount of entities
+            nullable: true
+            example: "1"
+          - name: offset
+            type: integer
+            description: Shift in number of entities from the starting point
+            nullable: true
+            example: "0"
   - status: "404"
     description: Error response.
-    parameters: []
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
 blocks:
   - type: info
     title: Errors and interpretation

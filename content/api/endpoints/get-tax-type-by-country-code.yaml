@@ -1,0 +1,143 @@
+slug: get-tax-type-by-country-code
+title: Get tax type by country code
+description: Get tax type by country code
+method: GET
+path: /api/v2/taxes/type
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters: []
+queryParameters:
+  - name: countryIsoTwoCode
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 2
+    maxLength: 2
+    example: US
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Tax type
+    parameters:
+      - name: type
+        type: object
+        description: No description provided in source.
+        example: sales_tax
+  - status: "400"
+    description: Bad Request
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "404"
+    description: Tax type not found
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Exception error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+blocks: []
+requestExamples: []
+responseExamples: []

@@ -1,0 +1,377 @@
+slug: get-buyers-buyer-id-subscriptions-subscription-id-purchase
+title: Get product prices for subscription upgrade
+description: Get product prices for subscription upgrade
+method: GET
+path: /api/v2/buyers/{buyerId}/subscriptions/{subscriptionId}/purchase
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
+  - name: subscriptionId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: aaddd8af-700d-4696-8ffd-cc69b8850977
+queryParameters:
+  - name: isMobile
+    type: boolean
+    required: false
+    description: No description provided in source.
+    example: "false"
+  - name: couponCode
+    type: string
+    required: false
+    description: No description provided in source.
+    example: 30OFFM3
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Product list available for shop
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        nullable: true
+        children:
+          - name: currency
+            type: string
+            description: ISO 4217 code
+            default: USD
+            minLength: 3
+            maxLength: 3
+          - name: tax
+            type: object
+            description: No description provided in source.
+            children:
+              - name: type
+                type: string
+                description: No description provided in source.
+                example: vat
+              - name: country
+                type: string
+                description: No description provided in source.
+                example: nl
+          - name: chargeMethods
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: value
+                  type: string
+                  description: No description provided in source.
+                  example: "9903"
+                - name: type
+                  type: string
+                  description: No description provided in source.
+                  example: credit_card
+                - name: paymentMethodType
+                  type: string
+                  description: No description provided in source.
+                  example: card
+                - name: paymentMethodIdentifier
+                  type: string
+                  description: No description provided in source.
+                  example: "**** **** **** 9903"
+                - name: chargeMethodId
+                  type: string
+                  description: No description provided in source.
+                  format: uuid
+                  example: cc714b56-55f5-4806-afb7-98e3a5b96974
+          - name: products
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: id
+                  type: string
+                  description: No description provided in source.
+                  format: uuid
+                  example: cf3755f7-9366-4963-b71c-038bb40f221c
+                - name: code
+                  type: string
+                  description: No description provided in source.
+                  example: TESTAI
+                - name: name
+                  type: string
+                  description: No description provided in source.
+                  example: mSpy 12-Month Premium Subscription
+                - name: durationDays
+                  type: integer
+                  description: No description provided in source.
+                  example: "366"
+                - name: durationMonth
+                  type: integer
+                  description: No description provided in source.
+                  example: "12"
+                - name: isTrial
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForPurchase
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForShop
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForControlPanel
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: availableForAutocharge
+                  type: boolean
+                  description: No description provided in source.
+                  example: "true"
+                - name: precheckAutocharge
+                  type: object
+                  description: No description provided in source.
+                  children:
+                    - name: isPrechecked
+                      type: boolean
+                      description: No description provided in source.
+                      example: "false"
+                    - name: isShown
+                      type: boolean
+                      description: No description provided in source.
+                      example: "true"
+                - name: prices
+                  type: object
+                  description: No description provided in source.
+                  children:
+                    - name: amount
+                      type: object
+                      description: No description provided in source.
+                      children:
+                        - name: origin
+                          type: string
+                          description: No description provided in source.
+                          example: "50.00"
+                        - name: amountForUpgrade
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "50.00"
+                        - name: amountForDowngrade
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "10.00"
+                        - name: discountPercent
+                          type: number
+                          description: Applied discount
+                          nullable: true
+                          minimum: 0.01
+                          maximum: 99.99
+                          example: 25.25
+                        - name: discount
+                          type: string
+                          description: No description provided in source.
+                          example: "10.00"
+                        - name: amountWithDiscount
+                          type: string
+                          description: No description provided in source.
+                          example: "40.00"
+                        - name: couponPercent
+                          type: string
+                          description: No description provided in source.
+                          example: "25.00"
+                        - name: couponCode
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: XMAS25
+                        - name: coupon
+                          type: string
+                          description: No description provided in source.
+                          example: "10.00"
+                        - name: amountWithDiscountAndCoupon
+                          type: string
+                          description: No description provided in source.
+                          example: "30.00"
+                        - name: taxPercent
+                          type: string
+                          description: No description provided in source.
+                          example: "10.00"
+                        - name: tax
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "3.00"
+                        - name: amountWithDiscountAndCouponAndTax
+                          type: string
+                          description: No description provided in source.
+                          example: "33.00"
+                    - name: monthlyAmount
+                      type: object
+                      description: No description provided in source.
+                      children:
+                        - name: origin
+                          type: string
+                          description: No description provided in source.
+                          example: "50.00"
+                        - name: amountForUpgrade
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "50.00"
+                        - name: amountForDowngrade
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "10.00"
+                        - name: discountPercent
+                          type: number
+                          description: Applied discount
+                          nullable: true
+                          minimum: 0.01
+                          maximum: 99.99
+                          example: 25.25
+                        - name: discount
+                          type: string
+                          description: No description provided in source.
+                          example: "10.00"
+                        - name: amountWithDiscount
+                          type: string
+                          description: No description provided in source.
+                          example: "40.00"
+                        - name: couponPercent
+                          type: string
+                          description: No description provided in source.
+                          example: "25.00"
+                        - name: couponCode
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: XMAS25
+                        - name: coupon
+                          type: string
+                          description: No description provided in source.
+                          example: "10.00"
+                        - name: amountWithDiscountAndCoupon
+                          type: string
+                          description: No description provided in source.
+                          example: "30.00"
+                        - name: taxPercent
+                          type: string
+                          description: No description provided in source.
+                          example: "10.00"
+                        - name: tax
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "3.00"
+                        - name: amountWithDiscountAndCouponAndTax
+                          type: string
+                          description: No description provided in source.
+                          example: "33.00"
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: collection
+          - name: total
+            type: integer
+            description: No description provided in source.
+            nullable: true
+            example: "1"
+          - name: offset
+            type: integer
+            description: No description provided in source.
+            nullable: true
+            example: "0"
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Exception error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+blocks: []
+requestExamples: []
+responseExamples: []

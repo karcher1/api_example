@@ -9,31 +9,39 @@ headerParameters:
     type: string
     required: true
     description: a public key that identifies the merchant account (there can be several for one merchant)
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
     description: is responsible for information about the buyer's IP address
+    example: 10.10.10.10
   - name: x-date
     type: string
     required: true
     description: is responsible for the date and time of sending the request
+    example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
     description: generated on the merchant side
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
 pathParameters:
   - name: bin
     type: string
     required: true
     description: "BIN number of the card to search Standard: 8 digits."
+    pattern: ^(\d{6}|\d{8})$
+    example: "42424242"
 queryParameters: []
 requestBodyParameters: []
 responses:
@@ -43,48 +51,118 @@ responses:
       - name: data
         type: object
         description: Contains card information
-      - name: bin
-        type: string
-        description: BIN number of the card (6 or 8 significant)
-      - name: brand
-        type: string
-        description: Card brand (eg VISA, MasterCard)
-      - name: issuer
-        type: string
-        description: Card issuing bank
-      - name: cardLevel
-        type: string
-        description: Card level (eg Platinum)
-      - name: cardType
-        type: string
-        description: Card type (Credit/Debit)
-      - name: isoCountryName
-        type: string
-        description: Issuer's country
-      - name: riskSegments
-        type: object
-        description: Gives information about the risk segment of the card
-      - name: all
-        type: string
-        description: General risk segment without binding to payment type
-      - name: autocharge
-        type: string
-        description: Risk segment for autocharge payment type
-      - name: initial
-        type: string
-        description: Risk segment for initial payment type
-      - name: oneclick
-        type: string
-        description: Risk segment for oneclick payment type
-      - name: isoATwo
-        type: string
-        description: ISO 3166-1 alpha-2 country code
+        children:
+          - name: bin
+            type: string
+            description: BIN number of the card (6 or 8 significant)
+            example: "424242"
+          - name: brand
+            type: string
+            description: Card brand (eg VISA, MasterCard)
+            example: VISA
+          - name: riskSegments
+            type: object
+            description: Gives information about the risk segment of the card
+            children:
+              - name: all
+                type: string
+                description: General risk segment without binding to payment type
+                example: white
+              - name: initial
+                type: string
+                description: Risk segment for initial payment type
+                example: white
+              - name: oneclick
+                type: string
+                description: Risk segment for oneclick payment type
+                example: low
+              - name: autocharge
+                type: string
+                description: Risk segment for autocharge payment type
+                example: low
+          - name: issuer
+            type: string
+            description: Card issuing bank
+            nullable: true
+            example: STRIPE PAYMENTS UK LTD
+          - name: cardType
+            type: string
+            description: Card type (Credit/Debit)
+            nullable: true
+            example: CREDIT
+          - name: cardLevel
+            type: string
+            description: Card level (eg Platinum)
+            nullable: true
+            example: CLASSIC
+          - name: isoCountryName
+            type: string
+            description: Issuer's country
+            nullable: true
+            example: United Kingdom
+          - name: isoATwo
+            type: string
+            description: ISO 3166-1 alpha-2 country code
+            nullable: true
+            example: GB
       - name: meta
         type: object
         description: Provides metadata about the response
-      - name: type
+        children:
+          - name: type
+            type: string
+            description: Data type
+            example: entity
+  - status: "404"
+    description: CardBin not found
+    parameters:
+      - name: uuid
         type: string
-        description: Data type
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
 blocks:
   - type: info
     title: Errors and interpretation

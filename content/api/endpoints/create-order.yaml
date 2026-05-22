@@ -9,93 +9,137 @@ headerParameters:
     type: string
     required: true
     description: a public key that identifies the merchant account (there can be several for one merchant)
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
     description: is responsible for information about the buyer's IP address
+    example: 10.10.10.10
   - name: x-date
     type: string
     required: true
     description: is responsible for the date and time of sending the request
+    example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
     description: generated on the merchant side
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
   - name: x-google-analytics-client-id
     type: string
-    required: false
+    required: true
     description: client identifier for Google Analytics
+    example: GA1.3.1034945594.1649316099
 pathParameters: []
 queryParameters: []
 requestBodyParameters:
-  - name: returnUrl
-    type: string
-    required: true
-    description: "The full URL of the merchant page to which the user will be redirected after a successful payment. NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta. These placeholders will be automatically replaced with the corresponding values from the request."
   - name: product
     type: object
     required: true
     description: Product information for purchase
-  - name: currency
-    type: string | null
-    required: false
-    description: "The currency in which the payment will be made. If not transferred, the recommended currency determined by IP will be used. Standard: ISO 4217 Alphabetic."
-  - name: code
-    type: string
-    required: true
-    description: Product code to buy
+    children:
+      - name: code
+        type: string
+        required: true
+        description: Product code to buy
+        example: TESTAD
+      - name: currency
+        type: string
+        required: false
+        description: "The currency in which the payment will be made. If not transferred, the recommended currency determined by IP will be used. Standard: ISO 4217 Alphabetic."
+        default: USD
+        minLength: 3
+        maxLength: 3
   - name: buyer
     type: object
     required: false
     description: Information about the buyer trying to make the payment. When generating orders from the Shop, the transfer of this key is MANDATORY
-  - name: email
-    type: string
-    required: false
-    description: Buyer email to which the purchased product will be linked. Required to establish a connection between previously made payments and a buyer, to connect to an existing account.
-  - name: locale
-    type: string
-    required: false
-    description: "Localization language Standard: ISO 639 set 1."
-  - name: metaData
+    children:
+      - name: email
+        type: string
+        required: false
+        description: Buyer email to which the purchased product will be linked. Required to establish a connection between previously made payments and a buyer, to connect to an existing account.
+        format: email
+        nullable: true
+      - name: locale
+        type: string
+        required: false
+        description: "Localization language Standard: ISO 639 set 1."
+        default: en
+        minLength: 2
+        maxLength: 2
+  - name: qa
     type: object
     required: false
-    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
-  - name: Attributes for metaData are dynamic
-    type: string | array | object
+    description: Data for QA testing
+    children:
+      - name: countryCode
+        type: string
+        required: false
+        description: No description provided in source.
+        nullable: true
+  - name: metaData
+    type: array
     required: false
-    description: Contains transmitted metadata
+    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
+    items:
+      type: object
+      required: false
+      description: No description provided in source.
   - name: buyerMeta
     type: object
     required: false
     description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
-  - name: Attributes for metaData are dynamic
-    type: string | array | object
-    required: false
-    description: Contains transmitted metadata
-  - name: autoChargeStatus
-    type: bool | null
-    required: false
-    description: Specifies autocharge settings for the product. If null is transmitted, the autocharge will be displayed according to the precheck_autocharge_config setting.
+    nullable: true
+    children:
+      - name: Attributes for metaData are dynamic
+        type: any
+        required: false
+        description: Contains transmitted metadata
   - name: sequence
     type: string
     required: false
     description: Internal user ID
+    nullable: true
   - name: discount
-    type: float
+    type: number
     required: false
     description: "Application of the discount (% value) to the initial cost of the product Standard: min: 0.01, max: 99.99."
+    nullable: true
+    minimum: 0.01
+    maximum: 99.99
+    example: 25.25
   - name: coupon
     type: string
     required: false
     description: Application of the coupon discount to the initial cost of the product. If a discount was applied to the initial price of the product, then the coupon is applied to the price including the discount.
+    nullable: true
+  - name: subbrand
+    type: string
+    required: false
+    description: No description provided in source.
+    nullable: true
+  - name: returnUrl
+    type: string
+    required: false
+    description: "The full URL of the merchant page to which the user will be redirected after a successful payment. NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta. These placeholders will be automatically replaced with the corresponding values from the request."
+    format: uri
+    nullable: true
+  - name: autoChargeStatus
+    type: boolean
+    required: false
+    description: Specifies autocharge settings for the product. If null is transmitted, the autocharge will be displayed according to the precheck_autocharge_config setting.
+    nullable: true
 responses:
   - status: "200"
     description: Successful response.
@@ -103,36 +147,111 @@ responses:
       - name: data
         type: object
         description: Contains information related to the created order
-      - name: url
-        type: string
-        description: Link to the newly created order
-      - name: params
-        type: object
-        description: Contains concise information about the newly created order
-      - name: metaData
-        type: object
-        description: Represents the transmitted internal meta-information
-      - name: Attributes for metaData are dynamic
-        type: string | array | object
-        description: Contains transmitted metadata
-      - name: sequence
-        type: string
-        description: Internal user ID
-      - name: discount
-        type: integer
-        description: The discount applied to the initial cost of the product
-      - name: coupon
-        type: string
-        description: The coupon discount applied to the initial cost of the product. If a discount was applied to the initial price of the product, then the coupon is applied to the price including the discount.
-      - name: googleAnalyticsClientId
-        type: string
-        description: Transmitted client ID for google-analytics
+        children:
+          - name: url
+            type: string
+            description: Link to the newly created order
+            example: http://pay-front-mspy.minikube/checkout-billing/JcYn4Yw1
+          - name: params
+            type: object
+            description: Contains concise information about the newly created order
+            children:
+              - name: metaData
+                type: array
+                description: Represents the transmitted internal meta-information
+                nullable: true
+                items:
+                  type: object
+                  description: No description provided in source.
+              - name: sequence
+                type: string
+                description: Internal user ID
+                nullable: true
+              - name: discount
+                type: integer
+                description: The discount applied to the initial cost of the product
+                nullable: true
+              - name: coupon
+                type: string
+                description: The coupon discount applied to the initial cost of the product. If a discount was applied to the initial price of the product, then the coupon is applied to the price including the discount.
+                nullable: true
+              - name: googleAnalyticsClientId
+                type: string
+                description: Transmitted client ID for google-analytics
+                nullable: true
       - name: meta
         type: object
         description: Provides metadata about the response
-      - name: type
+        children:
+          - name: type
+            type: string
+            description: Data type
+            example: entity
+  - status: "404"
+    description: Entity not found
+    parameters:
+      - name: uuid
         type: string
-        description: Data type
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Exception error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
 blocks:
   - type: info
     title: Discount and coupon

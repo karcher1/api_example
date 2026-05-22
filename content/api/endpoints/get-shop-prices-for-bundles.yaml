@@ -1,0 +1,449 @@
+slug: get-shop-prices-for-bundles
+title: Get shop prices for bundles
+description: Get shop prices for bundles
+method: POST
+path: /api/v3/products/shop-prices/bundles
+status: lts
+headerParameters:
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters: []
+queryParameters: []
+requestBodyParameters:
+  - name: currency
+    type: string
+    required: false
+    description: ISO 4217 code
+    default: USD
+    minLength: 3
+    maxLength: 3
+  - name: isMobile
+    type: boolean
+    required: true
+    description: No description provided in source.
+  - name: discount
+    type: number
+    required: false
+    description: Applied discount
+    nullable: true
+    minimum: 0.01
+    maximum: 99.99
+    example: 25.25
+  - name: locale
+    type: string
+    required: false
+    description: No description provided in source.
+    example: en
+  - name: bundles
+    type: array
+    required: true
+    description: No description provided in source.
+    items:
+      type: object
+      required: false
+      description: No description provided in source.
+      children:
+        - name: bundleHashKey
+          type: string
+          required: false
+          description: No description provided in source.
+        - name: products
+          type: array
+          required: false
+          description: No description provided in source.
+          items:
+            type: object
+            required: false
+            description: No description provided in source.
+            children:
+              - name: productHashKey
+                type: string
+                required: false
+                description: No description provided in source.
+              - name: productCode
+                type: string
+                required: false
+                description: No description provided in source.
+              - name: couponCode
+                type: string
+                required: false
+                description: No description provided in source.
+              - name: quantity
+                type: integer
+                required: false
+                description: No description provided in source.
+              - name: customPrice
+                type: number
+                required: false
+                description: No description provided in source.
+responses:
+  - status: "200"
+    description: Shop prices for bundles
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: currency
+            type: string
+            description: ISO 4217 code
+            default: USD
+            minLength: 3
+            maxLength: 3
+          - name: tax
+            type: object
+            description: No description provided in source.
+            children:
+              - name: type
+                type: string
+                description: Type of tax applied
+              - name: country
+                type: string
+                description: Country where the tax is applied
+          - name: chargeMethods
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: paymentMethodType
+                  type: string
+                  description: Type of payment method used (e.g., card, pay_pal)
+                - name: paymentMethodIdentifier
+                  type: string
+                  description: Identifier of the payment method
+                - name: chargeMethodId
+                  type: string
+                  description: Unique identifier of the charge method
+          - name: bundles
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: bundleHashKey
+                  type: string
+                  description: Unique hash key of the bundle
+                - name: totalAmount
+                  type: object
+                  description: No description provided in source.
+                  children:
+                    - name: origin
+                      type: string
+                      description: Original amount of the bundle
+                    - name: discountsAndCoupons
+                      type: string
+                      description: Total discounts and coupons applied
+                      nullable: true
+                      example: "223.63"
+                    - name: amountWithDiscountsAndCoupons
+                      type: string
+                      description: Amount after applying discounts and coupons
+                      nullable: true
+                      example: "1225.74"
+                    - name: taxPercent
+                      type: string
+                      description: Tax percentage applied to the bundle
+                    - name: tax
+                      type: string
+                      description: Tax amount applied to the bundle
+                    - name: amountWithDiscountsAndCouponsAndTax
+                      type: string
+                      description: Final amount after applying tax
+                      nullable: true
+                      example: "1225.74"
+                - name: products
+                  type: array
+                  description: No description provided in source.
+                  items:
+                    type: object
+                    description: No description provided in source.
+                    children:
+                      - name: productHashKey
+                        type: string
+                        description: Unique hash key of the product
+                      - name: code
+                        type: string
+                        description: Product code
+                      - name: isTrial
+                        type: boolean
+                        description: Indicates if the product is a trial version
+                      - name: action
+                        type: string
+                        description: Action performed on the product
+                      - name: subscriptionId
+                        type: string
+                        description: Unique identifier of the subscription
+                      - name: precheckAutocharge
+                        type: object
+                        description: No description provided in source.
+                        children:
+                          - name: isPrechecked
+                            type: boolean
+                            description: Indicates if autocharge is prechecked
+                          - name: isShown
+                            type: boolean
+                            description: Indicates if autocharge option is shown
+                      - name: amount
+                        type: object
+                        description: No description provided in source.
+                        children:
+                          - name: origin
+                            type: string
+                            description: Original amount of the product
+                          - name: amountForAction
+                            type: string
+                            description: Amount calculated for the action
+                          - name: discountPercent
+                            type: string
+                            description: Discount percentage applied
+                          - name: discount
+                            type: string
+                            description: Discount amount applied
+                          - name: amountWithDiscount
+                            type: string
+                            description: Amount after applying discount
+                          - name: couponPercent
+                            type: string
+                            description: Coupon percentage applied
+                          - name: couponCode
+                            type: string
+                            description: Coupon code applied
+                          - name: coupon
+                            type: string
+                            description: Coupon amount applied
+                          - name: amountWithDiscountAndCoupon
+                            type: string
+                            description: Amount after applying discount and coupon
+                          - name: taxPercent
+                            type: string
+                            description: Tax percentage applied to the product
+                          - name: tax
+                            type: string
+                            description: Tax amount applied to the product
+                          - name: amountWithDiscountAndCouponAndTax
+                            type: string
+                            description: Final amount after applying tax
+          - name: products
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: id
+                  type: string
+                  description: Unique identifier of the product
+                - name: code
+                  type: string
+                  description: Product code
+                - name: name
+                  type: string
+                  description: Name of the product
+                - name: nameByLocale
+                  type: string
+                  description: Localized name of the product
+                - name: durationDays
+                  type: integer
+                  description: Duration of the product in days
+                - name: durationWeeks
+                  type: integer
+                  description: Duration of the product in weeks
+                - name: durationMonth
+                  type: integer
+                  description: Duration of the product in months
+                - name: availableForPurchase
+                  type: boolean
+                  description: Indicates if the product is available for purchase
+                - name: availableForShop
+                  type: boolean
+                  description: Indicates if the product is available in the shop
+                - name: availableForControlPanel
+                  type: boolean
+                  description: Indicates if the product is available in the control panel
+                - name: availableForAutocharge
+                  type: boolean
+                  description: Indicates if the product is available for autocharge
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: Type of the response
+          - name: total
+            type: integer
+            description: Total number of items in the response
+          - name: offset
+            type: integer
+            description: Offset of the response
+  - status: "404"
+    description: Product not found
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Internal Server Error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+blocks: []
+requestExamples:
+  - label: JSON
+    language: json
+    code: |-
+      {
+        "isMobile": true,
+        "currency": "USD",
+        "discount": 50.55,
+        "locale": "en",
+        "bundles": [
+          {
+            "bundleHashKey": "bundlehashKey",
+            "products": [
+              {
+                "productHashKey": "productHashKey1",
+                "productCode": "TESTAH",
+                "couponCode": "trial",
+                "quantity": 10,
+                "customPrice": 99.99
+              }
+            ]
+          }
+        ]
+      }
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "bundles": [
+            {
+              "bundleHashKey": "bundlehashKey",
+              "totalAmount": {
+                "discountsAndCoupons": "223.63",
+                "amountWithDiscountsAndCoupons": "1225.74",
+                "taxPercent": "0.00",
+                "amountWithDiscountsAndCouponsAndTax": "1225.74",
+                "origin": "549.46",
+                "tax": "0.00"
+              },
+              "products": [
+                {
+                  "productHashKey": "productHashKey1",
+                  "isTrial": false,
+                  "currentDurationDays": 28,
+                  "precheckAutoCharge": {
+                    "isPrechecked": true,
+                    "isShown": true
+                  },
+                  "code": "TESTAH",
+                  "quantity": 10,
+                  "amount": {
+                    "originAmountWithTax": "999.90",
+                    "amountForAction": "999.90",
+                    "discountPercent": "0.00",
+                    "amountWithDiscount": "999.90",
+                    "couponPercent": "0.00",
+                    "couponCode": "trial",
+                    "amountWithDiscountAndCoupon": "999.90",
+                    "taxPercent": "0.00",
+                    "amountWithDiscountAndCouponAndTax": "999.90",
+                    "origin": "99.99",
+                    "discount": "0.00",
+                    "coupon": "0.00",
+                    "tax": "0.00"
+                  }
+                }
+              ]
+            }
+          ],
+          "products": [
+            {
+              "nameByLocale": "mSpy 3-Month Basic Subscription",
+              "durationDays": 84,
+              "durationWeeks": 12,
+              "durationMonths": 3,
+              "availableForShop": true,
+              "availableForControlPanel": true,
+              "availableForAutocharge": true,
+              "isActive": true,
+              "id": "42ad807e-9fa2-4951-9d8f-fe1935be770a",
+              "code": "TESTAC",
+              "name": "v2-bidJ-31-VjRtNWloNGVhLzZvWTVZRThrUnNFN2JjSWxhdXNLNzVrQXYvWnZtUzdVOD0="
+            }
+          ],
+          "currency": "USD",
+          "tax": {
+            "type": "vat",
+            "country": "us"
+          }
+        },
+        "meta": []
+      }

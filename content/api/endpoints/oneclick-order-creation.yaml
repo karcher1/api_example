@@ -1,0 +1,220 @@
+slug: oneclick-order-creation
+title: Oneclick order creation.
+description: Oneclick order creation.
+method: POST
+path: /api/v2/buyers/{buyerId}/oneclick
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
+queryParameters: []
+requestBodyParameters:
+  - name: currency
+    type: string
+    required: true
+    description: ISO 4217 code
+    default: USD
+    minLength: 3
+    maxLength: 3
+  - name: chargeMethodId
+    type: string
+    required: true
+    description: No description provided in source.
+    format: uuid
+  - name: couponCode
+    type: string
+    required: false
+    description: No description provided in source.
+    nullable: true
+    example: SUM30
+  - name: items
+    type: array
+    required: true
+    description: No description provided in source.
+    items:
+      type: object
+      required: false
+      description: No description provided in source.
+      children:
+        - name: type
+          type: string
+          required: true
+          description: No description provided in source.
+          enum:
+            - downgrade
+            - purchase
+            - renew
+            - upgrade
+        - name: productCode
+          type: string
+          required: true
+          description: No description provided in source.
+          example: TESTAF
+        - name: autoChargeStatus
+          type: boolean
+          required: true
+          description: No description provided in source.
+        - name: quantity
+          type: integer
+          required: false
+          description: "Only for purchase available, default: 1"
+          nullable: true
+          minimum: 1
+          maximum: 8
+        - name: discount
+          type: integer
+          required: false
+          description: No description provided in source.
+          nullable: true
+          example: "15.99"
+        - name: subscriptionId
+          type: string
+          required: false
+          description: "Required if action type: upgrade|renew|downgrade used."
+          format: uuid
+          nullable: true
+responses:
+  - status: "201"
+    description: Oneclick order created successfully.
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: id
+            type: string
+            description: OrderId of created Entity
+            example: qg0MrM9b
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: entity
+  - status: "400"
+    description: Bad Request
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "404"
+    description: One of specified entity not found
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Exception error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+blocks: []
+requestExamples: []
+responseExamples: []

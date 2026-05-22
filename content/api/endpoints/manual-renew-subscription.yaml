@@ -1,0 +1,140 @@
+slug: manual-renew-subscription
+title: Manual renew subscription
+description: Manual renew subscription
+method: POST
+path: /api/v2/buyers/{buyerId}/subscriptions/{subscriptionId}/renew
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
+  - name: subscriptionId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: aaddd8af-700d-4696-8ffd-cc69b8850977
+queryParameters: []
+requestBodyParameters:
+  - name: productId
+    type: string
+    required: true
+    description: No description provided in source.
+    format: uuid
+responses:
+  - status: "200"
+    description: Resulted subscription after renew
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: id
+            type: string
+            description: No description provided in source.
+            example: bb5403a2-8e20-44e9-a70c-55e6886b414e
+          - name: startDate
+            type: string
+            description: No description provided in source.
+            example: 2024-01-12T12:55:48+00:00
+          - name: endDate
+            type: string
+            description: No description provided in source.
+            example: 2024-06-12T12:55:48+00:00
+          - name: status
+            type: string
+            description: No description provided in source.
+            example: active
+          - name: autoChargeStatus
+            type: boolean
+            description: No description provided in source.
+            example: "false"
+          - name: isManual
+            type: boolean
+            description: No description provided in source.
+            example: "true"
+          - name: createdAt
+            type: string
+            description: No description provided in source.
+            example: 2024-01-12T12:56:10+00:00
+          - name: statusInfo
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: status
+                  type: string
+                  description: can be [active, expired, blocked, frozen, disabled, suspended]
+                  example: expired
+                - name: reason
+                  type: string
+                  description: No description provided in source.
+                  example: Subscription expired
+                - name: createdAt
+                  type: string
+                  description: No description provided in source.
+                  example: 2023-06-29T13:05:50+00:00
+          - name: freezeDetails
+            type: object
+            description: No description provided in source.
+            nullable: true
+            children:
+              - name: frozenAt
+                type: string
+                description: frozen date time at
+                example: 2024-03-13T11:14:18+00:00
+              - name: unfreezeAt
+                type: string
+                description: unfreeze date time at (can not be more 366 days)
+                example: 2024-04-14T11:14:18+00:00
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: entity
+blocks: []
+requestExamples: []
+responseExamples: []

@@ -9,47 +9,117 @@ headerParameters:
     type: string
     required: true
     description: a public key that identifies the merchant account (there can be several for one merchant)
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
     description: is responsible for information about the buyer's IP address
+    example: 10.10.10.10
   - name: x-date
     type: string
     required: true
     description: is responsible for the date and time of sending the request
+    example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
     description: generated on the merchant side
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
 pathParameters:
   - name: buyerId
     type: string
     required: true
     description: "Unique identifier of buyer in the system Standard: uuid."
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
 queryParameters: []
 requestBodyParameters:
   - name: chargeMethodTokenId
-    type: integer
+    type: string
     required: false
     description: Payment method token identifier
+    example: cbd6cf7d-3e0b-456a-b84f-dcbf0057c73f
 responses:
   - status: "204"
     description: Successful response without a response body.
     parameters: []
-  - status: "400"
-    description: Error response.
-    parameters: []
+  - status: "404"
+    description: Entity not found
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
   - status: "422"
     description: Error response.
-    parameters: []
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Internal Server Error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
 blocks:
   - type: info
     title: Errors and interpretation

@@ -1,0 +1,262 @@
+slug: get-initial-order-data
+title: Get initial order data
+description: Get initial order data
+method: GET
+path: /api/v3/orders/{orderId}/result
+status: lts
+headerParameters:
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters:
+  - name: orderId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 8
+    maxLength: 36
+    pattern: ^([A-Za-z0-9]{8}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$
+    example: kqBc47ju
+queryParameters:
+  - name: isMobile
+    type: boolean
+    required: false
+    description: No description provided in source.
+    example: "false"
+  - name: isForced
+    type: boolean
+    required: false
+    description: No description provided in source.
+    example: "false"
+requestBodyParameters: []
+responses:
+  - status: "200"
+    description: Charge result details
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: orderUuid
+            type: string
+            description: No description provided in source.
+            format: uuid
+            nullable: true
+          - name: chargeId
+            type: string
+            description: No description provided in source.
+            format: uuid
+          - name: chargeStatus
+            type: string
+            description: No description provided in source.
+            enum:
+              - authorized
+              - captured
+              - confirmed
+              - created
+              - deferred
+              - failed
+              - declined
+              - redirected
+              - settled
+              - verified
+          - name: provider
+            type: string
+            description: No description provided in source.
+            nullable: true
+            example: mspy
+          - name: paymentMethodType
+            type: string
+            description: No description provided in source.
+            nullable: true
+            enum:
+              - alipay
+              - apple_pay
+              - boleto
+              - boleto_flash
+              - card
+              - google_pay
+              - ideal
+              - mercado_pago
+              - oxxo
+              - paysafecard
+              - pay_pal
+              - paytm
+              - pay_with_crypto
+              - pix
+              - sofort
+              - spei
+              - upi
+              - web_pay
+              - wechat
+              - wire_transfer
+            example: card
+          - name: interaction
+            type: object
+            description: No description provided in source.
+            nullable: true
+            children:
+              - name: url
+                type: string
+                description: No description provided in source.
+              - name: method
+                type: string
+                description: No description provided in source.
+                example: GET
+              - name: params
+                type: array
+                description: No description provided in source.
+                items:
+                  type: string
+                  description: No description provided in source.
+          - name: error
+            type: object
+            description: No description provided in source.
+            nullable: true
+            children:
+              - name: uuid
+                type: string
+                description: No description provided in source.
+                format: uuid
+              - name: code
+                type: string
+                description: No description provided in source.
+              - name: message
+                type: string
+                description: No description provided in source.
+              - name: traceId
+                type: string
+                description: Unique request identifier
+                nullable: true
+                example: 082d86c339533af07c14252afcecc7bd
+          - name: hasPostTransaction
+            type: boolean
+            description: No description provided in source.
+            nullable: true
+            example: "true"
+          - name: thankYouPageType
+            type: string
+            description: No description provided in source.
+            nullable: true
+          - name: step
+            type: string
+            description: No description provided in source.
+            nullable: true
+            enum:
+              - READY_FOR_THANK_YOU_PAGE_LONG_TERM
+              - READY_FOR_POST_TRANSACTION_REDIRECT
+              - READY_FOR_SUCCESS_REDIRECT
+              - WAITING_FOR_QR_SCAN
+              - WAITING_FOR_PROVIDER_INTERACTION
+              - PAYMENT_FAILED
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: entity
+  - status: "204"
+    description: Order is still processing
+    parameters: []
+  - status: "404"
+    description: Entity not found
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: message
+            type: string
+            description: No description provided in source.
+            example: Entity not found
+      - name: meta
+        type: array
+        description: No description provided in source.
+        items:
+          type: string
+          description: No description provided in source.
+  - status: "422"
+    description: Unprocessable Content
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: message
+            type: string
+            description: No description provided in source.
+            example: Validation failed
+          - name: violations
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: field
+                  type: string
+                  description: No description provided in source.
+                  example: data[productId]
+                - name: title
+                  type: string
+                  description: No description provided in source.
+                  example: This value should not be blank.
+                - name: values
+                  type: string
+                  description: No description provided in source.
+                  example: 37b08860-926b-4837-983d-68bb34ad4cc8
+      - name: meta
+        type: array
+        description: No description provided in source.
+        items:
+          type: string
+          description: No description provided in source.
+  - status: "500"
+    description: Something went wrong
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: message
+            type: string
+            description: No description provided in source.
+            example: Something went wrong
+      - name: meta
+        type: array
+        description: No description provided in source.
+        items:
+          type: string
+          description: No description provided in source.
+blocks: []
+requestExamples:
+  - label: cURL
+    language: bash
+    code: curl -X GET "https://api.example.com/api/v3/orders/MJ9CqVS0/result?isMobile=false"
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "chargeId": "f5aa9513-0f57-434e-891e-5d1af0169441",
+          "chargeStatus": "authorized",
+          "provider": "adyen",
+          "paymentMethodType": "card",
+          "hasPostTransaction": true,
+          "thankYouPageType": "regular",
+          "step": "READY_FOR_POST_TRANSACTION_REDIRECT"
+        },
+        "meta": {
+          "type": "entity"
+        }
+      }

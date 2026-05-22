@@ -1,0 +1,138 @@
+slug: set-token-for-subscription
+title: Set token for subscription
+description: Set token for subscription
+method: PUT
+path: /api/v3/buyers/{buyerId}/subscriptions/{subscriptionId}/set-token
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
+  - name: subscriptionId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: aaddd8af-700d-4696-8ffd-cc69b8850977
+queryParameters: []
+requestBodyParameters:
+  - name: chargeMethodTokenId
+    type: string
+    required: true
+    description: UUID or numeric ID of a charge method token
+    example: cbd6cf7d-3e0b-456a-b84f-dcbf0057c73f
+responses:
+  - status: "204"
+    description: Token set successfully
+    parameters: []
+  - status: "404"
+    description: Entity not found
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: message
+            type: string
+            description: No description provided in source.
+            example: Entity not found
+      - name: meta
+        type: array
+        description: No description provided in source.
+        items:
+          type: string
+          description: No description provided in source.
+  - status: "422"
+    description: Unprocessable Content
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: message
+            type: string
+            description: No description provided in source.
+            example: Validation failed
+          - name: violations
+            type: array
+            description: No description provided in source.
+            items:
+              type: object
+              description: No description provided in source.
+              children:
+                - name: field
+                  type: string
+                  description: No description provided in source.
+                  example: data[productId]
+                - name: title
+                  type: string
+                  description: No description provided in source.
+                  example: This value should not be blank.
+                - name: values
+                  type: string
+                  description: No description provided in source.
+                  example: 37b08860-926b-4837-983d-68bb34ad4cc8
+      - name: meta
+        type: array
+        description: No description provided in source.
+        items:
+          type: string
+          description: No description provided in source.
+  - status: "500"
+    description: Something went wrong
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: message
+            type: string
+            description: No description provided in source.
+            example: Something went wrong
+      - name: meta
+        type: array
+        description: No description provided in source.
+        items:
+          type: string
+          description: No description provided in source.
+blocks: []
+requestExamples: []
+responseExamples: []

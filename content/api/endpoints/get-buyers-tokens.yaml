@@ -9,31 +9,41 @@ headerParameters:
     type: string
     required: true
     description: a public key that identifies the merchant account (there can be several for one merchant)
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
     description: is responsible for information about the buyer's IP address
+    example: 10.10.10.10
   - name: x-date
     type: string
     required: true
     description: is responsible for the date and time of sending the request
+    example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
     description: generated on the merchant side
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
 pathParameters:
   - name: buyerId
     type: string
     required: true
     description: "Unique ID of buyer in the system Standard: uuid."
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
 queryParameters: []
 requestBodyParameters: []
 responses:
@@ -41,65 +51,137 @@ responses:
     description: Successful response.
     parameters:
       - name: data
-        type: array of objects
+        type: array
         description: An array of payment methods with tokens
-      - name: id
-        type: string
-        description: Unique payment method identifier
-      - name: paymentMethodType
-        type: string
-        description: Payment method type
-      - name: paymentMethodIdentifier
-        type: string
-        description: Payment method identifier
-      - name: value
-        type: string
-        description: Additional information about the payment method
-      - name: tokens
-        type: array of objects
-        description: An array of tokens associated with the payment method
-      - name: id
-        type: string
-        description: Token identifier
-      - name: provider
-        type: string
-        description: "Payment provider (eg: braintree)"
-      - name: mid
-        type: string
-        description: Provider mid for which payment was made
-      - name: isEnabled
-        type: bool
-        description: Token activity status
-      - name: bin
-        type: string
-        description: BIN number of the card
-      - name: chargeId
-        type: string
-        description: Transaction identifier
-      - name: email
-        type: string
-        description: Token-related email
-      - name: createdAt
-        type: string
-        description: Date of creation of the token
-      - name: updatedAt
-        type: string
-        description: Date of last update of token
-      - name: successfullyUsedAt
-        type: string
-        description: Date of last successful use of the token
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: id
+              type: string
+              description: No description provided in source.
+              minLength: 36
+              maxLength: 36
+              pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+              example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+            - name: paymentMethodType
+              type: string
+              description: Payment method type
+              example: card
+            - name: paymentMethodIdentifier
+              type: string
+              description: Payment method identifier
+              example: 461fb87dfb1336593ae416e9ca6b8a1652c4262d6ea8b694acfe1c873013ddb1124e23cbb02ef1c7af5717b1b649476ff633c1fa63f2190aec215ae0c0818849
+            - name: value
+              type: string
+              description: Additional information about the payment method
+              example: "5032"
+            - name: tokens
+              type: array
+              description: An array of tokens associated with the payment method
+              items:
+                type: object
+                description: No description provided in source.
+                children:
+                  - name: id
+                    type: integer
+                    description: No description provided in source.
+                    example: "123123"
+                  - name: provider
+                    type: string
+                    description: "Payment provider (eg: braintree)"
+                    example: braintree
+                  - name: mid
+                    type: string
+                    description: Provider mid for which payment was made
+                    example: default
+                  - name: isEnabled
+                    type: boolean
+                    description: Token activity status
+                    example: "true"
+                  - name: bin
+                    type: string
+                    description: BIN number of the card
+                    example: "411111"
+                  - name: chargeId
+                    type: string
+                    description: Transaction identifier
+                    minLength: 36
+                    maxLength: 36
+                    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+                    example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+                  - name: email
+                    type: string
+                    description: Token-related email
+                    example: buyer-email@example.test
+                  - name: createdAt
+                    type: string
+                    description: Date of creation of the token
+                    format: date-time
+                    example: 2023-11-02 18:28:07
+                  - name: updatedAt
+                    type: string
+                    description: Date of last update of token
+                    format: date-time
+                    example: 2023-11-02 18:28:07
+                  - name: successfullyUsedAt
+                    type: string
+                    description: Date of last successful use of the token
+                    format: date-time
+                    example: 2023-11-02 18:28:07
       - name: meta
         type: object
         description: Provides metadata about the response
-      - name: type
+        children:
+          - name: type
+            type: string
+            description: Data type
+            example: collection
+          - name: total
+            type: integer
+            description: Total amount of entities
+            nullable: true
+            example: "1"
+          - name: offset
+            type: integer
+            description: Shift in number of entities from the starting point
+            nullable: true
+            example: "0"
+  - status: "404"
+    description: Entity not found
+    parameters:
+      - name: uuid
         type: string
-        description: Data type
-      - name: offset
-        type: integer
-        description: Shift in number of entities from the starting point
-      - name: total
-        type: integer
-        description: Total amount of entities
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "500"
+    description: Exception error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
 blocks:
   - type: info
     title: Errors and interpretation

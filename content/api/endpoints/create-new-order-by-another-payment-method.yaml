@@ -1,0 +1,280 @@
+slug: create-new-order-by-another-payment-method
+title: Create new Order by another-payment-method
+description: Create new Order by another-payment-method
+method: POST
+path: /api/v3/buyers/{buyerId}/another-payment-method
+status: lts
+headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 10.10.10.10
+  - name: x-date
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 2025-02-19T23:59:59
+  - name: x-token
+    type: string
+    required: true
+    description: No description provided in source.
+    example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  - name: x-source
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front
+  - name: x-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: pay-front-mspy
+  - name: x-google-analytics-client-id
+    type: string
+    required: true
+    description: No description provided in source.
+    example: GA1.3.1034945594.1649316099
+pathParameters:
+  - name: buyerId
+    type: string
+    required: true
+    description: No description provided in source.
+    minLength: 36
+    maxLength: 36
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    example: 614bf97d-02b8-4855-8ba7-e14bea65920f
+queryParameters: []
+requestBodyParameters:
+  - name: isMobile
+    type: boolean
+    required: true
+    description: No description provided in source.
+    nullable: false
+  - name: sequence
+    type: string
+    required: false
+    description: No description provided in source.
+    nullable: true
+    example: "9876543234567898765"
+  - name: currency
+    type: string
+    required: false
+    description: ISO 4217 code
+    default: USD
+    minLength: 3
+    maxLength: 3
+  - name: metaData
+    type: object
+    required: false
+    description: No description provided in source.
+  - name: returnUrl
+    type: string
+    required: false
+    description: No description provided in source.
+    format: uri
+    nullable: true
+  - name: products
+    type: array
+    required: true
+    description: No description provided in source.
+    items:
+      type: object
+      required: false
+      description: No description provided in source.
+      children:
+        - name: actionName
+          type: string
+          required: false
+          description: Action to be performed on the product (e.g., purchase, renew, upgrade, downgrade)
+          enum:
+            - downgrade
+            - purchase
+            - renew
+            - upgrade
+        - name: productCode
+          type: string
+          required: false
+          description: Code of the product
+        - name: couponCode
+          type: string
+          required: false
+          description: Code of the coupon applied
+          nullable: true
+        - name: subscriptionId
+          type: string
+          required: false
+          description: Unique identifier of the subscription, required for renew, upgrade and downgrade actions
+          nullable: true
+        - name: discount
+          type: string
+          required: false
+          description: Discount applied to the product
+          nullable: true
+        - name: quantity
+          type: integer
+          required: false
+          description: Quantity of the product to be purchased. Only for purchase action available
+        - name: autoChargeStatus
+          type: boolean
+          required: false
+          description: Promoted autoChargeStatus for current product
+responses:
+  - status: "200"
+    description: Order created successfully
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: url
+            type: string
+            description: No description provided in source.
+            example: http://pay-front-mspy.minikube/checkout-billing/JcYn4Yw1
+          - name: params
+            type: object
+            description: No description provided in source.
+            children:
+              - name: metaData
+                type: array
+                description: No description provided in source.
+                nullable: true
+                items:
+                  type: object
+                  description: No description provided in source.
+              - name: sequence
+                type: string
+                description: No description provided in source.
+                nullable: true
+                example: "9876543234567898765"
+              - name: discount
+                type: integer
+                description: No description provided in source.
+                nullable: true
+                example: "null"
+              - name: coupon
+                type: string
+                description: No description provided in source.
+                nullable: true
+                example: "null"
+              - name: googleAnalyticsClientId
+                type: string
+                description: No description provided in source.
+                nullable: true
+                example: ga1234566543
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: No description provided in source.
+            example: entity
+  - status: "404"
+    description: Some entity not found
+    parameters:
+      - name: data
+        type: object
+        description: No description provided in source.
+        children:
+          - name: id
+            type: string
+            description: Unique identifier of the order
+          - name: url
+            type: string
+            description: Order link
+      - name: meta
+        type: object
+        description: No description provided in source.
+        children:
+          - name: type
+            type: string
+            description: Type of the response
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
+  - status: "500"
+    description: Internal Server Error
+    parameters:
+      - name: code
+        type: number
+        description: No description provided in source.
+        example: "0"
+      - name: message
+        type: string
+        description: Exception message
+        example: Short exception description.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+blocks: []
+requestExamples:
+  - label: cURL
+    language: bash
+    code: curl -X POST "https://api.example.com/api/v3/buyers/4ca07c05-e384-4182-a01a-dcf76381894a/another-payment-method"
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+        "products": [
+          {
+            "actionName": "purchase",
+            "productCode": "TESTAH",
+            "couponCode": "sub1kdiop20",
+            "quantity": 1
+          }
+        ],
+        "metaData": {
+          "customerId": "ac2d5bc9-4b20-42e7-b9ae-dff63db4ea8d"
+        },
+        "isMobile": false,
+        "returnUrl": "https://merchant.example.test?subscriptionId={subscriptionId}"
+      }
+responseExamples:
+  - label: "200"
+    language: json
+    code: |-
+      {
+        "data": {
+          "url": "https://st-pay-front-mspy-com.dmr308.co/initial-billing/jIlBXKAX",
+          "params": {
+            "metaData": {
+              "customerId": "ac2d5bc9-4b20-42e7-b9ae-dff63db4ea8d"
+            }
+          }
+        },
+        "meta": []
+      }

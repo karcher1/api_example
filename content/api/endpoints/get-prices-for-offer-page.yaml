@@ -5,30 +5,16 @@ method: POST
 path: /api/v3/products/shop-prices
 status: lts
 headerParameters:
-  - name: x-public-key
-    type: string
-    required: true
-    description: a public key that identifies the merchant account (there can be several for one merchant)
-  - name: x-buyer-ip
-    type: string
-    required: true
-    description: is responsible for information about the buyer's IP address
-  - name: x-date
-    type: string
-    required: true
-    description: is responsible for the date and time of sending the request
-  - name: x-token
-    type: string
-    required: true
-    description: generated on the merchant side
   - name: x-source
     type: string
     required: true
     description: pass the value shop
+    example: pay-front
   - name: x-id
     type: string
     required: true
     description: merchant name
+    example: pay-front-mspy
 pathParameters: []
 queryParameters: []
 requestBodyParameters:
@@ -36,38 +22,53 @@ requestBodyParameters:
     type: string
     required: false
     description: "The currency in which the prices should be returned Standard: ISO 4217 Alphabetic."
+    default: USD
+    minLength: 3
+    maxLength: 3
   - name: products
-    type: array of objects
+    type: array
     required: true
     description: An array of data about actions performed on the subscription(s)
-  - name: productCode
-    type: string
-    required: false
-    description: Product code of the item to be purchased
-  - name: couponCode
-    type: string
-    required: false
-    description: Coupon code to be applied
-  - name: discount
-    type: string | (float data)
-    required: false
-    description: Discount percentage to be applied
-  - name: priceCalculationType
-    type: object
-    required: false
-    description: "Controls how price information for the product is displayed: per day, week, or month"
-  - name: dailyAmount
-    type: bool
-    required: false
-    description: Includes information on product prices by day
-  - name: weeklyAmount
-    type: bool
-    required: false
-    description: Includes information on product prices by week
-  - name: monthlyAmount
-    type: bool
-    required: false
-    description: Includes information on product prices by month
+    items:
+      type: object
+      required: false
+      description: No description provided in source.
+      children:
+        - name: productCode
+          type: string
+          required: false
+          description: Product code of the item to be purchased
+          example: TESTAH
+        - name: couponCode
+          type: string
+          required: false
+          description: Coupon code to be applied
+          example: XMAS
+        - name: discount
+          type: number
+          required: false
+          description: Discount percentage to be applied
+          nullable: true
+          minimum: 0.01
+          maximum: 99.99
+          example: 25.25
+        - name: priceCalculationType
+          type: object
+          required: false
+          description: "Controls how price information for the product is displayed: per day, week, or month"
+          children:
+            - name: dailyAmount
+              type: boolean
+              required: false
+              description: Includes information on product prices by day
+            - name: weeklyAmount
+              type: boolean
+              required: false
+              description: Includes information on product prices by week
+            - name: monthlyAmount
+              type: boolean
+              required: false
+              description: Includes information on product prices by month
 responses:
   - status: "200"
     description: Successful response.
@@ -79,62 +80,78 @@ responses:
           - name: currency
             type: string
             description: Currency code
+            default: USD
+            minLength: 3
+            maxLength: 3
           - name: tax
             type: object
-            description: "Contains information about the tax type applied to the subscription product, including the tax type and the country where this tax is applied. Note: If there is no tax information in the database, the response will contain the value null"
+            description: No description provided in source.
             children:
               - name: type
-                type: string | null
-                description: Type of tax
+                type: string
+                description: No description provided in source.
+                nullable: true
+                example: vat
               - name: country
-                type: string | null
+                type: string
                 description: Country code for which the tax is applied
+                nullable: true
+                example: nl
           - name: products
             type: array
             description: Represents detailed information about the product and prices
             items:
               type: object
-              description: Product record
+              description: No description provided in source.
               children:
-                - name: id
-                  type: string
-                  description: Unique product identifier
-                - name: code
-                  type: string
-                  description: Product code
-                - name: name
-                  type: string
-                  description: Product name in the EN locale
                 - name: nameByLocale
                   type: string
                   description: Product name in the buyer's locale
+                  example: mSpy 1-Month Basic Subscription
                 - name: durationDays
                   type: integer
                   description: Product duration in days
+                  example: "28"
                 - name: durationWeeks
                   type: integer
                   description: Product duration in weeks
-                - name: durationMonths
+                  example: "4"
+                - name: durationMonth
                   type: integer
-                  description: Product duration in months
-                - name: currentDurationDays
-                  type: integer
-                  description: Actual duration of the current subscription (including the trial period). For trial products, currentDurationDays < durationDays. For non-trial products, the values are equal.
+                  description: No description provided in source.
+                  example: "1"
                 - name: availableForPurchase
-                  type: bool
+                  type: boolean
                   description: Availability for purchase
+                  example: "true"
                 - name: availableForShop
-                  type: bool
+                  type: boolean
                   description: Availability for purchase in the Offer page
+                  example: "true"
                 - name: availableForControlPanel
-                  type: bool
+                  type: boolean
                   description: Availability for purchase in the CP
+                  example: "true"
                 - name: availableForAutocharge
-                  type: bool
+                  type: boolean
                   description: Autocharge availability
+                  example: "true"
                 - name: isTrial
-                  type: bool
+                  type: boolean
                   description: Indicates whether the product is a trial version
+                  example: "true"
+                - name: id
+                  type: string
+                  description: Unique product identifier
+                  example: cf3755f7-9366-4963-b71c-038bb40f221c
+                - name: code
+                  type: string
+                  description: Product code
+                  example: TESTAH
+                - name: name
+                  type: string
+                  description: Product name in the EN locale
+                  example: mSpy 1-Month Premium Subscription
                 - name: prices
                   type: object
                   description: Contains detailed price information for the product with a breakdown
@@ -144,180 +161,311 @@ responses:
                       description: Contains information about the full price of the product
                       children:
                         - name: origin
-                          type: string | (float data)
+                          type: string
                           description: Original amount of the item before discounts and taxes
-                        - name: amountForDowngrade
-                          type: string | (float data)
-                          description: Amount for performing downgrade
+                          example: "50.00"
                         - name: amountForUpgrade
-                          type: string | (float data)
+                          type: string
                           description: Amount for performing upgrade
+                          nullable: true
+                          example: "50.00"
+                        - name: amountForDowngrade
+                          type: string
+                          description: Amount for performing downgrade
+                          nullable: true
+                          example: "10.00"
                         - name: discountPercent
-                          type: string | (float data)
+                          type: number
                           description: Discount percentage applied to the initial amount
+                          nullable: true
+                          minimum: 0.01
+                          maximum: 99.99
+                          example: 25.25
                         - name: discount
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount applied to the initial amount
+                          example: "10.00"
                         - name: amountWithDiscount
-                          type: string | (float data)
+                          type: string
                           description: Final amount after the discount is applied
+                          example: "40.00"
                         - name: couponPercent
-                          type: string | (float data)
+                          type: string
                           description: Percentage of the discount applied from the coupon
+                          example: "25.00"
                         - name: couponCode
-                          type: string | null
+                          type: string
                           description: Coupon code used for the additional discount
+                          nullable: true
+                          example: XMAS25
                         - name: coupon
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount from the coupon
+                          example: "10.00"
                         - name: amountWithDiscountAndCoupon
-                          type: string | (float data)
+                          type: string
                           description: Final amount after both the discount and the coupon are applied
+                          example: "30.00"
                         - name: taxPercent
-                          type: string | (float data)
+                          type: string
                           description: Tax percentage applied to the final amount
+                          example: "10.00"
                         - name: tax
-                          type: string | (float data)
-                          description: Total tax amount applied to the final amount
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
-                          type: string | (float data)
+                          type: string
                           description: Final amount after applying the discount, coupon, and tax
+                          example: "33.00"
                     - name: dailyAmount
                       type: object
                       description: Contains information about the product price per day
                       children:
                         - name: origin
-                          type: string | (float data)
+                          type: string
                           description: Original amount of the item before discounts and taxes
-                        - name: amountForDowngrade
-                          type: string | (float data)
-                          description: Amount for performing downgrade
+                          example: "50.00"
                         - name: amountForUpgrade
-                          type: string | (float data)
+                          type: string
                           description: Amount for performing upgrade
+                          nullable: true
+                          example: "50.00"
+                        - name: amountForDowngrade
+                          type: string
+                          description: Amount for performing downgrade
+                          nullable: true
+                          example: "10.00"
                         - name: discountPercent
-                          type: string | (float data)
+                          type: number
                           description: Discount percentage applied to the initial amount
+                          nullable: true
+                          minimum: 0.01
+                          maximum: 99.99
+                          example: 25.25
                         - name: discount
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount applied to the initial amount
+                          example: "10.00"
                         - name: amountWithDiscount
-                          type: string | (float data)
+                          type: string
                           description: Final amount after the discount is applied
+                          example: "40.00"
                         - name: couponPercent
-                          type: string | (float data)
+                          type: string
                           description: Percentage of the discount applied from the coupon
+                          example: "25.00"
                         - name: couponCode
-                          type: string | null
+                          type: string
                           description: Coupon code used for the additional discount
+                          nullable: true
+                          example: XMAS25
                         - name: coupon
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount from the coupon
+                          example: "10.00"
                         - name: amountWithDiscountAndCoupon
-                          type: string | (float data)
+                          type: string
                           description: Final amount after both the discount and the coupon are applied
+                          example: "30.00"
                         - name: taxPercent
-                          type: string | (float data)
+                          type: string
                           description: Tax percentage applied to the final amount
+                          example: "10.00"
                         - name: tax
-                          type: string | (float data)
-                          description: Total tax amount applied to the final amount
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
-                          type: string | (float data)
+                          type: string
                           description: Final amount after applying the discount, coupon, and tax
+                          example: "33.00"
                     - name: weeklyAmount
                       type: object
                       description: Contains information about the product price per week
                       children:
                         - name: origin
-                          type: string | (float data)
+                          type: string
                           description: Original amount of the item before discounts and taxes
-                        - name: amountForDowngrade
-                          type: string | (float data)
-                          description: Amount for performing downgrade
+                          example: "50.00"
                         - name: amountForUpgrade
-                          type: string | (float data)
+                          type: string
                           description: Amount for performing upgrade
+                          nullable: true
+                          example: "50.00"
+                        - name: amountForDowngrade
+                          type: string
+                          description: Amount for performing downgrade
+                          nullable: true
+                          example: "10.00"
                         - name: discountPercent
-                          type: string | (float data)
+                          type: number
                           description: Discount percentage applied to the initial amount
+                          nullable: true
+                          minimum: 0.01
+                          maximum: 99.99
+                          example: 25.25
                         - name: discount
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount applied to the initial amount
+                          example: "10.00"
                         - name: amountWithDiscount
-                          type: string | (float data)
+                          type: string
                           description: Final amount after the discount is applied
+                          example: "40.00"
                         - name: couponPercent
-                          type: string | (float data)
+                          type: string
                           description: Percentage of the discount applied from the coupon
+                          example: "25.00"
                         - name: couponCode
-                          type: string | null
+                          type: string
                           description: Coupon code used for the additional discount
+                          nullable: true
+                          example: XMAS25
                         - name: coupon
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount from the coupon
+                          example: "10.00"
                         - name: amountWithDiscountAndCoupon
-                          type: string | (float data)
+                          type: string
                           description: Final amount after both the discount and the coupon are applied
+                          example: "30.00"
                         - name: taxPercent
-                          type: string | (float data)
+                          type: string
                           description: Tax percentage applied to the final amount
+                          example: "10.00"
                         - name: tax
-                          type: string | (float data)
-                          description: Total tax amount applied to the final amount
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
-                          type: string | (float data)
+                          type: string
                           description: Final amount after applying the discount, coupon, and tax
+                          example: "33.00"
                     - name: monthlyAmount
                       type: object
                       description: Contains information about the product price per month
                       children:
                         - name: origin
-                          type: string | (float data)
+                          type: string
                           description: Original amount of the item before discounts and taxes
-                        - name: amountForDowngrade
-                          type: string | (float data)
-                          description: Amount for performing downgrade
+                          example: "50.00"
                         - name: amountForUpgrade
-                          type: string | (float data)
+                          type: string
                           description: Amount for performing upgrade
+                          nullable: true
+                          example: "50.00"
+                        - name: amountForDowngrade
+                          type: string
+                          description: Amount for performing downgrade
+                          nullable: true
+                          example: "10.00"
                         - name: discountPercent
-                          type: string | (float data)
+                          type: number
                           description: Discount percentage applied to the initial amount
+                          nullable: true
+                          minimum: 0.01
+                          maximum: 99.99
+                          example: 25.25
                         - name: discount
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount applied to the initial amount
+                          example: "10.00"
                         - name: amountWithDiscount
-                          type: string | (float data)
+                          type: string
                           description: Final amount after the discount is applied
+                          example: "40.00"
                         - name: couponPercent
-                          type: string | (float data)
+                          type: string
                           description: Percentage of the discount applied from the coupon
+                          example: "25.00"
                         - name: couponCode
-                          type: string | null
+                          type: string
                           description: Coupon code used for the additional discount
+                          nullable: true
+                          example: XMAS25
                         - name: coupon
-                          type: string | (float data)
+                          type: string
                           description: Total discount amount from the coupon
+                          example: "10.00"
                         - name: amountWithDiscountAndCoupon
-                          type: string | (float data)
+                          type: string
                           description: Final amount after both the discount and the coupon are applied
+                          example: "30.00"
                         - name: taxPercent
-                          type: string | (float data)
+                          type: string
                           description: Tax percentage applied to the final amount
+                          example: "10.00"
                         - name: tax
-                          type: string | (float data)
-                          description: Total tax amount applied to the final amount
+                          type: string
+                          description: No description provided in source.
+                          nullable: true
+                          example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
-                          type: string | (float data)
+                          type: string
                           description: Final amount after applying the discount, coupon, and tax
+                          example: "33.00"
       - name: meta
         type: object
         description: Provides metadata about the response
         children:
           - name: type
             type: string
-            description: Data type
+            description: No description provided in source.
+            example: entity
+  - status: "404"
+    description: Product not found
+    parameters:
+      - name: uuid
+        type: string
+        description: Error message
+        format: uuid
+        example: 6642ea47-568c-4f12-bc85-dc750f5a140e
+      - name: code
+        type: number
+        description: Product code
+        example: "3000"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+  - status: "422"
+    description: Validation error
+    parameters:
+      - name: code
+        type: number
+        description: Product code
+        example: "0"
+      - name: message
+        type: string
+        description: Error message
+        example: Malformed request syntax.
+      - name: traceId
+        type: string
+        description: Error message
+        example: 082d86c339533af07c14252afcecc7bd
+      - name: errors
+        type: array
+        description: Errors list
+        items:
+          type: object
+          description: No description provided in source.
+          children:
+            - name: field
+              type: string
+              description: No description provided in source.
+              example: coupon
+            - name: title
+              type: string
+              description: No description provided in source.
+              example: Coupon not found.
 blocks:
   - type: info
     title: Errors and interpretation
