@@ -2327,6 +2327,11 @@ button.schema-tree-node-point:focus-visible {
   min-width: 0;
 }
 
+.article-document-webhook .docs-table-events th {
+  position: static;
+  top: auto;
+}
+
 .article-document-webhook .docs-table-params {
   min-width: 900px;
 }
@@ -2390,22 +2395,22 @@ button.schema-tree-node-point:focus-visible {
 
 .article-document-webhook .docs-table-events th:nth-child(1),
 .article-document-webhook .docs-table-events td:nth-child(1) {
-  width: 24%;
+  width: 23%;
 }
 
 .article-document-webhook .docs-table-events th:nth-child(2),
 .article-document-webhook .docs-table-events td:nth-child(2) {
-  width: 34%;
+  width: 30%;
 }
 
 .article-document-webhook .docs-table-events th:nth-child(3),
 .article-document-webhook .docs-table-events td:nth-child(3) {
-  width: 14%;
+  width: 13%;
 }
 
 .article-document-webhook .docs-table-events th:nth-child(4),
 .article-document-webhook .docs-table-events td:nth-child(4) {
-  width: 28%;
+  width: 34%;
 }
 
 .article-document-webhook .docs-table-params th:nth-child(1),
