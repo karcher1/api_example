@@ -61,7 +61,6 @@ function ArticleBlockView({ block }: { block: ArticleBlock }) {
 
 export function ArticleContent({
   page,
-  collectionTitle = "Articles",
   sectionVariant = "article",
 }: ArticleContentProps) {
   const body = bodyWithoutDuplicateTitle(page);
@@ -75,9 +74,7 @@ export function ArticleContent({
       ].join(" ")}
     >
       <header className={`static-page-header article-hero article-hero-${sectionVariant}`}>
-        <p className="page-eyebrow article-eyebrow">{collectionTitle}</p>
         <h1>{page.title}</h1>
-        {page.description ? <p>{page.description}</p> : null}
       </header>
       <SafeMarkdown source={body} />
       {page.blocks.length ? (

@@ -169,7 +169,16 @@ function renderTableCellContent(
   cellIndex: number,
 ) {
   if (kind === "events" && cellIndex === 1) {
-    return <span className="webhook-event-token">{stripInlineCode(cell)}</span>;
+    return (
+      <span className="webhook-event-token">
+        {stripInlineCode(cell).split("_").map((part, index, parts) => (
+          <span className="webhook-event-token-part" key={`${part}-${index}`}>
+            {part}
+            {index < parts.length - 1 ? "_" : ""}
+          </span>
+        ))}
+      </span>
+    );
   }
 
   if (kind === "events" && cellIndex === 2) {
