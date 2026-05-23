@@ -204,5 +204,70 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+               'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+              'x-public-key' => '<your public key uuid>',
+              'x-buyer-ip' => <external ip>',
+              'x-token' => '<generated token>',
+              'x-source'=> 'shop',
+              'x-id' => '<your-service-id>',
+              'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "expirationDate": "2024-12-12"
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v2/buyers/9cd310ef-664f-406f-88cc-315889beb270/subscriptions/00004d62-c4c4-4876-b9c2-c74f32d32af3/change_expiration_date', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v2/buyers/9cd310ef-664f-406f-88cc-315889beb270/subscriptions/00004d62-c4c4-4876-b9c2-c74f32d32af3/change_expiration_date' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "expirationDate": "2024-12-12"
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "expirationDate": "2024-12-12"
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/9cd310ef-664f-406f-88cc-315889beb270/subscriptions/00004d62-c4c4-4876-b9c2-c74f32d32af3/change_expiration_date',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          "expirationDate": "2024-12-12"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []

@@ -222,5 +222,127 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+         'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "isMobile": true,
+        "chargeMethodId": "34b0b357-a55b-4486-a1b5-cfd9be752e20",
+        "currency": "EUR",
+        "metaData": {
+          "someKey": "value"
+        },
+        "products": [
+          {
+            "actionName": "purchase",
+            "productCode": "<product_code>",
+            "couponCode": "SUM30",
+            "discount": "30.24",
+            "quantity": 2
+          }
+        ]
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v3/buyers/9cfba85a-89a0-4f21-89c0-f9a76a897d49/oneclick', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v3/buyers/9cfba85a-89a0-4f21-89c0-f9a76a897d49/oneclick' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "isMobile": true,
+          "chargeMethodId": "34b0b357-a55b-4486-a1b5-cfd9be752e20",
+          "currency": "EUR",
+          "metaData": {
+             "someKey": "value"
+          },
+          "products": [
+              {
+                  "actionName": "purchase",
+                  "productCode": "<product_code>",
+                  "couponCode": "SUM30",
+                  "discount": "30.24",
+                  "quantity": 2
+              }
+          ]
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "isMobile": true,
+          "chargeMethodId": "34b0b357-a55b-4486-a1b5-cfd9be752e20",
+          "currency": "EUR",
+          "metaData": {
+             "someKey": "value"
+          },
+          "products": [
+              {
+                  "actionName": "purchase",
+                  "productCode": "<product_code>",
+                  "couponCode": "SUM30",
+                  "discount": "30.24",
+                  "quantity": 2
+              }
+          ]
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9cfba85a-89a0-4f21-89c0-f9a76a897d49/oneclick',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+      
+        },
+        body: JSON.stringify({
+          "isMobile": true,
+          "chargeMethodId": "34b0b357-a55b-4486-a1b5-cfd9be752e20",
+          "currency": "EUR",
+          "metaData": {
+            "someKey": "value"
+          },
+          "products": [
+            {
+              "actionName": "purchase",
+              "productCode": "<product_code>",
+              "couponCode": "SUM30",
+              "discount": "30.24",
+              "quantity": 2
+            }
+          ]
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []

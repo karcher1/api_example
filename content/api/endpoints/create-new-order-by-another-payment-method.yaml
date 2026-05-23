@@ -242,27 +242,128 @@ responses:
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
 requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+      'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "sequence": "9876543234567898765",
+        "isMobile": true,
+        "currency": "USD",
+        "products": [
+          {
+            "actionName": "purchase",
+            "productCode": "<product_code>",
+            "couponCode": "test",
+            "discount": "30.24",
+            "quantity": 2
+          }
+        ],
+        "metaData": {
+          "someKey": "value"
+        }
+      }';
+      $request = new Request('POST', 'ttps://pay-sandbox.billerbase.com/api/v3/buyers/9fcb8e42-4a0c-452b-91de-f7c8fa996e17/another-payment-method', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
   - label: cURL
     language: bash
-    code: curl -X POST "https://api.example.com/api/v3/buyers/4ca07c05-e384-4182-a01a-dcf76381894a/another-payment-method"
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v3/buyers/9fcb8e42-4a0c-452b-91de-f7c8fa996e17/another-payment-method' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "sequence": "9876543234567898765",
+          "isMobile": true,
+          "currency": "USD",
+          "products": [
+              {
+                  "actionName": "purchase",
+                  "productCode": "<product_code>",
+                  "couponCode": "test",
+                  "discount": "30.24",
+                  "quantity": 2
+              }
+          ],
+          "metaData": {
+              "someKey": "value"
+          }
+      }'
   - label: JSON Body
     language: json
     code: |-
       {
-        "products": [
-          {
-            "actionName": "purchase",
-            "productCode": "TESTAH",
-            "couponCode": "sub1kdiop20",
-            "quantity": 1
+          "sequence": "9876543234567898765",
+          "isMobile": true,
+          "currency": "USD",
+          "products": [
+              {
+                  "actionName": "purchase",
+                  "productCode": "<product_code>",
+                  "couponCode": "test",
+                  "discount": "30.24",
+                  "quantity": 2
+              }
+          ],
+          "metaData": {
+              "someKey": "value"
           }
-        ],
-        "metaData": {
-          "customerId": "ac2d5bc9-4b20-42e7-b9ae-dff63db4ea8d"
-        },
-        "isMobile": false,
-        "returnUrl": "https://merchant.example.test?subscriptionId={subscriptionId}"
       }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9fcb8e42-4a0c-452b-91de-f7c8fa996e17/another-payment-method',
+        'headers': {
+          ''x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+      
+        },
+        body: JSON.stringify({
+          "sequence": "9876543234567898765",
+          "isMobile": true,
+          "currency": "USD",
+          "products": [
+            {
+              "actionName": "purchase",
+              "productCode": "<product_code>",
+              "couponCode": "test",
+              "discount": "30.24",
+              "quantity": 2
+            }
+          ],
+          "metaData": {
+            "someKey": "value"
+          }
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples:
   - label: "200"
     language: json

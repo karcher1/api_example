@@ -139,5 +139,54 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+       	'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+      	'x-public-key' => '<your public key uuid>',
+      	'x-buyer-ip' => <external ip>',
+      	'x-token' => '<generated token>',
+      	'x-source'=> 'shop',
+      	'x-id' => '<your-service-id>',
+      	'Content-Type' => 'application/json'
+      ];
+      $request = new Request('GET', 'https://pay-sandbox.billerbase.com/api/v2/taxes/type?countryIsoTwoCode=us', $headers);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v2/taxes/type?countryIsoTwoCode=us' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json'
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'GET',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/taxes/type?countryIsoTwoCode=us',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        }
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []

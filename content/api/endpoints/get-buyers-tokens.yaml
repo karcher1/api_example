@@ -230,7 +230,7 @@ requestExamples:
           'x-source': 'shop',
           'x-id': '<your-service-id>',
           'Content-Type': 'application/json'
-
+      
         }
       };
       request(options, function (error, response) {

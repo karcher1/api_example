@@ -104,5 +104,75 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+               'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+              'x-public-key' => '<your public key uuid>',
+              'x-buyer-ip' => <external ip>',
+              'x-token' => '<generated token>',
+              'x-source'=> 'shop',
+              'x-id' => '<your-service-id>',
+              'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "freezePeriodDays": 100,
+        "reason": "Just freeze"
+      }';
+      $request = new Request('PUT', 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a13bce3-9200-46a4-b66d-efe36f8d3f4a/subscriptions/9c9ce295-d522-4e76-aae3-8430d1fd3620/freeze', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location --request PUT 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a13bce3-9200-46a4-b66d-efe36f8d3f4a/subscriptions/9c9ce295-d522-4e76-aae3-8430d1fd3620/freeze' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+      	"freezePeriodDays": 100,
+          "reason": "Just freeze"
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+              "freezePeriodDays": 100,
+          "reason": "Just freeze"
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'PUT',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a13bce3-9200-46a4-b66d-efe36f8d3f4a/subscriptions/9c9ce295-d522-4e76-aae3-8430d1fd3620/freeze',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+      
+        },
+        body: JSON.stringify({
+          "freezePeriodDays": 100,
+          "reason": "Just freeze"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []

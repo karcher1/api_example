@@ -175,5 +175,70 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+       'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "productId": "d1f19524-df4b-4096-8490-2ede064344e7"
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a13bd9b-5eee-4633-908e-b6c6d774ee9b/subscriptions/000347bb-61e7-46da-9804-027ad5be7c21/downgrade', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a13bd9b-5eee-4633-908e-b6c6d774ee9b/subscriptions/000347bb-61e7-46da-9804-027ad5be7c21/downgrade' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "productId": "d1f19524-df4b-4096-8490-2ede064344e7"
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "productId": "d1f19524-df4b-4096-8490-2ede064344e7"
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a13bd9b-5eee-4633-908e-b6c6d774ee9b/subscriptions/000347bb-61e7-46da-9804-027ad5be7c21/downgrade',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>' ,
+          'Content-Type': 'application/json'
+       },
+        body: JSON.stringify({
+          "productId": "d1f19524-df4b-4096-8490-2ede064344e7"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []

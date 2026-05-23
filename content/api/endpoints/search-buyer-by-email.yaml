@@ -141,7 +141,7 @@ requestExamples:
       <?php
       $client = new Client();
       $headers = [
-          'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+         'x-date' => '<current date format(Y-m-d H:i:s.u)>',
           'x-public-key' => '<your public key uuid>',
           'x-buyer-ip' => <external ip>',
           'x-token' => '<generated token>',
@@ -179,7 +179,7 @@ requestExamples:
           'x-source': 'shop',
           'x-id': '<your-service-id>',
           'Content-Type': 'application/json'
-
+      
         }
       };
       request(options, function (error, response) {

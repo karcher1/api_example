@@ -411,30 +411,147 @@ responses:
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
 requestExamples:
-  - label: JSON
-    language: json
+  - label: PHP
+    language: php
     code: |-
-      {
-        "isMobile": false,
+      <?php
+      $client = new Client();
+      $headers = [
+       	'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+      	'x-public-key' => '<your public key uuid>',
+      	'x-buyer-ip' => <external ip>',
+      	'x-token' => '<generated token>',
+      	'x-source'=> 'shop',
+      	'x-id' => '<your-service-id>',
+      	'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "isMobile": true,
         "bundles": [
           {
-            "bundleHashKey": "79c0a65d-0279-436c-8653-0456de1f0d92",
+            "bundleHashKey": "<generate-bundle-string-hash-key>",
             "products": [
               {
-                "productHashKey": "6d27f447-3333-4b08-81ae-05c306b7f753",
-                "productCode": "TESTAG",
-                "actionName": "renew",
-                "subscriptionId": "fe171ff5-509f-4bab-b324-7cf10c9565f3",
+                "productHashKey": "<generate-product-string-hash-key>",
+                "actionName": "purchase",
+                "productCode": "MMPM",
+                "couponCode": "trial",
+                "discount": 10,
                 "priceCalculationType": {
-                  "dailyAmount": false,
-                  "weeklyAmount": false,
+                  "dailyAmount": true,
+                  "weeklyAmount": true,
                   "monthlyAmount": true
                 }
               }
             ]
           }
         ]
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v3/buyers/05d4fc43-e539-40d6-882e-0a679e2744fe/products/bundles', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v3/buyers/05d4fc43-e539-40d6-882e-0a679e2744fe/products/bundles' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "isMobile": true,
+          "bundles": [
+              {
+                  "bundleHashKey": "<generate-bundle-string-hash-key>",
+                  "products": [
+                      {
+                          "productHashKey": "<generate-product-string-hash-key>",
+                          "actionName": "purchase",
+                          "productCode": "MMPM",
+                          "couponCode": "trial",
+                          "discount": 10.00,
+                          "priceCalculationType": {
+                              "dailyAmount": true,
+                              "weeklyAmount": true,
+                              "monthlyAmount": true
+                          }
+                      }
+                  ]
+              }
+          ]
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "isMobile": true,
+          "bundles": [
+              {
+                  "bundleHashKey": "<generate-bundle-string-hash-key>",
+                  "products": [
+                      {
+                          "productHashKey": "<generate-product-string-hash-key>",
+                          "actionName": "purchase",
+                          "productCode": "MMPM",
+                          "couponCode": "trial",
+                          "discount": 10.00,
+                          "priceCalculationType": {
+                              "dailyAmount": true,
+                              "weeklyAmount": true,
+                              "monthlyAmount": true
+                          }
+                      }
+                  ]
+              }
+          ]
       }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/05d4fc43-e539-40d6-882e-0a679e2744fe/products/bundles',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          "isMobile": true,
+          "bundles": [
+            {
+              "bundleHashKey": "<generate-bundle-string-hash-key>",
+              "products": [
+                {
+                  "productHashKey": "<generate-product-string-hash-key>",
+                  "actionName": "purchase",
+                  "productCode": "MMPM",
+                  "couponCode": "trial",
+                  "discount": 10,
+                  "priceCalculationType": {
+                    "dailyAmount": true,
+                    "weeklyAmount": true,
+                    "monthlyAmount": true
+                  }
+                }
+              ]
+            }
+          ]
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples:
   - label: "200"
     language: json

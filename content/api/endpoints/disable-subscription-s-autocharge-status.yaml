@@ -215,16 +215,81 @@ responses:
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
 requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+       'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "type": "user",
+        "reason": "Just chargeback",
+        "comment": "some comment"
+      }';
+      $request = new Request('PUT', 'https://pay-sandbox.billerbase.com/api/v3/buyers/9db2c214-8434-4b9a-8d8d-98b59d9533cb/subscriptions/363b8cef-1e60-445c-9b25-e1bb4aac204e/autocharge_disable', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+      
   - label: cURL
     language: bash
-    code: curl -X PUT "https://api.example.com/api/v3/buyers/556234b8-5eef-4e4f-a1ae-6c0980003daa/subscriptions/9d91b7ab-5eec-4e52-99cf-826a6c3cd01e/autocharge_disable"
+    code: |-
+      curl --location --request PUT 'https://pay-sandbox.billerbase.com/api/v3/buyers/9db2c214-8434-4b9a-8d8d-98b59d9533cb/subscriptions/363b8cef-1e60-445c-9b25-e1bb4aac204e/autocharge_disable' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "type": "user",
+          "reason": "Just chargeback",
+          "comment": "some comment"
+      }'
   - label: JSON Body
     language: json
     code: |-
       {
-        "type": "user",
-        "reason": "user_cancel"
-      }
+          "type": "user",
+          "reason": "Just chargeback",
+          "comment": "some comment"
+        }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'PUT',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9db2c214-8434-4b9a-8d8d-98b59d9533cb/subscriptions/363b8cef-1e60-445c-9b25-e1bb4aac204e/autocharge_disable',
+        'headers': {
+       'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+      
+        },
+        body: JSON.stringify({
+          "type": "user",
+          "reason": "Just chargeback",
+          "comment": "some comment"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples:
   - label: "200"
     language: json

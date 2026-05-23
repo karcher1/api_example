@@ -464,26 +464,19 @@ requestExamples:
           'x-id' => '<your-service-id>',
           'Content-Type' => 'application/json'
       ];
-      $body = '{
-        "chargeMethodTokenId": 630
-      }';
-      $request = new Request('PUT', 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token', $headers, $body);
+      $request = new Request('GET', 'https://pay-sandbox.billerbase.com/apiv3/buyers/9a6a307e-1ea0-44b7-a915-9a98f8cbe3ab/charge/history', $headers);
       $res = $client->sendAsync($request)->wait();
       echo $res->getBody();
   - label: cURL
     language: bash
     code: |-
-      curl --location --request PUT 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token' \
+      curl --location 'https://pay-sandbox.billerbase.com/api/v3/buyers/9a6a307e-1ea0-44b7-a915-9a98f8cbe3ab/charge/history' \
       --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
       --header 'x-public-key: <your public key uuid>' \
       --header 'x-buyer-ip: <external ip>'\
       --header 'x-token: <generated token>' \
       --header 'x-source: shop' \
-      --header 'x-id: <your-service-id>' \
-      --header 'Content-Type: application/json' \
-      --data '{
-          "chargeMethodTokenId": 630
-      }'
+      --header 'x-id: <your-service-id>'
   - label: Node.js
     language: javascript
     code: |-
@@ -499,7 +492,7 @@ requestExamples:
           'x-source': 'shop',
           'x-id': '<your-service-id>',
           'Content-Type': 'application/json'
-
+      
         }
       };
       request(options, function (error, response) {

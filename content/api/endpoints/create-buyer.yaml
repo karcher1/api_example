@@ -146,7 +146,7 @@ requestExamples:
         "state": null,
         "locale": "en"
       }'
-  - label: JSON
+  - label: JSON Body
     language: json
     code: |-
       {
@@ -181,7 +181,7 @@ requestExamples:
           "state": null,
           "locale": "en"
         })
-
+      
       };
       request(options, function (error, response) {
         if (error) throw new Error(error);

@@ -266,7 +266,143 @@ blocks:
   - type: info
     title: Errors and interpretation
     content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      headers = [
+              'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+              'x-public-key' => '<your public key uuid>',
+              'x-buyer-ip' => <external ip>',
+              'x-token' => '<generated token>',
+              'x-source'=> 'shop',
+              'x-id' => '<your-service-id>',
+              'x-google-analytics-client-id' => 'GA1.3.1034945594.1649316099',
+              'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "product": {
+          "code": "SQL",
+          "currency": "EUR"
+        },
+        "buyer": {
+          "email": "yurii.sok+qa14+080702@rockalab.com",
+          "locale": "en"
+        },
+        "sequence": 123456123456123460,
+        "coupon": "null",
+        "subbrand": null,
+        "metaData": {
+          "foo": "bar",
+          "isProvider": {
+            "a": 1
+          }
+        },
+        "discount": 15,
+        "autoChargeStatus": null
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v2/initials/url', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v2/initials/url' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'x-google-analytics-client-id: GA1.3.1034945594.1649316099' \
+      --header 'Content-Type: application/json' \
+      --data-raw '{
+          "product": {
+              "code": "SQL",
+              "currency": "EUR"
+          },
+          "buyer": {
+              "email": "yurii.sok+qa14+080702@rockalab.com",
+              "locale": "en"
+          },
+          "sequence": 123456123456123456,
+          "coupon": "null",
+          "subbrand": null,
+          "metaData": {
+              "foo": "bar",
+              "isProvider": {"a":1}
+          },
+          "discount": 15,
+          "autoChargeStatus": null
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "product": {
+              "code": "SQL",
+              "currency": "EUR"
+          },
+          "buyer": {
+              "email": "yurii.sok+qa14+080702@rockalab.com",
+              "locale": "en"
+          },
+          "sequence": 123456123456123456,
+          "coupon": "null",
+          "subbrand": null,
+          "metaData": {
+              "foo": "bar",
+              "isProvider": {"a":1}
+          },
+          "discount": 15,
+          "autoChargeStatus": null
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/initials/url',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'x-google-analytics-client-id': 'GA1.3.1034945594.1649316099',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          "product": {
+            "code": "SQL",
+            "currency": "EUR"
+          },
+          "buyer": {
+            "email": "yurii.sok+qa14+080702@rockalab.com",
+            "locale": "en"
+          },
+          "sequence": 123456123456123460,
+          "coupon": "null",
+          "subbrand": null,
+          "metaData": {
+            "foo": "bar",
+            "isProvider": {
+              "a": 1
+            }
+          },
+          "discount": 15,
+          "autoChargeStatus": null
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples:
   - label: "200"
     language: json

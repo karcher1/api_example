@@ -239,9 +239,55 @@ responses:
           description: No description provided in source.
 blocks: []
 requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+       	'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+      	'x-public-key' => '<your public key uuid>',
+      	'x-buyer-ip' => <external ip>',
+      	'x-token' => '<generated token>',
+      	'x-source'=> 'shop',
+      	'x-id' => '<your-service-id>',
+      	'Content-Type' => 'application/json'
+      ];
+      $request = new Request('GET', 'https://pay-sandbox.billerbase.com/api/v3/orders/kqJIgkjf/result?isMobile=false&isForced=false', $headers);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
   - label: cURL
     language: bash
-    code: curl -X GET "https://api.example.com/api/v3/orders/MJ9CqVS0/result?isMobile=false"
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v3/orders/kqJIgkjf/result?isMobile=false&isForced=false' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json'
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'GET',
+        'url': 'https://pay-sandbox.billerbase.com/api/v3/orders/kqJIgkjf/result?isMobile=false&isForced=false',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        }
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples:
   - label: "200"
     language: json

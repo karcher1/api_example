@@ -98,5 +98,70 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+        'x-id' => 'postman',
+        'Content-Type' => 'application/json',
+        'Brand' => 'mspy',
+        'x-client-ip' => '95.168.166.12',
+        'x-source' => 'postman',
+        'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "reason": "Refund"
+      }';
+      $request = new Request('PUT', 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a704808-bc43-4a1d-b200-8524cfa9e6e0/subscriptions/e1a54ecd-d42e-4c7a-9c66-d477fc346da1/disable', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location --request PUT 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a704808-bc43-4a1d-b200-8524cfa9e6e0/subscriptions/e1a54ecd-d42e-4c7a-9c66-d477fc346da1/disable' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "reason": "Refund"
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "reason": "Refund"
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'PUT',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a704808-bc43-4a1d-b200-8524cfa9e6e0/subscriptions/e1a54ecd-d42e-4c7a-9c66-d477fc346da1/disable',
+        'headers': {
+          'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+      
+        },
+        body: JSON.stringify({
+          "reason": "Refund"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []

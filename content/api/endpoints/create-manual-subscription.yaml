@@ -135,17 +135,83 @@ responses:
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
 requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+       'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "productId": "c5bc1fb3-1560-4116-8f17-5aa9f5e7b8e9",
+        "currency": "USD",
+        "start": "2026-01-01T12:44:17.555Z",
+        "end": "2026-02-28T12:44:17.555Z"
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v2/api/v2/buyers/9a704808-bc43-4a1d-b200-8524cfa9e6e0/subscriptions', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
   - label: cURL
     language: bash
-    code: curl -X POST "https://api.example.com/api/v2/buyers/54c440d0-f854-4c25-a938-c78bc1049232/subscriptions"
+    code: |-
+      curl --location 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a704808-bc43-4a1d-b200-8524cfa9e6e0/subscriptions' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "productId": "c5bc1fb3-1560-4116-8f17-5aa9f5e7b8e9",
+          "currency": "USD",
+          "start": "2026-01-01T12:44:17.555Z",
+          "end": "2026-02-28T12:44:17.555Z"
+      }'
   - label: JSON Body
     language: json
     code: |-
       {
-        "customerId": "a250a178-cf9b-45b6-a618-dd40f974087e",
-        "productId": "997b3bb7-3b7a-4b3c-b173-0deac2b4359d",
-        "currency": "USD"
+          "productId": "c5bc1fb3-1560-4116-8f17-5aa9f5e7b8e9",
+          "currency": "USD",
+          "start": "2026-01-01T12:44:17.555Z",
+          "end": "2026-02-28T12:44:17.555Z"
       }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/9a704808-bc43-4a1d-b200-8524cfa9e6e0/subscriptions',
+        'headers': {
+          ''x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          "productId": "c5bc1fb3-1560-4116-8f17-5aa9f5e7b8e9",
+          "currency": "USD",
+          "start": "2026-01-01T12:44:17.555Z",
+          "end": "2026-02-28T12:44:17.555Z"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples:
   - label: "201"
     language: json

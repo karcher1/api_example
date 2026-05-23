@@ -159,7 +159,7 @@ requestExamples:
       --data '{
           "chargeMethodTokenId": 630
       }'
-  - label: JSON
+  - label: JSON Body
     language: json
     code: |-
       {
@@ -184,7 +184,7 @@ requestExamples:
         body: JSON.stringify({
           "chargeMethodTokenId": 630
         })
-
+      
       };
       request(options, function (error, response) {
         if (error) throw new Error(error);

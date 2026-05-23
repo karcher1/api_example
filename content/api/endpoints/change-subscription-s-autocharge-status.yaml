@@ -208,5 +208,79 @@ responses:
         description: Error message
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
-requestExamples: []
+requestExamples:
+  - label: PHP
+    language: php
+    code: |-
+      <?php
+      $client = new Client();
+      $headers = [
+        'x-date' => '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key' => '<your public key uuid>',
+          'x-buyer-ip' => <external ip>',
+          'x-token' => '<generated token>',
+          'x-source'=> 'shop',
+          'x-id' => '<your-service-id>',
+          'Content-Type' => 'application/json'
+      ];
+      $body = '{
+        "autochargeStatus": true,
+        "reason": "Just chargeback",
+        "comment": "some comment"
+      }';
+      $request = new Request('POST', 'https://pay-sandbox.billerbase.com/api/v2/buyers/a03cc3e3-b802-45ad-8f64-6199ba6d4497/subscriptions/402332d3-7019-4700-8446-98c99a1c6b4b/change_autocharge_status', $headers, $body);
+      $res = $client->sendAsync($request)->wait();
+      echo $res->getBody();
+  - label: cURL
+    language: bash
+    code: |-
+      curl --location https://pay-sandbox.billerbase.com/api/v2/buyers/a03cc3e3-b802-45ad-8f64-6199ba6d4497/subscriptions/402332d3-7019-4700-8446-98c99a1c6b4b/change_autocharge_status' \
+      --header 'x-date: <Y-m-d H:i:s.u (current date)>' \
+      --header 'x-public-key: <your public key uuid>' \
+      --header 'x-buyer-ip: <external ip>'\
+      --header 'x-token: <generated token>' \
+      --header 'x-source: shop' \
+      --header 'x-id: <your-service-id>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+          "autochargeStatus": true,
+          "reason": "Just chargeback",
+          "comment": "some comment"
+      }'
+  - label: JSON Body
+    language: json
+    code: |-
+      {
+          "autochargeStatus": true,
+          "reason": "Just chargeback",
+          "comment": "some comment"
+      }
+  - label: Node.js
+    language: javascript
+    code: |-
+      var request = require('request');
+      var options = {
+        'method': 'POST',
+        'url': 'https://pay-sandbox.billerbase.com/api/v2/buyers/a03cc3e3-b802-45ad-8f64-6199ba6d4497/subscriptions/402332d3-7019-4700-8446-98c99a1c6b4b/change_autocharge_status',
+        'headers': {
+           'x-date': '<current date format(Y-m-d H:i:s.u)>',
+          'x-public-key': '<your public key uuid>',
+          'x-buyer-ip': <external ip>',
+          'x-token': '<generated token>',
+          'x-source': 'shop',
+          'x-id': '<your-service-id>',
+          'Content-Type': 'application/json'
+      
+        },
+        body: JSON.stringify({
+          "autochargeStatus": true,
+          "reason": "Just chargeback",
+          "comment": "some comment"
+        })
+      
+      };
+      request(options, function (error, response) {
+        if (error) throw new Error(error);
+        console.log(response.body);
+      });
 responseExamples: []
