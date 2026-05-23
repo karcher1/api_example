@@ -107,14 +107,6 @@ sections:
     items:
       - title: Get tax type by country code
         slug: get-tax-type-by-country-code
-  - title: System
-    id: system
-    defaultOpen: true
-    items:
-      - title: Checking the service's readiness for operation.
-        slug: checking-the-service-s-readiness-for-operation
-      - title: Check all necessary service relations.
-        slug: check-all-necessary-service-relations
   - title: Bundles
     id: bundles
     defaultOpen: true
