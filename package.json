@@ -9,8 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "validate:content": "node scripts/validate-content.mjs",
-    "test:content-workflow": "node scripts/test-content-workflow.mjs",
-    "test:admin-workflow": "node scripts/test-admin-workflow.mjs"
+    "test:content-workflow": "node scripts/test-content-workflow.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
