@@ -20,6 +20,53 @@ content: |
   | --- | --- | --- | --- |
   | To get information about unsuccess charge | `charge_unsuccess` | `Decline or fail` | When a charge is declined, the payment fails and no funds are collected. Depending on the order type and billing rules, this may result in no new charge being created or in changes to the subscription flow. |
   
+  ## Webhook-request format
+  
+  | Attribute | Type | Requirement | Description |
+  | --- | --- | --- | --- |
+  | `type` | string | mandatory | Type of event. There will always be a subscription. |
+  | `action` | string | mandatory | Indicates event (subscription_user_renew, subscription_user_create, etc) |
+  | `merchant` | string | mandatory | Merchant's name |
+  | `buyer` | object | mandatory | Contains buyer details |
+  | `buyer.id` | string | mandatory | Unique identifier of buyer in the system |
+  | `buyer.buyerEmail` | string | mandatory | Buyer email |
+  | `buyer.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON |
+  | `chargeData` | object | mandatory | Contains charge details |
+  | `chargeData.id` | string | mandatory | Charge identifier |
+  | `chargeData.status` | string | mandatory | Payment status |
+  | `chargeData.firstName` | string | Mandatory | Buyer name |
+  | `chargeData.lastName` | string | Mandatory | Buyer last name |
+  | `chargeData.createdAt` | string | mandatory | Date of creation of payment |
+  | `chargeData.isServiceFee` | bool | mandatory | Indicates whether this charge is the main or service fee |
+  | `chargeData.order` | object | mandatory | Contains order details |
+  | `chargeData.order.id` | string | mandatory | Order identifier |
+  | `chargeData.order.type` | string | mandatory | Order type |
+  | `chargeData.order.currency` | string | mandatory | Order currency |
+  | `chargeData.order.amount` | string | mandatory | Order amount |
+  | `chargeData.order.locale` | string | mandatory | Language selected on the checkout page |
+  | `chargeData.order.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about order. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON |
+  | `chargeData.paymentMethod` | object | mandatory | Information about the payment method |
+  | `chargeData.paymentMethod.type` | string | mandatory | Type of payment method |
+  | `chargeData.paymentMethod.data` | object | mandatory | Payment details |
+  | `chargeData.paymentMethod.data.bin` | string | optional | BIN card |
+  | `chargeData.paymentMethod.data.lastFour` | string | optional | Card last four digits |
+  | `chargeData.paymentMethod.binData` | object | optional | Object containing card BIN data. Includes information about the first 6 or 8 digits of the card PAN, card brand, issuer, card type, card level, and issuing country. |
+  | `chargeData.paymentMethod.binData.bin` | string | mandatory | First 6 or 8 digits of the card PAN used to identify the BIN/IIN |
+  | `chargeData.paymentMethod.binData.brand` | string | optional | Payment card brand |
+  | `chargeData.paymentMethod.binData.issuer` | string | optional | Name of the bank or financial institution that issued the card |
+  | `chargeData.paymentMethod.binData.cardType` | string | optional | Card type, such as debit, credit, or prepaid |
+  | `chargeData.paymentMethod.binData.cardLevel` | string | optional | Card level or category within the card brand |
+  | `chargeData.paymentMethod.binData.countryIsoTwo` | string | optional | Two-letter ISO country code of the card issuing country in ISO 3166-1 alpha-2 format |
+  | `chargeData.provider` | object | optional | Contains provider information |
+  | `chargeData.provider.name` | string | mandatory | Name of the payment provider |
+  | `chargeData.provider.mid` | object | mandatory | Mid details |
+  | `chargeData.provider.mid.name` | string | mandatory | The name of the MID through which the payment was made |
+  | `chargeData.declineData` | object | mandatory | Contains charge decline information |
+  | `chargeData.declineData.type` | string | mandatory | Type of decline |
+  | `chargeData.declineData.errorMessage` | string | optional | Decline message |
+  | `chargeData.declineData.code` | string | optional | Mapped decline code |
+  | `chargeData.declineData.code.name` | string | mandatory | The name of the MID through which the payment was made |
+  
   ## JSON example
   
   ```json
@@ -80,50 +127,3 @@ content: |
     }
   }
   ```
-  
-  ## Webhook-request format
-  
-  | Attribute | Type | Requirement | Description | Standard |
-  | --- | --- | --- | --- | --- |
-  | `type` | string | mandatory | Type of event. There will always be a subscription. | - |
-  | `action` | string | mandatory | Indicates event (subscription_user_renew, subscription_user_create, etc) | - |
-  | `merchant` | string | mandatory | Merchant's name | - |
-  | `buyer` | object | mandatory | Contains buyer details | - |
-  | `buyer.id` | string | mandatory | Unique identifier of buyer in the system | - |
-  | `buyer.buyerEmail` | string | mandatory | Buyer email | - |
-  | `buyer.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON | - |
-  | `chargeData` | object | mandatory | Contains charge details | - |
-  | `chargeData.id` | string | mandatory | Charge identifier | - |
-  | `chargeData.status` | string | mandatory | Payment status | - |
-  | `chargeData.firstName` | string | Mandatory | Buyer name | - |
-  | `chargeData.lastName` | string | Mandatory | Buyer last name | - |
-  | `chargeData.createdAt` | string | mandatory | Date of creation of payment | - |
-  | `chargeData.isServiceFee` | bool | mandatory | Indicates whether this charge is the main or service fee | - |
-  | `chargeData.order` | object | mandatory | Contains order details | - |
-  | `chargeData.order.id` | string | mandatory | Order identifier | - |
-  | `chargeData.order.type` | string | mandatory | Order type | - |
-  | `chargeData.order.currency` | string | mandatory | Order currency | - |
-  | `chargeData.order.amount` | string | mandatory | Order amount | - |
-  | `chargeData.order.locale` | string | mandatory | Language selected on the checkout page | - |
-  | `chargeData.order.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about order. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON | - |
-  | `chargeData.paymentMethod` | object | mandatory | Information about the payment method | - |
-  | `chargeData.paymentMethod.type` | string | mandatory | Type of payment method | - |
-  | `chargeData.paymentMethod.data` | object | mandatory | Payment details | - |
-  | `chargeData.paymentMethod.data.bin` | string | optional | BIN card | - |
-  | `chargeData.paymentMethod.data.lastFour` | string | optional | Card last four digits | - |
-  | `chargeData.paymentMethod.binData` | object | optional | Object containing card BIN data. Includes information about the first 6 or 8 digits of the card PAN, card brand, issuer, card type, card level, and issuing country. | - |
-  | `chargeData.paymentMethod.binData.bin` | string | mandatory | First 6 or 8 digits of the card PAN used to identify the BIN/IIN | - |
-  | `chargeData.paymentMethod.binData.brand` | string | optional | Payment card brand | - |
-  | `chargeData.paymentMethod.binData.issuer` | string | optional | Name of the bank or financial institution that issued the card | - |
-  | `chargeData.paymentMethod.binData.cardType` | string | optional | Card type, such as debit, credit, or prepaid | - |
-  | `chargeData.paymentMethod.binData.cardLevel` | string | optional | Card level or category within the card brand | - |
-  | `chargeData.paymentMethod.binData.countryIsoTwo` | string | optional | Two-letter ISO country code of the card issuing country in ISO 3166-1 alpha-2 format | - |
-  | `chargeData.provider` | object | optional | Contains provider information | - |
-  | `chargeData.provider.name` | string | mandatory | Name of the payment provider | - |
-  | `chargeData.provider.mid` | object | mandatory | Mid details | - |
-  | `chargeData.provider.mid.name` | string | mandatory | The name of the MID through which the payment was made | - |
-  | `chargeData.declineData` | object | mandatory | Contains charge decline information | - |
-  | `chargeData.declineData.type` | string | mandatory | Type of decline | - |
-  | `chargeData.declineData.errorMessage` | string | optional | Decline message | - |
-  | `chargeData.declineData.code` | string | optional | Mapped decline code | - |
-  | `chargeData.declineData.code.name` | string | mandatory | The name of the MID through which the payment was made | - |

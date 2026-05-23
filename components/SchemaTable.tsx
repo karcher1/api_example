@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type CSSProperties } from "react";
 import { ChevronRight } from "lucide-react";
+import { MarkdownInline } from "@/components/MarkdownInline";
 import type { SchemaNode } from "@/lib/openapi";
 
 interface SchemaTableProps {
@@ -236,7 +237,9 @@ function SchemaTreeNode({
               </span>
             ))}
           </div>
-          <p className="schema-tree-description">{schemaDescription(node)}</p>
+          <p className="schema-tree-description">
+            <MarkdownInline source={schemaDescription(node)} keyPrefix={`schema-description-${path}`} />
+          </p>
         </div>
         {showRequiredState ? (
           <span className={node.required ? "schema-required" : "schema-optional"}>

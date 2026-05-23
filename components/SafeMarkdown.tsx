@@ -1,79 +1,13 @@
-import Link from "next/link";
+import { renderInline } from "@/components/MarkdownInline";
+import { SchemaTable } from "@/components/SchemaTable";
+import { createHeadingIdTracker } from "@/lib/markdown";
+import type { SchemaNode } from "@/lib/openapi";
 
 interface SafeMarkdownProps {
   source: string;
 }
 
-type InlineNode = string | JSX.Element;
 type TableKind = "events" | "params" | "default";
-
-function renderInline(text: string, keyPrefix: string): InlineNode[] {
-  const nodes: InlineNode[] = [];
-  const pattern = /(!\[([^\]]*)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*|\[([^\]]+)\]\(([^)]+)\))/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  let index = 0;
-
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      nodes.push(text.slice(lastIndex, match.index));
-    }
-
-    const token = match[0];
-
-    if (token.startsWith("![")) {
-      const alt = match[2] ?? "";
-      const src = match[3] ?? "";
-
-      nodes.push(
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="mdx-image" src={src} alt={alt} key={`${keyPrefix}-image-${index}`} />,
-      );
-    } else if (token.startsWith("`")) {
-      nodes.push(
-        <code className="mdx-code" key={`${keyPrefix}-code-${index}`}>
-          {match[4] ?? token.slice(1, -1)}
-        </code>,
-      );
-    } else if (token.startsWith("**")) {
-      nodes.push(
-        <strong key={`${keyPrefix}-strong-${index}`}>
-          {match[5] ?? token.slice(2, -2)}
-        </strong>,
-      );
-    } else if (token.startsWith("*")) {
-      nodes.push(
-        <em key={`${keyPrefix}-em-${index}`}>
-          {match[6] ?? token.slice(1, -1)}
-        </em>,
-      );
-    } else {
-      const label = match[7] ?? "";
-      const href = match[8] ?? "";
-
-      nodes.push(
-        href.startsWith("/") ? (
-          <Link className="mdx-link" href={href} key={`${keyPrefix}-link-${index}`}>
-            {label}
-          </Link>
-        ) : (
-          <a className="mdx-link" href={href} key={`${keyPrefix}-link-${index}`}>
-            {label}
-          </a>
-        ),
-      );
-    }
-
-    lastIndex = pattern.lastIndex;
-    index += 1;
-  }
-
-  if (lastIndex < text.length) {
-    nodes.push(text.slice(lastIndex));
-  }
-
-  return nodes;
-}
 
 function isTableStart(lines: string[], index: number): boolean {
   return Boolean(
@@ -140,21 +74,115 @@ function parseTable(lines: string[], start: number) {
 
 function tableKind(header: string[]): TableKind {
   const normalized = header.map((cell) => cell.trim().toLowerCase());
+  const headerKey = normalized.join("|");
 
-  if (normalized.join("|") === "reason|event|action|outcome") {
+  if (headerKey === "reason|event|action|outcome") {
     return "events";
   }
 
-  if (normalized.join("|") === "attribute|type|requirement|description|standard") {
+  if (
+    headerKey === "attribute|type|requirement|description" ||
+    headerKey === "attribute|type|requirement|description|standard"
+  ) {
     return "params";
   }
 
   return "default";
 }
 
+function stripInlineCode(value: string): string {
+  const trimmed = value.trim();
+  const codeMatch = trimmed.match(/^`([^`]+)`$/);
+
+  return codeMatch ? codeMatch[1].trim() : trimmed;
+}
+
+function isRequiredRequirement(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+
+  return normalized === "mandatory" || normalized === "required";
+}
+
+function tableRowsToSchema(rows: string[][]): SchemaNode {
+  const root: SchemaNode = {
+    type: "object",
+    properties: [],
+  };
+  const nodesByPath = new Map<string, SchemaNode>();
+
+  rows.forEach((row) => {
+    const attribute = stripInlineCode(row[0] ?? "");
+    const pathParts = attribute.split(".").map((part) => part.trim()).filter(Boolean);
+
+    if (!pathParts.length) {
+      return;
+    }
+
+    let parent = root;
+    let currentPath = "";
+
+    pathParts.forEach((part, partIndex) => {
+      const isLast = partIndex === pathParts.length - 1;
+      currentPath = currentPath ? `${currentPath}.${part}` : part;
+
+      let node = nodesByPath.get(currentPath);
+
+      if (!node) {
+        node = {
+          name: part,
+          type: isLast ? stripInlineCode(row[1] ?? "") || "unknown" : "object",
+        };
+        parent.properties = parent.properties ?? [];
+        parent.properties.push(node);
+        nodesByPath.set(currentPath, node);
+      }
+
+      if (isLast) {
+        node.type = stripInlineCode(row[1] ?? "") || "unknown";
+        node.required = isRequiredRequirement(row[2] ?? "");
+        node.description = row[3]?.trim() || undefined;
+      }
+
+      parent = node;
+    });
+  });
+
+  return root;
+}
+
+function eventTableCellClass(cellIndex: number): string | undefined {
+  if (cellIndex === 1) {
+    return "webhook-event-cell";
+  }
+
+  if (cellIndex === 2) {
+    return "webhook-action-cell";
+  }
+
+  return undefined;
+}
+
+function renderTableCellContent(
+  kind: TableKind,
+  cell: string,
+  rowIndex: number,
+  cellIndex: number,
+) {
+  if (kind === "events" && cellIndex === 1) {
+    return <span className="webhook-event-token">{stripInlineCode(cell)}</span>;
+  }
+
+  if (kind === "events" && cellIndex === 2) {
+    return <span className="webhook-action-label">{stripInlineCode(cell)}</span>;
+  }
+
+  return renderInline(cell, `table-${rowIndex}-${cellIndex}`);
+}
+
 export function SafeMarkdown({ source }: SafeMarkdownProps) {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const blocks: JSX.Element[] = [];
+  const nextHeadingId = createHeadingIdTracker();
   let index = 0;
   let blockIndex = 0;
 
@@ -192,37 +220,62 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
       const tableKindClass = table.kind === "default" ? "" : ` table-wrap-${table.kind}`;
       const docsTableKindClass = table.kind === "default" ? "" : ` docs-table-${table.kind}`;
 
-      blocks.push(
-        <div className={`table-wrap${tableKindClass}`} key={`block-${blockIndex}`}>
-          <table className={`docs-table${docsTableKindClass}`}>
-            <thead>
-              <tr>
-                {table.header.map((cell) => (
-                  <th key={cell}>{renderInline(cell, `table-head-${cell}`)}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {table.body.map((row, rowIndex) => (
-                <tr key={`row-${rowIndex}`}>
-                  {row.map((cell, cellIndex) => (
-                    <td key={`${rowIndex}-${cellIndex}`}>{renderInline(cell, `table-${rowIndex}-${cellIndex}`)}</td>
+      if (table.kind === "params") {
+        blocks.push(
+          <div className="webhook-schema-tree" key={`block-${blockIndex}`}>
+            <SchemaTable
+              schema={tableRowsToSchema(table.body)}
+              rootLabel="payload"
+              variant="fieldList"
+              initialExpansion="default"
+            />
+          </div>,
+        );
+      } else {
+        blocks.push(
+          <div className={`table-wrap${tableKindClass}`} key={`block-${blockIndex}`}>
+            <table className={`docs-table${docsTableKindClass}`}>
+              <thead>
+                <tr>
+                  {table.header.map((cell) => (
+                    <th key={cell}>{renderInline(cell, `table-head-${cell}`)}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>,
-      );
+              </thead>
+              <tbody>
+                {table.body.map((row, rowIndex) => (
+                  <tr key={`row-${rowIndex}`}>
+                    {row.map((cell, cellIndex) => {
+                      const cellClass = table.kind === "events" ? eventTableCellClass(cellIndex) : undefined;
+
+                      return (
+                        <td className={cellClass} key={`${rowIndex}-${cellIndex}`}>
+                          {renderTableCellContent(table.kind, cell, rowIndex, cellIndex)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>,
+        );
+      }
       index = table.nextIndex;
       blockIndex += 1;
       continue;
     }
 
     if (trimmed.startsWith("### ")) {
+      const headingText = trimmed.slice(4);
+      const headingId = nextHeadingId(headingText);
+
       blocks.push(
-        <h3 className="mdx-h3" key={`block-${blockIndex}`}>
-          {renderInline(trimmed.slice(4), `h3-${blockIndex}`)}
+        <h3 className="mdx-h3" id={headingId} key={`block-${blockIndex}`}>
+          {renderInline(headingText, `h3-${blockIndex}`)}
+          <a className="heading-anchor" href={`#${headingId}`} aria-label="Link to this section">
+            #
+          </a>
         </h3>,
       );
       index += 1;
@@ -231,9 +284,15 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
     }
 
     if (trimmed.startsWith("## ")) {
+      const headingText = trimmed.slice(3);
+      const headingId = nextHeadingId(headingText);
+
       blocks.push(
-        <h2 className="mdx-h2" key={`block-${blockIndex}`}>
-          {renderInline(trimmed.slice(3), `h2-${blockIndex}`)}
+        <h2 className="mdx-h2" id={headingId} key={`block-${blockIndex}`}>
+          {renderInline(headingText, `h2-${blockIndex}`)}
+          <a className="heading-anchor" href={`#${headingId}`} aria-label="Link to this section">
+            #
+          </a>
         </h2>,
       );
       index += 1;
@@ -242,9 +301,15 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
     }
 
     if (trimmed.startsWith("# ")) {
+      const headingText = trimmed.slice(2);
+      const headingId = nextHeadingId(headingText);
+
       blocks.push(
-        <h1 className="mdx-h1" key={`block-${blockIndex}`}>
-          {renderInline(trimmed.slice(2), `h1-${blockIndex}`)}
+        <h1 className="mdx-h1" id={headingId} key={`block-${blockIndex}`}>
+          {renderInline(headingText, `h1-${blockIndex}`)}
+          <a className="heading-anchor" href={`#${headingId}`} aria-label="Link to this section">
+            #
+          </a>
         </h1>,
       );
       index += 1;

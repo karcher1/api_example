@@ -9,7 +9,7 @@ content: |
 
   Articles support **bold text**, *italic text*, `inline code`, links, lists, images, and code examples.
 
-  Example link to API Reference: [Create user](/api/create-user).
+  Example link to API Reference: [Create buyer](/api/create-buyer).
 
   ```bash
   curl https://api.example.com/v1/users

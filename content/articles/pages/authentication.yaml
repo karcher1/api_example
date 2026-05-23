@@ -13,7 +13,7 @@ content: |
 
   Use **HTTPS** and keep API tokens private.
 
-  See the [Create user endpoint](/api/create-user).
+  See the [Create buyer endpoint](/api/create-buyer).
 
 blocks:
   - type: warning

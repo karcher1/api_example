@@ -52,6 +52,38 @@ content: |
   | To obtain information about linking a new token to a subscription. | `subscription_scheduled_tokenize` | `tokenize` | The token on the subscription is updated. |
   | To remove expired tokens. | `subscription_scheduled_remove_expired_charge_method` | `end_date` | The token is removed from the subscription. |
   
+  ## Webhook-request format
+  
+  | Attribute | Type | Requirement | Description |
+  | --- | --- | --- | --- |
+  | `type` | string | mandatory | Type of event. There will always be a subscription. |
+  | `action` | string | mandatory | Indicates event (subscription_user_renew, subscription_user_create, etc) |
+  | `merchant` | string | mandatory | Merchant's name |
+  | `chargeId` | string | optional | Transaction identifier |
+  | `buyer` | object | mandatory | Contains buyer details |
+  | `buyer.id` | string | mandatory | Unique identifier of buyer in the system |
+  | `buyer.buyerEmail` | string | mandatory | Buyer email |
+  | `buyer.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON |
+  | `subscriptionData` | object | mandatory | Contains subscription details |
+  | `subscriptionData.id` | string | mandatory | Subscription identifier |
+  | `subscriptionData.status` | string | mandatory | Subscription status |
+  | `subscriptionData.buyerId` | string | mandatory | Unique identifier of buyer in the system **(deprecated)**. **Note:** Use the same parameter in the buyer object |
+  | `subscriptionData.buyerEmail` | string | mandatory | Buyer email **(deprecated)**. **Note:** Use the same parameter in the buyer object |
+  | `subscriptionData.buyerMetaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON **(deprecated)**. **Note:** Use the same parameter in the buyer object |
+  | `subscriptionData.startDate` | string | mandatory | Subscription start date |
+  | `subscriptionData.endDate` | string | mandatory | Subscription end date |
+  | `subscriptionData.createdAt` | string | mandatory | Subscription creation date |
+  | `subscriptionData.updatedAt` | string | mandatory | Subscription renewal date |
+  | `subscriptionData.isManual` | bool | mandatory | Indicates whether the subscription is manual |
+  | `subscriptionData.autochargeStatus` | bool | mandatory | Indicates auto-charge status |
+  | `subscriptionData.product` | object | mandatory | Contains product information |
+  | `subscriptionData.product.code` | string | mandatory | Product code |
+  | `subscriptionData.product.name` | string | mandatory | Product name in EN |
+  | `subscriptionData.product.nameByLocale` | string | mandatory | Product name by selected language on the checkout page |
+  | `subscriptionData.product.productPrice` | object | mandatory | Contains price information of product |
+  | `subscriptionData.product.productPrice.amount` | string | mandatory | Product/subscription price |
+  | `subscriptionData.product.productPrice.currency` | string | mandatory | Currency of product/order/subscription |
+  
   ## JSON example
   
   ```json
@@ -93,35 +125,3 @@ content: |
     }
   }
   ```
-  
-  ## Webhook-request format
-  
-  | Attribute | Type | Requirement | Description | Standard |
-  | --- | --- | --- | --- | --- |
-  | `type` | string | mandatory | Type of event. There will always be a subscription. | - |
-  | `action` | string | mandatory | Indicates event (subscription_user_renew, subscription_user_create, etc) | - |
-  | `merchant` | string | mandatory | Merchant's name | - |
-  | `chargeId` | string | optional | Transaction identifier | - |
-  | `buyer` | object | mandatory | Contains buyer details | - |
-  | `buyer.id` | string | mandatory | Unique identifier of buyer in the system | - |
-  | `buyer.buyerEmail` | string | mandatory | Buyer email | - |
-  | `buyer.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON | - |
-  | `subscriptionData` | object | mandatory | Contains subscription details | - |
-  | `subscriptionData.id` | string | mandatory | Subscription identifier | - |
-  | `subscriptionData.status` | string | mandatory | Subscription status | - |
-  | `subscriptionData.buyerId` | string | mandatory | Unique identifier of buyer in the system **(deprecated)**. **Note:** Use the same parameter in the buyer object | - |
-  | `subscriptionData.buyerEmail` | string | mandatory | Buyer email **(deprecated)**. **Note:** Use the same parameter in the buyer object | - |
-  | `subscriptionData.buyerMetaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON **(deprecated)**. **Note:** Use the same parameter in the buyer object | - |
-  | `subscriptionData.startDate` | string | mandatory | Subscription start date | - |
-  | `subscriptionData.endDate` | string | mandatory | Subscription end date | - |
-  | `subscriptionData.createdAt` | string | mandatory | Subscription creation date | - |
-  | `subscriptionData.updatedAt` | string | mandatory | Subscription renewal date | - |
-  | `subscriptionData.isManual` | bool | mandatory | Indicates whether the subscription is manual | - |
-  | `subscriptionData.autochargeStatus` | bool | mandatory | Indicates auto-charge status | - |
-  | `subscriptionData.product` | object | mandatory | Contains product information | - |
-  | `subscriptionData.product.code` | string | mandatory | Product code | - |
-  | `subscriptionData.product.name` | string | mandatory | Product name in EN | - |
-  | `subscriptionData.product.nameByLocale` | string | mandatory | Product name by selected language on the checkout page | - |
-  | `subscriptionData.product.productPrice` | object | mandatory | Contains price information of product | - |
-  | `subscriptionData.product.productPrice.amount` | string | mandatory | Product/subscription price | - |
-  | `subscriptionData.product.productPrice.currency` | string | mandatory | Currency of product/order/subscription | - |
