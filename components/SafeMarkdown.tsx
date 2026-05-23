@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { renderInline } from "@/components/MarkdownInline";
 import { SchemaTable } from "@/components/SchemaTable";
 import { createHeadingIdTracker } from "@/lib/markdown";
@@ -5,6 +6,7 @@ import type { SchemaNode } from "@/lib/openapi";
 
 interface SafeMarkdownProps {
   source: string;
+  sectionCards?: boolean;
 }
 
 type TableKind = "events" | "params" | "default";
@@ -188,7 +190,66 @@ function renderTableCellContent(
   return renderInline(cell, `table-${rowIndex}-${cellIndex}`);
 }
 
-export function SafeMarkdown({ source }: SafeMarkdownProps) {
+function blockClassName(block: JSX.Element): string {
+  const className = (block.props as { className?: unknown }).className;
+
+  return typeof className === "string" ? className : "";
+}
+
+function isSectionHeading(block: JSX.Element): boolean {
+  return blockClassName(block).split(/\s+/).includes("mdx-h2");
+}
+
+function renderSectionCards(blocks: JSX.Element[]) {
+  const sections: Array<{
+    key: string;
+    type: "intro" | "section";
+    blocks: JSX.Element[];
+  }> = [];
+
+  blocks.forEach((block, index) => {
+    if (isSectionHeading(block)) {
+      sections.push({
+        key: `markdown-section-${index}`,
+        type: "section",
+        blocks: [block],
+      });
+      return;
+    }
+
+    const current = sections[sections.length - 1];
+
+    if (current) {
+      current.blocks.push(block);
+      return;
+    }
+
+    sections.push({
+      key: "markdown-intro",
+      type: "intro",
+      blocks: [block],
+    });
+  });
+
+  return (
+    <>
+      {sections.map((section, index) => (
+        <section
+          className={[
+            "article-section-card",
+            section.type === "intro" ? "article-section-card-intro" : "",
+          ].filter(Boolean).join(" ")}
+          key={section.key}
+          style={{ "--article-card-index": index } as CSSProperties}
+        >
+          {section.blocks}
+        </section>
+      ))}
+    </>
+  );
+}
+
+export function SafeMarkdown({ source, sectionCards = false }: SafeMarkdownProps) {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const blocks: JSX.Element[] = [];
   const nextHeadingId = createHeadingIdTracker();
@@ -282,9 +343,6 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
       blocks.push(
         <h3 className="mdx-h3" id={headingId} key={`block-${blockIndex}`}>
           {renderInline(headingText, `h3-${blockIndex}`)}
-          <a className="heading-anchor" href={`#${headingId}`} aria-label="Link to this section">
-            #
-          </a>
         </h3>,
       );
       index += 1;
@@ -299,9 +357,6 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
       blocks.push(
         <h2 className="mdx-h2" id={headingId} key={`block-${blockIndex}`}>
           {renderInline(headingText, `h2-${blockIndex}`)}
-          <a className="heading-anchor" href={`#${headingId}`} aria-label="Link to this section">
-            #
-          </a>
         </h2>,
       );
       index += 1;
@@ -316,9 +371,6 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
       blocks.push(
         <h1 className="mdx-h1" id={headingId} key={`block-${blockIndex}`}>
           {renderInline(headingText, `h1-${blockIndex}`)}
-          <a className="heading-anchor" href={`#${headingId}`} aria-label="Link to this section">
-            #
-          </a>
         </h1>,
       );
       index += 1;
@@ -396,5 +448,5 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
     blockIndex += 1;
   }
 
-  return <>{blocks}</>;
+  return sectionCards ? renderSectionCards(blocks) : <>{blocks}</>;
 }

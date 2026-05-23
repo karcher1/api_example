@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import { Header, type HeaderNavItem } from "@/components/Header";
 import { getFirstEndpointHref } from "@/lib/openapi";
-import { getFirstContentPageHref, getFirstWebhookPageHref } from "@/lib/pages";
+import { getFirstContentPageHref, getFirstSdkPageHref, getFirstWebhookPageHref } from "@/lib/pages";
 
 export const metadata: Metadata = {
   title: "API Docs",
@@ -27,6 +27,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       label: "Webhooks",
       href: getFirstWebhookPageHref(),
       match: "/webhooks",
+    },
+    {
+      label: "SDK",
+      href: getFirstSdkPageHref(),
+      match: "/sdk",
     },
   ];
 

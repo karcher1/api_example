@@ -95,6 +95,16 @@ const WEBHOOKS_COLLECTION = collectionConfig({
   nodePrefix: "webhook",
 });
 
+const SDK_COLLECTION = collectionConfig({
+  dirName: "sdk",
+  routeBase: "/sdk",
+  defaultTitle: "SDK",
+  contentLabel: "SDK content",
+  navigationLabel: "SDK navigation",
+  itemLabel: "SDK page",
+  nodePrefix: "sdk",
+});
+
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -516,4 +526,28 @@ export function getWebhookNavigation(): NavNode[] {
 
 export function getFirstWebhookPageHref(): string {
   return getFirstPageHref(WEBHOOKS_COLLECTION);
+}
+
+export function getSdkPages(): ContentPage[] {
+  return getPages(SDK_COLLECTION);
+}
+
+export function getSdkPage(slug: string): ContentPage | undefined {
+  return getSdkPages().find((page) => page.slug === slug);
+}
+
+export function getSdkPageStaticParams(): Array<{ slug: string }> {
+  return getSdkPages().map((page) => ({ slug: page.slug }));
+}
+
+export function getSdkNavigationTitle(): string {
+  return getNavigationTitle(SDK_COLLECTION);
+}
+
+export function getSdkNavigation(): NavNode[] {
+  return getNavigation(SDK_COLLECTION);
+}
+
+export function getFirstSdkPageHref(): string {
+  return getFirstPageHref(SDK_COLLECTION);
 }

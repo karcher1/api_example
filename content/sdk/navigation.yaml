@@ -1,0 +1,10 @@
+title: SDK
+sections:
+  - title: SDK
+    id: sdk
+    defaultOpen: true
+    items:
+      - title: SDK
+        slug: checkout-sdk
+      - title: Integration with page builder
+        slug: integration-with-page-builder

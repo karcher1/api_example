@@ -146,6 +146,27 @@ content: |
   );
 }
 
+function writeSdkFixture(root) {
+  const filePath = path.join(root, "content", "sdk", "pages", "workflow-sdk.yaml");
+
+  fs.writeFileSync(
+    filePath,
+    `slug: workflow-sdk
+title: Workflow SDK
+description: Temporary content workflow SDK page.
+
+content: |
+  # Workflow SDK
+
+  This page verifies SDK documentation creation through YAML.
+
+  \`\`\`typescript
+  CheckoutSDK.cleanup();
+  \`\`\`
+`,
+  );
+}
+
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "api-docs-content-workflow-"));
 
 try {
@@ -158,6 +179,7 @@ try {
   const apiNavPath = path.join(tempRoot, "content", "api", "navigation.yaml");
   const articleNavPath = path.join(tempRoot, "content", "articles", "navigation.yaml");
   const webhookNavPath = path.join(tempRoot, "content", "webhooks", "navigation.yaml");
+  const sdkNavPath = path.join(tempRoot, "content", "sdk", "navigation.yaml");
 
   runValidation(tempRoot, "base content validates");
 
@@ -220,6 +242,26 @@ try {
 
   removeSection(webhookNavPath, "workflow-webhooks-moved");
   runValidation(tempRoot, "webhook page removed from webhook navigation while file remains draft-routable");
+
+  writeSdkFixture(tempRoot);
+  addSection(sdkNavPath, {
+    title: "Workflow SDK",
+    id: "workflow-sdk",
+    defaultOpen: true,
+    items: [{ title: "Workflow SDK", slug: "workflow-sdk" }],
+  });
+  runValidation(tempRoot, "new SDK page linked in SDK navigation");
+
+  replaceSection(sdkNavPath, "workflow-sdk", {
+    title: "Workflow SDK Moved",
+    id: "workflow-sdk-moved",
+    defaultOpen: true,
+    items: [{ title: "Workflow SDK", slug: "workflow-sdk" }],
+  });
+  runValidation(tempRoot, "SDK page moved by editing SDK navigation only");
+
+  removeSection(sdkNavPath, "workflow-sdk-moved");
+  runValidation(tempRoot, "SDK page removed from SDK navigation while file remains draft-routable");
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;

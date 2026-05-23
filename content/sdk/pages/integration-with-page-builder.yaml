@@ -1,0 +1,76 @@
+slug: integration-with-page-builder
+title: Integration with page builder
+description: Example integration flow for FunnelFox and similar page builders.
+
+content: |
+  # Integration with page builder
+
+  Let's walk through an integration example using FunnelFox.
+
+  FunnelFox allows you to build pages and steps in a sales funnel (landing -> plan selection -> payment -> thank you). From this, we can derive two main stages of integration with our billing: displaying plans/prices and proceeding to payment. Optionally, you can combine them on a single page.
+
+  ## 1) Plan selection page: how to display plans and prices
+
+  At the step where the user chooses a plan, there are two approaches.
+
+  ### Option A - Hardcode plans in FunnelFox
+
+  If you have a fixed set of plans and rarely change prices/descriptions, you can simply configure the following manually:
+
+  - plan names
+  - prices
+  - currency
+  - duration etc.
+
+  > Note: This is the simplest approach, but keep in mind that any changes (price, plan contents, discount) will have to be updated manually in FunnelFox.
+
+  ### Option B - Load plans and prices via our API
+
+  If you want prices and product information to always be up to date, you can use our endpoint to retrieve:
+
+  - current prices for plans
+  - product data (name, period, description)
+  - additional attributes that you store on the billing side
+
+  **How it typically works:**
+
+  1. You (your backend or frontend) send a request to our API, for example the endpoint for [retrieving prices](/api/get-prices-for-offer-page).
+  2. You receive a list of plans/prices.
+  3. You render the plans on the selection page.
+
+  This option is easier to scale and maintain: changes are made on the billing side, and you simply display the latest data on FunnelFox.
+
+  ## 2) After plan selection: two payment scenarios
+
+  When the user selects a plan, you then choose one of two UX scenarios and implement it using the following endpoints: [Create order](/api/create-order) or [One-time payment](/api/one-time-payment).
+
+  ### Scenario 1 - Next FunnelFox page + embedded iFrame
+
+  After selecting a plan, the next FunnelFox step opens - a payment page where:
+
+  - an iFrame with our checkout/payment interface is embedded (about iFrame integration read [here](/sdk/checkout-sdk))
+  - the user completes the payment while staying inside the FunnelFox funnel
+
+  **When this is convenient:**
+
+  - you want to keep a seamless experience within FunnelFox
+  - it's important that the user does not leave your flow
+
+  ### Scenario 2 - Redirect to our hosted payment page
+
+  After selecting a plan, you open our hosted payment page, already tied to the user's order:
+
+  - an order is created
+  - you receive the order URL
+  - you redirect the user to our page and the user pays there
+  - after payment, we redirect the user back to your flow
+
+  **When this is convenient:**
+
+  - you want the simplest and most reliable option
+  - you want to avoid iFrame limitations
+  - you prefer to keep the entire payment experience on our side
+
+  ## Practical tip
+
+  If the integration involves keys/signatures/secrets, it's better for FunnelFox to call your backend, and for your backend to communicate with our API. This way you don't expose secrets in the browser, and you can centrally log and control requests.

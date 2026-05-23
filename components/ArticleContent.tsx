@@ -76,7 +76,7 @@ export function ArticleContent({
       <header className={`static-page-header article-hero article-hero-${sectionVariant}`}>
         <h1>{page.title}</h1>
       </header>
-      <SafeMarkdown source={body} />
+      <SafeMarkdown source={body} sectionCards />
       {page.blocks.length ? (
         <div className="article-blocks">
           {page.blocks.map((block) => (

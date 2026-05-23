@@ -481,13 +481,26 @@ function validateWebhooks(root) {
   return pages.length;
 }
 
+function validateSdk(root) {
+  const sdkRoot = path.join(root, "content", "sdk");
+  const pages = yamlFilePaths(path.join(sdkRoot, "pages"), "SDK pages").map((filePath) =>
+    validateArticleFile(root, filePath, "SDK content", "SDK file"),
+  );
+  const pagesBySlug = bySlug(pages, "SDK page");
+
+  validateNavigation(path.join(sdkRoot, "navigation.yaml"), "SDK navigation", pagesBySlug, "SDK page");
+
+  return pages.length;
+}
+
 try {
   const { root } = parseArgs();
   const endpointCount = validateApi(root);
   const articleCount = validateArticles(root);
   const webhookCount = validateWebhooks(root);
+  const sdkCount = validateSdk(root);
 
-  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${articleCount} article(s), ${webhookCount} webhook page(s).`);
+  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${articleCount} article(s), ${webhookCount} webhook page(s), ${sdkCount} SDK page(s).`);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

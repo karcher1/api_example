@@ -1,0 +1,458 @@
+slug: checkout-sdk
+title: Checkout SDK
+description: A set of tools for integrating payment functionality on the frontend.
+
+content: |
+  # Checkout SDK
+
+  **Checkout SDK** - a set of tools for integrating payment functionality on the frontend.
+
+  ## SDK integration
+
+  ### Before we started working with the SDK please make sure
+
+  You passed `parentUrl` when creating order. This is required to redirect to correct page after user passes 3DS check. It can be done like this:
+
+  ```typescript
+  const createdOrderResponse = await fetch(GET_CHECKOUT_URL_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      // !!! Important !!!
+      // pass parentUrl in metadata, so we can restore the payment session
+      metaData: {
+        parentUrl: window.location.href,
+        // ...any of your analytics or session-related data
+      },
+      // ...product, buyer, shop etc
+    }),
+  });
+  ```
+
+  `GET_CHECKOUT_URL_API` along with more details on this request can be found on either [Create order](/api/create-order) or [One-time payment](/api/one-time-payment) depending on your use-case.
+
+  All DNS records provided by our Merchant manager should be set correctly. Otherwise you will get a `DNS_PROBE_FINISHED_NXDOMAIN` error.
+
+  ### Attach a script
+
+  Add the SDK script to your HTML document:
+
+  ```html
+  <script src="https://{ENVIRONMENT}/checkout-sdk.umd.js"></script>
+  ```
+
+  `ENVIRONMENT` values:
+
+  - SANDBOX - `checkout-sdk-sandbox.billerbase.com`
+  - PROD - `checkout-sdk.billerbase.com`
+
+  Please make sure the script is loaded before you try to run the code below.
+
+  ### Init SDK
+
+  The `initCheckoutSDK` function is used to initialize the SDK. It configures all required subscriptions, event handlers, and settings for working with the checkout.
+
+  ```typescript
+  const CheckoutSDK = initCheckoutSDK({
+    // you get this from the request with which you create the order
+    checkoutUrl: "https://cart.example.com/initial-billing/${orderId}",
+    debug: {
+      logLevel: "info",
+      logCheckoutEvents: true,
+    },
+  });
+  ```
+
+  Parameters:
+
+  - `checkoutUrl` (required): a link to the checkout page received from billing when creating an order (`/api/v2/initials/url`).
+  - You can add the query parameter `priceCalculationType` with the values `daily`, `weekly`, `monthly`, or `none` to `checkoutUrl` to change how prices are displayed on the checkout.
+  - Example: `https://cart.example.com/initial-billing/${orderId}?priceCalculationType=monthly`
+  - `debug` (optional): logging configuration.
+  - `logLevel` (`info` | `warn` | `error`): `info` logs errors, warnings, and integration/debug messages; `warn` logs warnings and errors only; `error` logs errors only. Default: `warn`.
+  - `logCheckoutEvents` (boolean): enables logging checkout events to the browser console. Default: `false`.
+
+  Notes:
+
+  - Currently, a single SDK instance can create only one checkout. If you need multiple checkouts on the same page, create a separate instance for each.
+  - Each instance works independently and their events are isolated.
+  - You will receive the `checkoutUrl` value when you perform the request to create an order.
+
+  ### Setup event listeners
+
+  When the script is loaded and Checkout SDK instance initiated you should subscribe to events from checkout so you can react to what's going on inside the checkout.
+
+  Let's continue with code example. You could use it as a starter:
+
+  ```typescript
+  CheckoutSDK.checkout.events.subscribe("ready", (payload) => {
+    // means checkout form is completely loaded and ready to be used
+  });
+
+  CheckoutSDK.checkout.events.subscribe("submitButtonLoading", (payload) => {
+    // THIS EVENT IS ONLY NEEDED WHEN YOU HAVE CUSTOM SUBMIT BUTTON INSTEAD OF BUILT-IN
+    //
+    // sometimes we need to block submit button so we can check the data
+    // and this event is specifically for that
+    // so here you should do something like
+    //
+    // setSubmitButtonLoading(payload.isLoading)
+  });
+
+  CheckoutSDK.checkout.events.subscribe("redirect", (payload) => {
+    // checkout will prompt you to redirect user for such cases:
+    // 1. successful payment - redirectUrl will be equal to MERCHANT_REDIRECT_URL you specified before
+    // 2. 3DS - redirect to provider so user can pass the challenge and confirm the payment
+    // 3. 404|503 error
+
+    if (payload.shouldOpenInNewTab) {
+      window.open(payload.redirectUrl, "_blank");
+    } else {
+      window.location.href = payload.redirectUrl;
+    }
+  });
+
+  CheckoutSDK.checkout.events.subscribe("submit", (payload) => {
+    if (payload.validationPassed) {
+      // submit attempt like this will start payment processing
+    } else {
+      // something wrong with user's input
+    }
+  });
+
+  CheckoutSDK.checkout.events.subscribe("paymentProcessingStart", (payload) => {
+    // we have all we need and started payment processing
+  });
+
+  CheckoutSDK.checkout.events.subscribe("paymentProcessingFinish", (payload) => {
+    if (payload.status === "success") {
+      // change UI to let your user know the payment is completed
+      // if the only change you plan is redirect, better do it in "redirect" event handler
+    } else {
+      // payment processing failed (either decline or some tech error)
+      // it's probably a good idea to check payload?.reason for details
+    }
+  });
+
+  CheckoutSDK.checkout.events.subscribe("error", (payload) => {
+    // catch runtime errors from sdk
+  });
+  ```
+
+  ### Restoring payment session after 3DS
+
+  3DS is a mechanism when provider checks if it's actually the right user who wants to make the payment. Commonly for us it means redirect to a provider's page:
+
+  1. Checkout page -> Provider: redirect to a provider so user can pass the check.
+  2. Provider -> Billerix: provider sends user to our page as we have initiated the check.
+  3. Billerix -> Checkout page: we redirect user back to your Checkout page.
+
+  But there's a pitfall: when user is directed to 3DS (step 1) the session is broken because for some time they will be on page we can't control. So in order to restore it on step 3 we redirect user back to your Checkout page with `orderId` param in query, so you can check it and restore Checkout SDK instance using respective URL.
+
+  From your side it requires something like this:
+
+  ```typescript
+  // after getting checkoutUrl
+  const orderId = new URL(checkoutUrl).pathname.split("/").pop();
+  localStorage.setItem(`checkoutUrl-${orderId}`, checkoutUrl);
+
+  // and before every creation of order check if this visit isn't the case when user is coming back from 3DS
+  const params = new URLSearchParams(window.location.search);
+  const isUserComingBackFrom3DS = params.has("orderId");
+
+  if (isUserComingBackFrom3DS) {
+    // restore session like they never left
+    const orderId = params.get("orderId");
+    const checkoutUrl = localStorage.getItem(`checkoutUrl-${orderId}`);
+
+    const CheckoutSDK = initCheckoutSDK({
+      checkoutUrl,
+      // ...other things you usually pass
+    });
+  } else {
+    // now we know it's a new user, so here you should create an order and continue as usual
+  }
+  ```
+
+  There's more about checkout events along with TS types for payload in the table below, but this is a great starter.
+
+  ## SDK methods
+
+  ### 1. checkout.mount
+
+  The `checkout.mount` method is used to add the checkout into the specified DOM container.
+
+  ```javascript
+  CheckoutSDK.checkout.mount({
+    containerId: "checkout-container",
+    options: {
+      coupon: "COUPON123",
+      language: "en",
+      autocharge: false,
+    },
+  });
+  ```
+
+  Parameters:
+
+  - `containerId` (required): the ID of the DOM element where the checkout will be mounted. The container must exist in the DOM before calling the method. The checkout will automatically adjust its height to content changes, so the container should be allowed to grow in height and width to avoid unwanted scrollbars.
+  - `options` (optional): a set of parameters applied when loading the checkout.
+  - `coupon` (string)
+  - `language` (string)
+  - `autocharge` (boolean)
+  - `mobileView` (boolean): force-enable the mobile layout; otherwise, device detection is based on `userAgent`. This may be useful if your desktop container width for the checkout matches the mobile layout width.
+  - `hideFields` (object): an object with fields to hide on the form when rendering the checkout. Currently, only the email field is supported. Use the field name as the key and a boolean as the value: `true` means the field will be hidden; `false` means the field will be visible.
+
+  ### 2. checkout.unmount
+
+  The `checkout.unmount` method removes the checkout from the DOM. Event subscriptions related to it remain.
+
+  ```javascript
+  CheckoutSDK.checkout.unmount();
+  ```
+
+  ### 3. checkout.submit
+
+  The `checkout.submit` method is used to submit the form in the checkout. Needed when you have a custom Submit button outside the checkout.
+
+  ```javascript
+  CheckoutSDK.checkout.submit();
+  ```
+
+  Notes:
+
+  - This method triggers the submit of the checkout form.
+  - Before calling the method, make sure the checkout is mounted and ready.
+
+  ### 4. checkout.update
+
+  The `checkout.update` method is used to modify checkout data.
+
+  ```javascript
+  CheckoutSDK.checkout.update({
+    language: "de",
+    autocharge: false,
+    hideFields: {
+      email: true,
+    },
+  });
+  ```
+
+  Parameters:
+
+  - `language` (string): changes the language.
+  - `autocharge` (boolean): enables or disables automatic subscription renewal.
+  - `hideFields` (object): an object with fields to hide on the form when rendering the checkout. Currently, only the email field is supported. Use the field name as the key and a boolean as the value.
+
+  ### 5. checkout.events
+
+  The `checkout.events` object provides methods for working with checkout events. You can subscribe to events coming from the checkout.
+
+  ### 5.1. checkout.events.subscribe
+
+  The `subscribe` method is used to subscribe to events coming from the checkout.
+
+  ```typescript
+  const subscription = CheckoutSDK.checkout.events.subscribe(
+    "ready",
+    (payload) => {
+      console.log("Checkout event:", payload);
+    },
+  );
+  ```
+
+  Parameters:
+
+  - `type` (string): the name of the event to subscribe to. See the "Available events" section.
+  - `handler` (function): a function that will be called when the event is received, with the payload object as an argument.
+
+  Returns an object with an unsubscribe method that allows you to cancel the event subscription.
+
+  ```typescript
+  subscription.unsubscribe();
+  ```
+
+  ### 5.2. checkout.events.unsubscribeAll
+
+  The `unsubscribeAll` method is used to remove all subscriptions to checkout events.
+
+  ```typescript
+  CheckoutSDK.checkout.events.unsubscribeAll();
+  ```
+
+  Notes:
+
+  - Use this method to clear all subscriptions, for example, before removing the checkout or finishing work with the SDK.
+  - The method automatically removes all subscriptions created via `checkout.events.subscribe`.
+
+  General example of using subscriptions:
+
+  ```typescript
+  // subscribe an event handler
+  const readySubscription = CheckoutSDK.checkout.events.subscribe(
+    "ready",
+    (payload) => {
+      console.log("Checkout is ready:", payload);
+    },
+  );
+
+  // cancel handling of the "ready" event
+  readySubscription.unsubscribe();
+
+  // remove all subscriptions for all events
+  CheckoutSDK.checkout.events.unsubscribeAll();
+  ```
+
+  ## Available events
+
+  ### ready
+
+  Triggered when the checkout content is fully loaded and ready for interaction. Contains information about the selected payment method, autocharge status, and the URL applied in the iframe `src` attribute.
+
+  ```typescript
+  {
+    paymentMethod: PaymentMethodName;
+    autocharge: boolean;
+    iframeUrl: string;
+  }
+  ```
+
+  ### payButtonReady
+
+  Triggered when the third-party pay button (Apple Pay, Google Pay, or PayPal) is rendered and ready for the user to click.
+
+  ```typescript
+  {
+    paymentMethod: "apple_pay" | "google_pay" | "pay_pal";
+  }
+  ```
+
+  ### redirect
+
+  Triggered when the checkout requests a redirect to another URL.
+
+  `redirectUrl` is the URL to which the user should be redirected. `shouldOpenInNewTab` indicates whether the link should be opened in a new browser tab.
+
+  ```typescript
+  {
+    redirectUrl: string;
+    shouldOpenInNewTab: boolean;
+  }
+  ```
+
+  ### changePaymentMethod
+
+  Triggered when the user changes the payment method in the checkout. Works only for checkouts that have tabs for switching payment methods.
+
+  ```typescript
+  {
+    paymentMethod: PaymentMethodName;
+  }
+  ```
+
+  ### submit
+
+  Triggered when the user clicks the Submit button that initiates the payment process, including payment methods like Apple Pay, Google Pay, and PayPal. Also fires when `checkout.submit` is called.
+
+  ```typescript
+  {
+    paymentMethod: PaymentMethodName;
+    validationPassed: boolean;
+  }
+  ```
+
+  ### submitButtonLoading
+
+  Triggered when the submit button changes its loading state. This happens, for example, during card BIN validation.
+
+  ```typescript
+  {
+    isLoading: boolean;
+  }
+  ```
+
+  ### paymentProcessingStart
+
+  Triggered at the start of payment processing.
+
+  ```typescript
+  {
+    paymentMethod: PaymentMethodName;
+  }
+  ```
+
+  ### paymentProcessingFinish
+
+  Triggered after payment processing is finished. Contains information about the payment status at the end of processing.
+
+  ```typescript
+  type PaymentProcessingFinishPayload =
+    | {
+        status: "success";
+        paymentMethod: PaymentMethodName;
+        orderId: string;
+        email: string;
+      }
+    | {
+        status: "failed";
+        paymentMethod: PaymentMethodName;
+        reason?: string;
+      };
+  ```
+
+  ### error
+
+  Triggered when an unexpected error occurs during payment processing.
+
+  ```typescript
+  {
+    error: string;
+    paymentMethod: PaymentMethodName;
+  }
+  ```
+
+  Useful type:
+
+  ```typescript
+  type PaymentMethodName =
+    | "card"
+    | "google_pay"
+    | "apple_pay"
+    | "pay_pal"
+    | "spei"
+    | "sofort"
+    | "boleto"
+    | "ideal"
+    | "wechat"
+    | "alipay"
+    | "pix"
+    | "paytm"
+    | "paysafecard"
+    | "boleto_flash"
+    | "oxxo"
+    | "mercado_pago"
+    | "wire_transfer"
+    | "web_pay"
+    | "upi"
+    | "pay_with_crypto";
+  ```
+
+  ## cleanup method
+
+  The `cleanup` method is used to finish SDK work. It clears all resources created during SDK usage, including removing the checkout, clearing event subscriptions, and unsubscribing from messages. This method ensures that the SDK does not leave any active subscriptions or resources after it finishes. It might be useful if user stays on the same page after the payment is completed.
+
+  What it does:
+
+  - Removes the checkout from the DOM.
+  - Clears all subscriptions to checkout events.
+
+  Usage example:
+
+  ```javascript
+  // call the cleanup method to clear SDK resources
+  CheckoutSDK.cleanup();
+  ```
+
+  Notes:
+
+  - After calling `cleanup`, the SDK instance can no longer be used. To use it again, you need to create a new instance via `initCheckoutSDK`.
