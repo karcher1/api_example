@@ -12,7 +12,7 @@ The site has two main documentation areas:
 1. API Reference
 2. Informational Articles section
 
-Both areas must have their own independent navigation and content model.
+Both areas must have their own independent navigation and content model. But it can have even more areas in the future.
 
 ## Important constraints
 

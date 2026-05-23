@@ -4,6 +4,8 @@ import type { ArticleBlock, ContentPage } from "@/lib/pages";
 
 interface ArticleContentProps {
   page: ContentPage;
+  collectionTitle?: string;
+  displayVariant?: "article" | "reference";
 }
 
 function noticeTone(type: string): string {
@@ -80,13 +82,18 @@ function bodyWithoutDuplicateTitle(page: ContentPage): string {
   return [...lines.slice(0, firstContentIndex), ...lines.slice(firstContentIndex + 1)].join("\n").trimStart();
 }
 
-export function ArticleContent({ page }: ArticleContentProps) {
+export function ArticleContent({
+  page,
+  collectionTitle = "Articles",
+  displayVariant = "article",
+}: ArticleContentProps) {
   const body = bodyWithoutDuplicateTitle(page);
+  const isReference = displayVariant === "reference";
 
   return (
-    <article className="mdx-document article-document">
+    <article className={isReference ? "mdx-document article-document article-document-reference" : "mdx-document article-document"}>
       <header className="static-page-header">
-        <p className="page-eyebrow">Articles</p>
+        <p className="page-eyebrow">{collectionTitle}</p>
         <h1>{page.title}</h1>
         {page.description ? <p>{page.description}</p> : null}
       </header>

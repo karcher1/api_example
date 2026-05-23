@@ -1,0 +1,19 @@
+title: Webhooks
+sections:
+  - title: Getting Started
+    id: getting-started
+    defaultOpen: true
+    items:
+      - title: Integration
+        slug: integration
+
+  - title: Event Reference
+    id: event-reference
+    defaultOpen: true
+    items:
+      - title: Subscription webhooks
+        slug: webhooks-v2-0
+      - title: Payment webhooks
+        slug: webhooks-v2-1
+      - title: Decline webhooks
+        slug: webhooks-v2-2

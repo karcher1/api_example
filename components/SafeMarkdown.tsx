@@ -5,6 +5,7 @@ interface SafeMarkdownProps {
 }
 
 type InlineNode = string | JSX.Element;
+type TableKind = "events" | "params" | "default";
 
 function renderInline(text: string, keyPrefix: string): InlineNode[] {
   const nodes: InlineNode[] = [];
@@ -82,6 +83,39 @@ function isTableStart(lines: string[], index: number): boolean {
   );
 }
 
+function splitTableRow(line: string): string[] {
+  const trimmed = line.trim();
+  const withoutLeadingPipe = trimmed.startsWith("|") ? trimmed.slice(1) : trimmed;
+  const content = withoutLeadingPipe.endsWith("|") && !withoutLeadingPipe.endsWith("\\|")
+    ? withoutLeadingPipe.slice(0, -1)
+    : withoutLeadingPipe;
+  const cells: string[] = [];
+  let current = "";
+
+  for (let index = 0; index < content.length; index += 1) {
+    const character = content[index];
+    const nextCharacter = content[index + 1];
+
+    if (character === "\\" && nextCharacter === "|") {
+      current += "|";
+      index += 1;
+      continue;
+    }
+
+    if (character === "|") {
+      cells.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += character;
+  }
+
+  cells.push(current.trim());
+
+  return cells;
+}
+
 function parseTable(lines: string[], start: number) {
   const tableLines: string[] = [];
   let index = start;
@@ -92,17 +126,30 @@ function parseTable(lines: string[], start: number) {
   }
 
   const rows = tableLines.map((line) =>
-    line
-      .replace(/^\||\|$/g, "")
-      .split("|")
-      .map((cell) => cell.trim()),
+    splitTableRow(line),
   );
+  const header = rows[0] ?? [];
 
   return {
-    header: rows[0] ?? [],
+    header,
     body: rows.slice(2),
+    kind: tableKind(header),
     nextIndex: index,
   };
+}
+
+function tableKind(header: string[]): TableKind {
+  const normalized = header.map((cell) => cell.trim().toLowerCase());
+
+  if (normalized.join("|") === "reason|event|action|outcome") {
+    return "events";
+  }
+
+  if (normalized.join("|") === "attribute|type|requirement|description|standard") {
+    return "params";
+  }
+
+  return "default";
 }
 
 export function SafeMarkdown({ source }: SafeMarkdownProps) {
@@ -142,10 +189,12 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
 
     if (isTableStart(lines, index)) {
       const table = parseTable(lines, index);
+      const tableKindClass = table.kind === "default" ? "" : ` table-wrap-${table.kind}`;
+      const docsTableKindClass = table.kind === "default" ? "" : ` docs-table-${table.kind}`;
 
       blocks.push(
-        <div className="table-wrap" key={`block-${blockIndex}`}>
-          <table className="docs-table">
+        <div className={`table-wrap${tableKindClass}`} key={`block-${blockIndex}`}>
+          <table className={`docs-table${docsTableKindClass}`}>
             <thead>
               <tr>
                 {table.header.map((cell) => (
@@ -232,12 +281,30 @@ export function SafeMarkdown({ source }: SafeMarkdownProps) {
       continue;
     }
 
+    if (trimmed.startsWith(">")) {
+      const quoteLines: string[] = [];
+
+      while (index < lines.length && lines[index].trim().startsWith(">")) {
+        quoteLines.push(lines[index].trim().replace(/^>\s?/, ""));
+        index += 1;
+      }
+
+      blocks.push(
+        <blockquote className="mdx-blockquote" key={`block-${blockIndex}`}>
+          {renderInline(quoteLines.join(" "), `quote-${blockIndex}`)}
+        </blockquote>,
+      );
+      blockIndex += 1;
+      continue;
+    }
+
     const paragraphLines: string[] = [];
 
     while (
       index < lines.length &&
       lines[index].trim() &&
       !lines[index].trim().startsWith("#") &&
+      !lines[index].trim().startsWith(">") &&
       !lines[index].trim().startsWith("```") &&
       !isTableStart(lines, index) &&
       !/^[-*]\s+/.test(lines[index].trim()) &&

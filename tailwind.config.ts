@@ -18,6 +18,10 @@ const config: Config = {
         brand: "rgb(var(--color-brand) / <alpha-value>)",
         code: "rgb(var(--color-code) / <alpha-value>)",
       },
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        mono: ["var(--font-mono)"],
+      },
       boxShadow: {
         panel: "0 1px 2px rgb(15 23 42 / 0.06)",
       },

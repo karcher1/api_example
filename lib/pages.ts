@@ -29,10 +29,71 @@ export interface ContentPage {
 
 type UnknownRecord = Record<string, unknown>;
 
-const ARTICLES_ROOT = path.join(process.cwd(), "content", "articles");
-const ARTICLES_NAVIGATION_PATH = path.join(ARTICLES_ROOT, "navigation.yaml");
-const ARTICLES_PAGES_DIR = path.join(ARTICLES_ROOT, "pages");
 const PUBLIC_ROOT = path.join(process.cwd(), "public");
+
+interface ContentCollectionConfig {
+  root: string;
+  navigationPath: string;
+  pagesDir: string;
+  routeBase: string;
+  defaultTitle: string;
+  contentLabel: string;
+  navigationLabel: string;
+  itemLabel: string;
+  nodePrefix: string;
+}
+
+function collectionConfig({
+  dirName,
+  routeBase,
+  defaultTitle,
+  contentLabel,
+  navigationLabel,
+  itemLabel,
+  nodePrefix,
+}: {
+  dirName: string;
+  routeBase: string;
+  defaultTitle: string;
+  contentLabel: string;
+  navigationLabel: string;
+  itemLabel: string;
+  nodePrefix: string;
+}): ContentCollectionConfig {
+  const root = path.join(process.cwd(), "content", dirName);
+
+  return {
+    root,
+    navigationPath: path.join(root, "navigation.yaml"),
+    pagesDir: path.join(root, "pages"),
+    routeBase,
+    defaultTitle,
+    contentLabel,
+    navigationLabel,
+    itemLabel,
+    nodePrefix,
+  };
+}
+
+const ARTICLES_COLLECTION = collectionConfig({
+  dirName: "articles",
+  routeBase: "/docs",
+  defaultTitle: "Articles",
+  contentLabel: "article content",
+  navigationLabel: "article navigation",
+  itemLabel: "article",
+  nodePrefix: "article",
+});
+
+const WEBHOOKS_COLLECTION = collectionConfig({
+  dirName: "webhooks",
+  routeBase: "/webhooks",
+  defaultTitle: "Webhooks",
+  contentLabel: "webhook content",
+  navigationLabel: "webhook navigation",
+  itemLabel: "webhook page",
+  nodePrefix: "webhook",
+});
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -69,31 +130,36 @@ function readYamlObject(filePath: string, label: string): UnknownRecord {
   return parsed;
 }
 
-function contentError(filePath: string, message: string): never {
-  throw new Error(`Invalid article content at ${filePath}: ${message}`);
+function contentError(collection: ContentCollectionConfig, filePath: string, message: string): never {
+  throw new Error(`Invalid ${collection.contentLabel} at ${filePath}: ${message}`);
 }
 
-function navError(message: string): never {
-  throw new Error(`Invalid article navigation at ${ARTICLES_NAVIGATION_PATH}: ${message}`);
+function navError(collection: ContentCollectionConfig, message: string): never {
+  throw new Error(`Invalid ${collection.navigationLabel} at ${collection.navigationPath}: ${message}`);
 }
 
 function fileSlug(filePath: string): string {
   return path.basename(filePath).replace(/\.ya?ml$/i, "");
 }
 
-function validateSlugMatchesFile(slug: string, filePath: string) {
+function validateSlugMatchesFile(collection: ContentCollectionConfig, slug: string, filePath: string) {
   const expected = fileSlug(filePath);
 
   if (slug !== expected) {
-    contentError(filePath, `slug "${slug}" must match filename "${expected}".`);
+    contentError(collection, filePath, `slug "${slug}" must match filename "${expected}".`);
   }
 }
 
-function requireString(record: UnknownRecord, field: string, filePath: string): string {
+function requireString(
+  collection: ContentCollectionConfig,
+  record: UnknownRecord,
+  field: string,
+  filePath: string,
+): string {
   const value = asString(record[field]).trim();
 
   if (!value) {
-    contentError(filePath, `${field} is required and must be a non-empty string.`);
+    contentError(collection, filePath, `${field} is required and must be a non-empty string.`);
   }
 
   return value;
@@ -105,43 +171,59 @@ function optionalString(record: UnknownRecord, field: string): string | undefine
   return value || undefined;
 }
 
-function ensureArray(value: unknown, field: string, filePath: string): unknown[] {
+function ensureArray(
+  collection: ContentCollectionConfig,
+  value: unknown,
+  field: string,
+  filePath: string,
+): unknown[] {
   if (value === undefined || value === null) {
     return [];
   }
 
   if (!Array.isArray(value)) {
-    contentError(filePath, `${field} must be an array when provided.`);
+    contentError(collection, filePath, `${field} must be an array when provided.`);
   }
 
   return value;
 }
 
-function validateLocalImageSrc(src: string, filePath: string, location: string) {
+function validateLocalImageSrc(
+  collection: ContentCollectionConfig,
+  src: string,
+  filePath: string,
+  location: string,
+) {
   if (/^[a-z][a-z\d+.-]*:/i.test(src) || src.startsWith("//")) {
     return;
   }
 
   if (!src.startsWith("/")) {
-    contentError(filePath, `${location}.src references local image "${src}". Use an absolute public path like /images/example.png.`);
+    contentError(collection, filePath, `${location}.src references local image "${src}". Use an absolute public path like /images/example.png.`);
   }
 
   const publicPath = path.normalize(path.join(PUBLIC_ROOT, src.replace(/^\/+/, "")));
   const publicRootWithSeparator = `${PUBLIC_ROOT}${path.sep}`;
 
   if (publicPath !== PUBLIC_ROOT && !publicPath.startsWith(publicRootWithSeparator)) {
-    contentError(filePath, `${location}.src must stay inside the public directory.`);
+    contentError(collection, filePath, `${location}.src must stay inside the public directory.`);
   }
 
   if (!fs.existsSync(publicPath)) {
     contentError(
+      collection,
       filePath,
       `${location}.src references missing public asset "${src}" (expected ${publicPath}).`,
     );
   }
 }
 
-function validateMarkdownLocalImageSrcs(source: string | undefined, filePath: string, location: string) {
+function validateMarkdownLocalImageSrcs(
+  collection: ContentCollectionConfig,
+  source: string | undefined,
+  filePath: string,
+  location: string,
+) {
   if (!source) {
     return;
   }
@@ -150,51 +232,51 @@ function validateMarkdownLocalImageSrcs(source: string | undefined, filePath: st
   let match: RegExpExecArray | null;
 
   while ((match = imagePattern.exec(source)) !== null) {
-    validateLocalImageSrc(match[1] ?? "", filePath, `${location} Markdown image`);
+    validateLocalImageSrc(collection, match[1] ?? "", filePath, `${location} Markdown image`);
   }
 }
 
-function articleFilePaths(): string[] {
-  if (!fs.existsSync(ARTICLES_PAGES_DIR)) {
-    throw new Error(`Article pages directory was not found at ${ARTICLES_PAGES_DIR}.`);
+function pageFilePaths(collection: ContentCollectionConfig): string[] {
+  if (!fs.existsSync(collection.pagesDir)) {
+    throw new Error(`${collection.defaultTitle} pages directory was not found at ${collection.pagesDir}.`);
   }
 
   return fs
-    .readdirSync(ARTICLES_PAGES_DIR)
+    .readdirSync(collection.pagesDir)
     .filter((file) => file.endsWith(".yaml") || file.endsWith(".yml"))
     .sort()
-    .map((file) => path.join(ARTICLES_PAGES_DIR, file));
+    .map((file) => path.join(collection.pagesDir, file));
 }
 
-function parseBlocks(value: unknown, filePath: string): ArticleBlock[] {
-  return ensureArray(value, "blocks", filePath).map((blockValue, index) => {
+function parseBlocks(collection: ContentCollectionConfig, value: unknown, filePath: string): ArticleBlock[] {
+  return ensureArray(collection, value, "blocks", filePath).map((blockValue, index) => {
     if (!isRecord(blockValue)) {
-      contentError(filePath, `blocks[${index}] must be an object.`);
+      contentError(collection, filePath, `blocks[${index}] must be an object.`);
     }
 
-    const type = requireString(blockValue, "type", filePath);
+    const type = requireString(collection, blockValue, "type", filePath);
     const title = optionalString(blockValue, "title");
     const content = optionalString(blockValue, "content");
     const code = optionalString(blockValue, "code");
     const src = optionalString(blockValue, "src");
 
     if (["note", "info", "warning", "danger", "tip"].includes(type) && !content) {
-      contentError(filePath, `blocks[${index}].content is required for ${type} blocks.`);
+      contentError(collection, filePath, `blocks[${index}].content is required for ${type} blocks.`);
     }
 
     if (type === "code" && !code) {
-      contentError(filePath, `blocks[${index}].code is required for code blocks.`);
+      contentError(collection, filePath, `blocks[${index}].code is required for code blocks.`);
     }
 
     if (type === "image" && !src) {
-      contentError(filePath, `blocks[${index}].src is required for image blocks.`);
+      contentError(collection, filePath, `blocks[${index}].src is required for image blocks.`);
     }
 
     if (type === "image" && src) {
-      validateLocalImageSrc(src, filePath, `blocks[${index}]`);
+      validateLocalImageSrc(collection, src, filePath, `blocks[${index}]`);
     }
 
-    validateMarkdownLocalImageSrcs(content, filePath, `blocks[${index}].content`);
+    validateMarkdownLocalImageSrcs(collection, content, filePath, `blocks[${index}].content`);
 
     return {
       id: slugify(title || `${type}-${index + 1}`),
@@ -210,35 +292,35 @@ function parseBlocks(value: unknown, filePath: string): ArticleBlock[] {
   });
 }
 
-function pageFromFile(filePath: string): ContentPage {
-  const document = readYamlObject(filePath, "Article file");
-  const slug = requireString(document, "slug", filePath);
-  const title = requireString(document, "title", filePath);
-  const body = requireString(document, "content", filePath);
+function pageFromFile(collection: ContentCollectionConfig, filePath: string): ContentPage {
+  const document = readYamlObject(filePath, `${collection.defaultTitle} file`);
+  const slug = requireString(collection, document, "slug", filePath);
+  const title = requireString(collection, document, "title", filePath);
+  const body = requireString(collection, document, "content", filePath);
 
-  validateSlugMatchesFile(slug, filePath);
-  validateMarkdownLocalImageSrcs(body, filePath, "content");
+  validateSlugMatchesFile(collection, slug, filePath);
+  validateMarkdownLocalImageSrcs(collection, body, filePath, "content");
 
   return {
     slug,
-    href: `/docs/${slug}`,
+    href: `${collection.routeBase}/${slug}`,
     title,
     description: optionalString(document, "description"),
     body,
-    blocks: parseBlocks(document.blocks, filePath),
+    blocks: parseBlocks(collection, document.blocks, filePath),
   };
 }
 
-export function getContentPages(): ContentPage[] {
+function getPages(collection: ContentCollectionConfig): ContentPage[] {
   const seen = new Map<string, string>();
   const pages: ContentPage[] = [];
 
-  articleFilePaths().forEach((filePath) => {
-    const page = pageFromFile(filePath);
+  pageFilePaths(collection).forEach((filePath) => {
+    const page = pageFromFile(collection, filePath);
     const existing = seen.get(page.slug);
 
     if (existing) {
-      throw new Error(`Duplicate article slug "${page.slug}" in ${existing} and ${filePath}.`);
+      throw new Error(`Duplicate ${collection.itemLabel} slug "${page.slug}" in ${existing} and ${filePath}.`);
     }
 
     seen.set(page.slug, filePath);
@@ -246,6 +328,10 @@ export function getContentPages(): ContentPage[] {
   });
 
   return pages;
+}
+
+export function getContentPages(): ContentPage[] {
+  return getPages(ARTICLES_COLLECTION);
 }
 
 export function getContentPage(slug: string): ContentPage | undefined {
@@ -260,15 +346,15 @@ export function getLegacyContentPageStaticParams(): Array<{ page: string }> {
   return getContentPages().map((page) => ({ page: page.slug }));
 }
 
-function readNavigationDocument(): UnknownRecord {
-  const document = readYamlObject(ARTICLES_NAVIGATION_PATH, "Article navigation file");
+function readNavigationDocument(collection: ContentCollectionConfig): UnknownRecord {
+  const document = readYamlObject(collection.navigationPath, `${collection.defaultTitle} navigation file`);
 
   if (!Array.isArray(document.sections)) {
-    navError("sections must be an array.");
+    navError(collection, "sections must be an array.");
   }
 
   if (document.sections.length === 0) {
-    navError("sections must contain at least one section.");
+    navError(collection, "sections must contain at least one section.");
   }
 
   return document;
@@ -278,9 +364,9 @@ function pagesBySlug(pages: ContentPage[]): Map<string, ContentPage> {
   return new Map(pages.map((page) => [page.slug, page]));
 }
 
-function articleNavNode(page: ContentPage, label?: string): NavNode {
+function contentNavNode(collection: ContentCollectionConfig, page: ContentPage, label?: string): NavNode {
   return {
-    id: `article:${page.slug}`,
+    id: `${collection.nodePrefix}:${page.slug}`,
     type: "endpoint",
     label: label || page.title,
     href: page.href,
@@ -289,6 +375,7 @@ function articleNavNode(page: ContentPage, label?: string): NavNode {
 }
 
 function parseNavItems(
+  collection: ContentCollectionConfig,
   value: unknown,
   pageBySlug: Map<string, ContentPage>,
   placedSlugs: Set<string>,
@@ -296,47 +383,47 @@ function parseNavItems(
   location: string,
 ): NavNode[] {
   if (!Array.isArray(value)) {
-    navError(`${location} must be an array.`);
+    navError(collection, `${location} must be an array.`);
   }
 
   if (value.length === 0) {
-    navError(`${location} must contain at least one item.`);
+    navError(collection, `${location} must contain at least one item.`);
   }
 
   return value.map((itemValue, index) => {
     const itemLocation = `${location}[${index}]`;
 
     if (!isRecord(itemValue)) {
-      navError(`${itemLocation} must be an object.`);
+      navError(collection, `${itemLocation} must be an object.`);
     }
 
     const slug = asString(itemValue.slug).trim();
 
     if (slug) {
       if (itemValue.items !== undefined) {
-        navError(`${itemLocation} cannot define both slug and items.`);
+        navError(collection, `${itemLocation} cannot define both slug and items.`);
       }
 
       const page = pageBySlug.get(slug);
 
       if (!page) {
-        navError(`${itemLocation}.slug references missing article "${slug}".`);
+        navError(collection, `${itemLocation}.slug references missing ${collection.itemLabel} "${slug}".`);
       }
 
       if (placedSlugs.has(slug)) {
-        navError(`Article slug "${slug}" is listed more than once in navigation.`);
+        navError(collection, `${collection.itemLabel} slug "${slug}" is listed more than once in navigation.`);
       }
 
       placedSlugs.add(slug);
 
-      return articleNavNode(page, optionalString(itemValue, "title"));
+      return contentNavNode(collection, page, optionalString(itemValue, "title"));
     }
 
-    const id = requireString(itemValue, "id", ARTICLES_NAVIGATION_PATH);
-    const label = requireString(itemValue, "title", ARTICLES_NAVIGATION_PATH);
+    const id = requireString(collection, itemValue, "id", collection.navigationPath);
+    const label = requireString(collection, itemValue, "title", collection.navigationPath);
 
     if (groupIds.has(id)) {
-      navError(`Group id "${id}" is used more than once.`);
+      navError(collection, `Group id "${id}" is used more than once.`);
     }
 
     groupIds.add(id);
@@ -346,7 +433,7 @@ function parseNavItems(
       type: "group",
       label,
       defaultOpen: itemValue.defaultOpen !== false,
-      children: parseNavItems(itemValue.items, pageBySlug, placedSlugs, groupIds, `${itemLocation}.items`),
+      children: parseNavItems(collection, itemValue.items, pageBySlug, placedSlugs, groupIds, `${itemLocation}.items`),
     };
   });
 }
@@ -367,30 +454,66 @@ function firstPageInNavigation(nodes: NavNode[]): NavNode | undefined {
   return undefined;
 }
 
-export function getContentNavigationTitle(): string {
-  const document = readNavigationDocument();
+function getNavigationTitle(collection: ContentCollectionConfig): string {
+  const document = readNavigationDocument(collection);
   const title = optionalString(document, "title");
 
-  return title ?? "Articles";
+  return title ?? collection.defaultTitle;
 }
 
-export function getContentNavigation(): NavNode[] {
-  const pages = getContentPages();
-  const document = readNavigationDocument();
+export function getContentNavigationTitle(): string {
+  return getNavigationTitle(ARTICLES_COLLECTION);
+}
+
+function getNavigation(collection: ContentCollectionConfig): NavNode[] {
+  const pages = getPages(collection);
+  const document = readNavigationDocument(collection);
   const placedSlugs = new Set<string>();
   const groupIds = new Set<string>();
 
-  return parseNavItems(document.sections, pagesBySlug(pages), placedSlugs, groupIds, "sections");
+  return parseNavItems(collection, document.sections, pagesBySlug(pages), placedSlugs, groupIds, "sections");
 }
 
-export function getFirstContentPageHref(): string {
-  const navigationFirst = firstPageInNavigation(getContentNavigation());
+export function getContentNavigation(): NavNode[] {
+  return getNavigation(ARTICLES_COLLECTION);
+}
+
+function getFirstPageHref(collection: ContentCollectionConfig): string {
+  const navigationFirst = firstPageInNavigation(getNavigation(collection));
 
   if (navigationFirst?.href) {
     return navigationFirst.href;
   }
 
-  const page = getContentPages()[0];
+  const page = getPages(collection)[0];
 
   return page?.href ?? "/";
+}
+
+export function getFirstContentPageHref(): string {
+  return getFirstPageHref(ARTICLES_COLLECTION);
+}
+
+export function getWebhookPages(): ContentPage[] {
+  return getPages(WEBHOOKS_COLLECTION);
+}
+
+export function getWebhookPage(slug: string): ContentPage | undefined {
+  return getWebhookPages().find((page) => page.slug === slug);
+}
+
+export function getWebhookPageStaticParams(): Array<{ slug: string }> {
+  return getWebhookPages().map((page) => ({ slug: page.slug }));
+}
+
+export function getWebhookNavigationTitle(): string {
+  return getNavigationTitle(WEBHOOKS_COLLECTION);
+}
+
+export function getWebhookNavigation(): NavNode[] {
+  return getNavigation(WEBHOOKS_COLLECTION);
+}
+
+export function getFirstWebhookPageHref(): string {
+  return getFirstPageHref(WEBHOOKS_COLLECTION);
 }

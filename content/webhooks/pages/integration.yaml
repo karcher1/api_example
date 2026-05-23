@@ -1,0 +1,92 @@
+slug: integration
+title: Webhooks Integration
+description: Webhooks allow your server to automatically receive notifications about events in our system.
+
+content: |
+  # Webhooks Integration
+  
+  **Webhooks** allow your server to automatically receive notifications about events in our system. Instead of periodically polling the API, you configure one endpoint and we send you an HTTP request for each important event.
+  
+  *To connect webhooks, you need:*
+  
+  1. Create an HTTPS endpoint that accepts JSON requests.
+  2. Send us the URL of this endpoint.
+  3. Choose which events you want to receive.
+  4. Accept and test webhook.
+  
+  ## How it works in general
+  
+  1. An event occurs in our system (for example, a payment is created or its status has changed).
+  2. We form a webhook notification in the form of an HTTP POST request with a JSON host.
+  3. We send a request to your endpoint.
+  4. Your server handles the request and responds with 2xx (usually 200) if it is successful.
+  5. In case of 4xx or 5xx we will try to resend the webhook (Repeated 5 times at 3-second intervals, every 5 minutes.)
+  
+  ![Webhook delivery flow](/images/webhooks/webhook-flow.png)
+  
+  Webhooks use a common format (contract) for all event types. Only the type field value and the data object content are different.
+  
+  ## Step 1: Create endpoint to receive webhooks
+  
+  First you need to prepare an endpoint on your system that will accept webhook requests. Depending on your integration architecture, different webhooks can use the same shared endpoint or separate endpoints.
+  
+  Endpoint requirements:
+  
+  1. Must accept HTTP POST requests.
+  2. Must be accessible via HTTP.
+  3. If the request is successfully processed, the HTTP code must be returned from the 2xx range (for example, 200 OK).
+  
+  Recommended processing approach:
+  
+  1. Must accept HTTP POST requests.
+  2. Write event to log/database.
+  3. It is desirable to reply as soon as possible (the processing can be put in an asynchronous queue).
+  4. Return response 200 OK if the request is accepted.
+  
+  ![Webhook group configuration](/images/webhooks/webhook-group.png)
+  
+  You can implement this endpoint on any stack that you use (Node.js, PHP, Python, Java, Go, etc).
+  
+  After endpoint implementation - share your endpoint URL with us.
+  
+  ## Step 2: Select the events you want to receive
+  
+  We support a common webhook-notification format for all events. The specific event type is defined by the type field in the JSON body.
+  
+  You can select one or more event types. Once connected, we will send you webhooks only for the selected events.
+  
+  What to do:
+  
+  1. View the list of available events (see below)
+  2. Determine which events you need.
+  3. Send us a list of event identifiers.
+  
+  For example:
+  
+  > I would like to receive subscription_manual_chargeback, subscription_event_refund, subscription_user_create
+  
+  You can change the list of events at any time - just send us a new list.
+  
+  ![Webhook event configuration](/images/webhooks/webhook-in-group.png)
+  
+  ## Step 3: We activate webhooks and send a test request
+  
+  After you have:
+  
+  - configured the endpoint,
+  - gave us the URL,
+  - selected and agreed the list of events,
+  
+  we connect your endpoint and start sending webhooks.
+  
+  At the connection stage we can send a test webhook to make sure that:
+  
+  - your endpoint is accessible over the network,
+  - requests are successfully accepted,
+  - you correctly process JSON and return the 2xx response.
+  
+  What you should do:
+  
+  1. Check the server logs and make sure that the test webhook has been received.
+  2. Make sure that the processing is done correctly (for example, these events are saved in your system).
+  3. If necessary, adjust the processor.

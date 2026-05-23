@@ -119,6 +119,33 @@ content: |
   );
 }
 
+function writeWebhookFixture(root) {
+  const filePath = path.join(root, "content", "webhooks", "pages", "workflow-webhook.yaml");
+
+  fs.writeFileSync(
+    filePath,
+    `slug: workflow-webhook
+title: Workflow Webhook
+description: Temporary content workflow webhook page.
+
+content: |
+  # Workflow Webhook
+
+  This page verifies webhook documentation creation through YAML.
+
+  | Event | Action |
+  | --- | --- |
+  | workflow_event | workflow |
+
+  \`\`\`json
+  {
+    "type": "workflow"
+  }
+  \`\`\`
+`,
+  );
+}
+
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "api-docs-content-workflow-"));
 
 try {
@@ -130,6 +157,7 @@ try {
 
   const apiNavPath = path.join(tempRoot, "content", "api", "navigation.yaml");
   const articleNavPath = path.join(tempRoot, "content", "articles", "navigation.yaml");
+  const webhookNavPath = path.join(tempRoot, "content", "webhooks", "navigation.yaml");
 
   runValidation(tempRoot, "base content validates");
 
@@ -172,6 +200,26 @@ try {
 
   removeSection(articleNavPath, "workflow-articles-moved");
   runValidation(tempRoot, "article removed from article navigation while file remains draft-routable");
+
+  writeWebhookFixture(tempRoot);
+  addSection(webhookNavPath, {
+    title: "Workflow Webhooks",
+    id: "workflow-webhooks",
+    defaultOpen: true,
+    items: [{ title: "Workflow Webhook", slug: "workflow-webhook" }],
+  });
+  runValidation(tempRoot, "new webhook page linked in webhook navigation");
+
+  replaceSection(webhookNavPath, "workflow-webhooks", {
+    title: "Workflow Webhooks Moved",
+    id: "workflow-webhooks-moved",
+    defaultOpen: true,
+    items: [{ title: "Workflow Webhook", slug: "workflow-webhook" }],
+  });
+  runValidation(tempRoot, "webhook page moved by editing webhook navigation only");
+
+  removeSection(webhookNavPath, "workflow-webhooks-moved");
+  runValidation(tempRoot, "webhook page removed from webhook navigation while file remains draft-routable");
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;

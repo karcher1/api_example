@@ -319,42 +319,42 @@ function validateEndpointFile(root, filePath) {
   };
 }
 
-function validateArticleBlocks(root, value, filePath) {
-  ensureArray(value, "blocks", filePath, "article content").forEach((block, index) => {
+function validateArticleBlocks(root, value, filePath, label = "article content") {
+  ensureArray(value, "blocks", filePath, label).forEach((block, index) => {
     if (!isRecord(block)) {
-      contentError("article content", filePath, `blocks[${index}] must be an object.`);
+      contentError(label, filePath, `blocks[${index}] must be an object.`);
     }
 
-    const type = requireString(block, "type", filePath, "article content");
+    const type = requireString(block, "type", filePath, label);
     const content = asString(block.content).trim();
 
     if (NOTICE_BLOCK_TYPES.has(type) && !content) {
-      contentError("article content", filePath, `blocks[${index}].content is required for ${type} blocks.`);
+      contentError(label, filePath, `blocks[${index}].content is required for ${type} blocks.`);
     }
 
     if (type === "code") {
-      requireString(block, "code", filePath, "article content");
+      requireString(block, "code", filePath, label);
     }
 
     if (type === "image") {
-      const src = requireString(block, "src", filePath, "article content");
+      const src = requireString(block, "src", filePath, label);
 
-      validatePublicAsset(root, src, filePath, "article content", `blocks[${index}].src`);
+      validatePublicAsset(root, src, filePath, label, `blocks[${index}].src`);
     }
 
-    validateMarkdownImages(root, content, filePath, "article content", `blocks[${index}].content`);
+    validateMarkdownImages(root, content, filePath, label, `blocks[${index}].content`);
   });
 }
 
-function validateArticleFile(root, filePath) {
-  const page = readYamlObject(filePath, "Article file");
-  const slug = requireString(page, "slug", filePath, "article content");
-  const title = requireString(page, "title", filePath, "article content");
-  const content = requireString(page, "content", filePath, "article content");
+function validateArticleFile(root, filePath, label = "article content", fileLabel = "Article file") {
+  const page = readYamlObject(filePath, fileLabel);
+  const slug = requireString(page, "slug", filePath, label);
+  const title = requireString(page, "title", filePath, label);
+  const content = requireString(page, "content", filePath, label);
 
-  validateSlugMatchesFile(slug, filePath, "article content");
-  validateMarkdownImages(root, content, filePath, "article content", "content");
-  validateArticleBlocks(root, page.blocks, filePath);
+  validateSlugMatchesFile(slug, filePath, label);
+  validateMarkdownImages(root, content, filePath, label, "content");
+  validateArticleBlocks(root, page.blocks, filePath, label);
 
   return {
     slug,
@@ -469,12 +469,25 @@ function validateArticles(root) {
   return pages.length;
 }
 
+function validateWebhooks(root) {
+  const webhooksRoot = path.join(root, "content", "webhooks");
+  const pages = yamlFilePaths(path.join(webhooksRoot, "pages"), "Webhook pages").map((filePath) =>
+    validateArticleFile(root, filePath, "webhook content", "Webhook file"),
+  );
+  const pagesBySlug = bySlug(pages, "webhook page");
+
+  validateNavigation(path.join(webhooksRoot, "navigation.yaml"), "webhook navigation", pagesBySlug, "webhook page");
+
+  return pages.length;
+}
+
 try {
   const { root } = parseArgs();
   const endpointCount = validateApi(root);
   const articleCount = validateArticles(root);
+  const webhookCount = validateWebhooks(root);
 
-  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${articleCount} article(s).`);
+  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${articleCount} article(s), ${webhookCount} webhook page(s).`);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

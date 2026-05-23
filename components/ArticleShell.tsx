@@ -7,9 +7,17 @@ interface ArticleShellProps {
   page: ContentPage;
   navigation: NavNode[];
   navigationTitle?: string;
+  displayVariant?: "article" | "reference";
 }
 
-export function ArticleShell({ page, navigation, navigationTitle = "Articles" }: ArticleShellProps) {
+export function ArticleShell({
+  page,
+  navigation,
+  navigationTitle = "Articles",
+  displayVariant = "article",
+}: ArticleShellProps) {
+  const isReference = displayVariant === "reference";
+
   return (
     <>
       <EndpointNavDrawer
@@ -19,7 +27,7 @@ export function ArticleShell({ page, navigation, navigationTitle = "Articles" }:
         ariaLabel="Article navigation"
         storageKey={`article-nav:${navigationTitle}`}
       />
-      <div className="articles-grid">
+      <div className={isReference ? "articles-grid articles-grid-reference" : "articles-grid"}>
         <aside className="left-rail" aria-label="Article navigation">
           <EndpointNav
             nodes={navigation}
@@ -29,8 +37,8 @@ export function ArticleShell({ page, navigation, navigationTitle = "Articles" }:
             storageKey={`article-nav:${navigationTitle}`}
           />
         </aside>
-        <main className="main-column article-main-column">
-          <ArticleContent page={page} />
+        <main className={isReference ? "main-column article-main-column article-main-column-reference" : "main-column article-main-column"}>
+          <ArticleContent page={page} collectionTitle={navigationTitle} displayVariant={displayVariant} />
         </main>
       </div>
     </>

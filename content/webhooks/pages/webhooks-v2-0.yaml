@@ -1,0 +1,127 @@
+slug: webhooks-v2-0
+title: Subscription webhooks
+description: Webhooks allow your server to automatically receive notifications about events in our system. Instead of periodically polling the API, you configure one endpoint and we send you an HTTP request for each important event.
+
+content: |
+  # Subscription webhooks
+  
+  **Webhooks** allow your server to automatically receive notifications about events in our system. Instead of periodically polling the API, you configure one endpoint and we send you an HTTP request for each important event.
+  
+  *To connect webhooks, you need:*
+  
+  1. Create an HTTPS endpoint that accepts JSON requests.
+  2. Send us the URL of this endpoint.
+  3. Choose which events you want to receive.
+  4. Accept and test webhook.
+  
+  ## Possible payment events
+  
+  | Reason | Event | Action | Outcome |
+  | --- | --- | --- | --- |
+  | To obtain information about freezing a subscription. | `subscription_manual_freeze` | `freeze` | The subscription status is changed to frozen; in a separate table, subscription_planned_unfreeze, the planned unfreeze date and the reason for freezing are recorded. |
+  | To obtain information about unfreezing a subscription. | `subscription_manual_unfreeze` | `unfreeze` | The funds are debited from the customer's account and transferred to the merchant's account; a new subscription is created or the existing subscription is renewed. |
+  | To obtain information about unfreezing a subscription. | `subscription_scheduled_unfreeze` | `unfreeze` | The subscription status changes to active; the endDate may change. |
+  | To obtain information about subscription creation. | `subscription_manual_create` | `create` | A subscription is created for the specified product with auto-charge disabled; it is not linked to a payment method, but it is linked to an existing buyer. |
+  | To obtain information about subscription creation. | `subscription_user_create` | `create` | A subscription is created with the specified settings: product, auto-charge, payment method or without one. A charge_id is returned. |
+  | To obtain information about a chargeback on a subscription. | `subscription_event_chargeback` | `suspend` | The subscription status changes to suspended; auto-charge is turned off if it was enabled. |
+  | To obtain information about a chargeback on a subscription. | `subscription_manual_chargeback` | `suspend` | The subscription status changes to suspended; auto-charge is turned off if it was enabled. |
+  | To obtain information about a refund issued on a subscription. | `subscription_event_refund` | `disable` | The subscription status changes to disabled; auto-charge is turned off if it was enabled. |
+  | To obtain information about a void issued on a subscription. | `subscription_event_void` | `disable` | The subscription status changes to disabled; auto-charge is turned off if it was enabled. |
+  | To obtain information about a received refund / void on a subscription. | `subscription_manual_disable` | `disable` | The subscription status changes to disabled; auto-charge is turned off if it was enabled. |
+  | To obtain information about expired or blocked subscriptions. | `subscription_scheduled_disable` | `disable` | The subscription status changes to disabled; auto-charge is turned off if it was enabled. |
+  | To obtain information about changing the subscription status to blocked. | `subscription_scheduled_failed_capture` | `block` | The subscription status is changed to blocked. |
+  | To obtain information about enabling auto-charge for a subscription. | `subscription_manual_auto_charge_on` | `auto_charge_on` | Auto-charge on the subscription is enabled; the reason for enabling it is recorded by the support agent. Can be obtained through the following endpoints: One, Two. |
+  | To obtain information about enabling auto-charge for a subscription. | `subscription_user_auto_charge_on` | `auto_charge_on` | Auto-charge on the subscription is enabled; a user comment with the reason for enabling auto-charge is recorded. Can be obtained through the following endpoint. |
+  | To obtain information about enabling auto-charge for a subscription. | `subscription_scheduled_auto_charge_on` | `auto_charge_on` | Autocharge is enabled for the subscription, and the comment Enabled by subscription tokenization is recorded. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_manual_auto_charge_off` | `auto_charge_off` | Auto-charge on the subscription is disabled; the reason for disabling it is recorded by the support agent. Can be obtained through the following endpoints: One, Two. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_user_auto_charge_off` | `auto_charge_off` | Auto-charge on the subscription is disabled; a user comment with the reason for disabling auto-charge is recorded. Can be obtained through the following endpoint. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_scheduled_auto_charge_off` | `auto_charge_off` | Auto-charge on the subscription is disabled automatically. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_fraud_auto_charge_off` | `auto_charge_off` | Auto-charge on the subscription is disabled automatically. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_system_auto_charge_off` | `auto_charge_off` | Auto-charge on the subscription is disabled as a consequence of actions related to another subscription. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_manual_upgrade` | `upgrade` | The subscription's product, its price, and end date are changed; the auto-charge status and the subscription status may change. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_user_upgrade` | `upgrade` | The subscription's product, its price, and end date are changed; the auto-charge status, subscription status, and currency may change. A payment method may also be added or changed. A charge_id is returned. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_manual_downgrade` | `downgrade` | The subscription's product, its price, and end date are changed; the auto-charge status and the subscription status may change. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_user_downgrade` | `downgrade` | The subscription's product, its price, and end date are changed; the auto-charge status, subscription status, and currency may change. A payment method may also be added or changed. A charge_id is returned. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_manual_renew` | `renew` | The subscription's product, price, end date, auto-charge status, and subscription status may change. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_user_renew` | `renew` | The subscription's product, price, end date, auto-charge status, subscription status, and currency may change. A payment method may also be added or changed. A charge_id is returned. |
+  | To obtain information about disabling auto-charge for a subscription. | `subscription_scheduled_renew` | `renew` | The subscription's end date is changed and its price, auto-charge status, and subscription status may change. A charge_id is returned. |
+  | To obtain information about changing the endDate for a subscription. | `subscription_manual_end_date` | `end_date` | The subscription's endDate is changed (endDate = expired); the subscription status may change. |
+  | To obtain information about expired subscriptions. | `subscription_scheduled_expire` | `expire` | The subscription status changes to expired. |
+  | To obtain information about linking a new token to a subscription. | `subscription_manual_tokenize` | `tokenize` | The token on the subscription is updated. |
+  | To obtain information about linking a new token to a subscription. | `subscription_rotation_tokenize` | `tokenize` | The token on the subscription is updated. |
+  | To obtain information about linking a new token to a subscription. | `subscription_scheduled_tokenize` | `tokenize` | The token on the subscription is updated. |
+  | To remove expired tokens. | `subscription_scheduled_remove_expired_charge_method` | `end_date` | The token is removed from the subscription. |
+  
+  ## JSON example
+  
+  ```json
+  {
+    "type": "subscription",
+    "action": "subscription_manual_freeze",
+    "merchant": "valid_merchant",
+    "chargeId": "uuid",
+    "buyer": {
+      "id": "4dc68f5f-77bd-4d5f-b02b-2f518e757c19",
+      "email":"buyer_email@mail.co",
+      "metaData": {
+        "key": "value from buyer meta"
+      }
+    },
+    "subscriptionData": {
+      "id": "uuid",
+      "status": "frozen",
+      "buyerId": "4dc68f5f-77bd-4d5f-b02b-2f518e757c19",
+      "buyerEmail":"buyer_email@mail.co",
+      "buyerMetaData": {
+        "key": "value from buyer meta"
+      },
+      "startDate": "2023-02-01 12:00:00",
+      "endDate": "2023-03-21 12:00:00",
+      "createdAt": "2023-02-01 12:00:00",
+      "updatedAt": "2023-02-01 12:00:00",
+      "isManual": true,
+      "autochargeStatus": false,
+      "product": {
+        "code": "MSF1F",
+        "name": "Product name",
+        "nameByLocale": "Product name by locale",
+        "productPrice": {
+          "amount": 123.12,
+          "currency": "USD"
+        }
+      }
+    }
+  }
+  ```
+  
+  ## Webhook-request format
+  
+  | Attribute | Type | Requirement | Description | Standard |
+  | --- | --- | --- | --- | --- |
+  | `type` | string | mandatory | Type of event. There will always be a subscription. | - |
+  | `action` | string | mandatory | Indicates event (subscription_user_renew, subscription_user_create, etc) | - |
+  | `merchant` | string | mandatory | Merchant's name | - |
+  | `chargeId` | string | optional | Transaction identifier | - |
+  | `buyer` | object | mandatory | Contains buyer details | - |
+  | `buyer.id` | string | mandatory | Unique identifier of buyer in the system | - |
+  | `buyer.buyerEmail` | string | mandatory | Buyer email | - |
+  | `buyer.metaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON | - |
+  | `subscriptionData` | object | mandatory | Contains subscription details | - |
+  | `subscriptionData.id` | string | mandatory | Subscription identifier | - |
+  | `subscriptionData.status` | string | mandatory | Subscription status | - |
+  | `subscriptionData.buyerId` | string | mandatory | Unique identifier of buyer in the system **(deprecated)**. **Note:** Use the same parameter in the buyer object | - |
+  | `subscriptionData.buyerEmail` | string | mandatory | Buyer email **(deprecated)**. **Note:** Use the same parameter in the buyer object | - |
+  | `subscriptionData.buyerMetaData` | valid JSON string (object or array) \| empty array | optional | Contains meta data about buyer. Valid JSON (object or array) is always sent. If there was a void in extra, we correct the empty array, which is also valid JSON **(deprecated)**. **Note:** Use the same parameter in the buyer object | - |
+  | `subscriptionData.startDate` | string | mandatory | Subscription start date | - |
+  | `subscriptionData.endDate` | string | mandatory | Subscription end date | - |
+  | `subscriptionData.createdAt` | string | mandatory | Subscription creation date | - |
+  | `subscriptionData.updatedAt` | string | mandatory | Subscription renewal date | - |
+  | `subscriptionData.isManual` | bool | mandatory | Indicates whether the subscription is manual | - |
+  | `subscriptionData.autochargeStatus` | bool | mandatory | Indicates auto-charge status | - |
+  | `subscriptionData.product` | object | mandatory | Contains product information | - |
+  | `subscriptionData.product.code` | string | mandatory | Product code | - |
+  | `subscriptionData.product.name` | string | mandatory | Product name in EN | - |
+  | `subscriptionData.product.nameByLocale` | string | mandatory | Product name by selected language on the checkout page | - |
+  | `subscriptionData.product.productPrice` | object | mandatory | Contains price information of product | - |
+  | `subscriptionData.product.productPrice.amount` | string | mandatory | Product/subscription price | - |
+  | `subscriptionData.product.productPrice.currency` | string | mandatory | Currency of product/order/subscription | - |
