@@ -100,19 +100,19 @@ responseExamples:
   );
 }
 
-function writeArticleFixture(root) {
-  const filePath = path.join(root, "content", "articles", "pages", "workflow-test.yaml");
+function writeGuideFixture(root) {
+  const filePath = path.join(root, "content", "guides", "pages", "workflow-test.yaml");
 
   fs.writeFileSync(
     filePath,
     `slug: workflow-test
 title: Workflow Test
-description: Temporary content workflow article.
+description: Temporary content workflow guide.
 
 content: |
   # Workflow Test
 
-  This page verifies article creation through YAML.
+  This page verifies guide creation through YAML.
 
   ![Authentication flow](/images/auth-flow.svg)
 `,
@@ -177,7 +177,7 @@ try {
   }
 
   const apiNavPath = path.join(tempRoot, "content", "api", "navigation.yaml");
-  const articleNavPath = path.join(tempRoot, "content", "articles", "navigation.yaml");
+  const guideNavPath = path.join(tempRoot, "content", "guides", "navigation.yaml");
   const webhookNavPath = path.join(tempRoot, "content", "webhooks", "navigation.yaml");
   const sdkNavPath = path.join(tempRoot, "content", "sdk", "navigation.yaml");
 
@@ -203,25 +203,25 @@ try {
   removeSection(apiNavPath, "workflow-api-moved");
   runValidation(tempRoot, "endpoint removed from API navigation while file remains draft-routable");
 
-  writeArticleFixture(tempRoot);
-  addSection(articleNavPath, {
-    title: "Workflow Articles",
-    id: "workflow-articles",
+  writeGuideFixture(tempRoot);
+  addSection(guideNavPath, {
+    title: "Workflow Guides",
+    id: "workflow-guides",
     defaultOpen: true,
     items: [{ title: "Workflow Test", slug: "workflow-test" }],
   });
-  runValidation(tempRoot, "new article file linked in article navigation");
+  runValidation(tempRoot, "new guide file linked in guide navigation");
 
-  replaceSection(articleNavPath, "workflow-articles", {
-    title: "Workflow Articles Moved",
-    id: "workflow-articles-moved",
+  replaceSection(guideNavPath, "workflow-guides", {
+    title: "Workflow Guides Moved",
+    id: "workflow-guides-moved",
     defaultOpen: true,
     items: [{ title: "Workflow Test", slug: "workflow-test" }],
   });
-  runValidation(tempRoot, "article moved by editing article navigation only");
+  runValidation(tempRoot, "guide moved by editing guide navigation only");
 
-  removeSection(articleNavPath, "workflow-articles-moved");
-  runValidation(tempRoot, "article removed from article navigation while file remains draft-routable");
+  removeSection(guideNavPath, "workflow-guides-moved");
+  runValidation(tempRoot, "guide removed from guide navigation while file remains draft-routable");
 
   writeWebhookFixture(tempRoot);
   addSection(webhookNavPath, {

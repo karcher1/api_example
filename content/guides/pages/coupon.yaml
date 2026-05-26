@@ -1,0 +1,74 @@
+slug: coupon
+title: Coupon
+description: How coupons are applied, distributed, and validated.
+content: |
+  # Coupon
+
+  A **coupon** is a code that provides a **percentage discount** on a purchase.
+
+  A coupon can be applied in two ways:
+
+  - **Automatically** - if the coupon is already included in a [Direct Link](/guides/direct-link).
+  - **Manually** - if the user enters the promo code on the checkout page.
+
+  ## General rules
+
+  - **One order - one coupon.** You cannot apply two coupons at the same time.
+  - **Coupon validation happens on the checkout page**: validity, product eligibility, and other rules are checked there.
+  - **The price and taxes are recalculated after a coupon is applied** and shown to the user before payment.
+  - [Trial](/guides/trial-discount): when starting a trial, **an additional coupon cannot be applied**.
+
+  ### Case 1 - Coupon included in a Direct Link
+
+  If the user opens the checkout page through a Direct Link, the coupon may already be included in the link.
+
+  How it works:
+
+  - The user opens the checkout page through a **Direct Link**.
+  - The link already contains a coupon according to the Direct Link creation mechanism.
+  - When the checkout page loads, the system validates the coupon, **applies it automatically**, and shows the updated price and discount details to the user.
+
+  If the coupon fails validation, the price is displayed **without the coupon discount**.
+
+  ### Case 2 - User enters a coupon on the checkout page
+
+  This scenario is used when the user arrives at checkout from a landing page and the coupon was not provided in advance.
+
+  How it works:
+
+  - The user navigates to the checkout page from a landing page.
+  - The user has a coupon received from the merchant through any channel.
+  - On the checkout page, the user enters the code in the **Promo code / coupon** field, clicks **Apply**, and sees the updated price and discount reflected in the order summary.
+
+  If the coupon fails validation, the price remains **without the coupon discount**.
+
+  ## Coupon distribution
+
+  For a merchant to distribute coupons to users, they need to request coupon creation through their account or partner manager.
+
+  ### Information required for coupon creation
+
+  Minimum required information:
+
+  - **Product Code(s)** - the product or products the coupon should apply to.
+  - **Coupon discount percentage** - the discount value.
+  - **Validity period** - start/end dates, or confirmation that the coupon is **non-expiring**.
+
+  ### Which products a coupon can apply to
+
+  - One coupon can apply to **multiple products** (multiple Product Codes).
+  - One coupon can be limited to **a single specific product**.
+
+  ## Q&A
+
+  **Q:** Can I apply two coupons at the same time?
+
+  **A:** No. The default rule is one order - one coupon. During a trial, an additional coupon cannot be applied.
+
+  **Q:** What happens if a coupon from a Direct Link is invalid?
+
+  **A:** The checkout page will show the reason and display the price without the coupon discount.
+
+  **Q:** Can the same coupon be used for multiple products?
+
+  **A:** Yes. A coupon can be configured to apply to multiple Product Codes.

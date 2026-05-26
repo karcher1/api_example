@@ -14,8 +14,8 @@ They should only edit:
 
 - API navigation YAML;
 - endpoint YAML files;
-- article navigation YAML;
-- article content YAML files;
+- guide navigation YAML;
+- guide content YAML files;
 - images/assets if needed.
 
 ---
@@ -255,23 +255,23 @@ The block content should support Markdown-compatible formatting.
 
 ---
 
-# 8. How to add a new article
+# 8. How to add a new guide
 
-## Step 1. Create article file
+## Step 1. Create guide file
 
 Create:
 
 ```txt
-/content/articles/pages/{article-slug}.yaml
+/content/guides/pages/{guide-slug}.yaml
 ```
 
 Example:
 
 ```txt
-/content/articles/pages/webhooks.yaml
+/content/guides/pages/webhooks.yaml
 ```
 
-Minimal article:
+Minimal guide:
 
 ```yaml
 slug: webhooks
@@ -292,12 +292,12 @@ content: |
   Read more in the [API Reference](/api/list-users).
 ```
 
-## Step 2. Add article to article navigation
+## Step 2. Add guide to guide navigation
 
 Edit:
 
 ```txt
-/content/articles/navigation.yaml
+/content/guides/navigation.yaml
 ```
 
 Add:
@@ -314,7 +314,7 @@ sections:
 
 ## Step 3. Check the site
 
-The article should appear in the articles navigation and render as a page.
+The guide should appear in the guides navigation and render as a page.
 
 You can validate content without running a full build:
 
@@ -324,7 +324,7 @@ npm run validate:content
 
 ---
 
-# 9. How to add images to articles
+# 9. How to add images to guides
 
 Option 1: Markdown image in `content`:
 
@@ -346,12 +346,12 @@ Both options are supported. Local image paths must be absolute public paths, for
 
 ---
 
-# 10. How to link articles and API endpoints
+# 10. How to link guides and API endpoints
 
 Use normal hyperlinks:
 
 ```md
-Read the [Authentication guide](/docs/authentication).
+Read the [Authentication guide](/guides/authentication).
 ```
 
 ```md
@@ -373,11 +373,11 @@ These actions should not require editing application code:
 - adding request example;
 - adding response example;
 - changing parameter tables;
-- adding article;
-- editing article;
-- moving article to another section;
-- adding article image;
-- adding article link;
+- adding guide;
+- editing guide;
+- moving guide to another section;
+- adding guide image;
+- adding guide link;
 - renaming navigation sections.
 
 ---

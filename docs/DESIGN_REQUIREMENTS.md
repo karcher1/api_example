@@ -12,13 +12,13 @@ The source of truth for global font stacks is `app/globals.css`:
 All public sections must use the same sans-serif stack for ordinary text:
 
 - API Reference
-- Articles
+- Guides
 - Webhooks
 - Header and navigation UI
 
-Do not add page-specific or section-specific `font-family` declarations for regular content. Headings, paragraphs, tables, notices, navigation labels, and article content should inherit from `body` unless there is a specific technical-text reason to use `--font-mono`.
+Do not add page-specific or section-specific `font-family` declarations for regular content. Headings, paragraphs, tables, notices, navigation labels, and guide content should inherit from `body` unless there is a specific technical-text reason to use `--font-mono`.
 
-Do not introduce serif font stacks for documentation headings or article pages.
+Do not introduce serif font stacks for documentation headings or guide pages.
 
 ## Changing Fonts
 
@@ -44,7 +44,7 @@ npm run build
 Also check one page from each public documentation area:
 
 - API Reference
-- Articles
+- Guides
 - Webhooks
 
 Inline code and code blocks should remain monospace. Normal headings and body text should remain sans-serif everywhere.

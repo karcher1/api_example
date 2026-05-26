@@ -18,8 +18,8 @@
 - использовать текущие компоненты и структуру, если они уже подходят;
 - не менять визуальные пропорции, типографику и общий layout без необходимости;
 - убрать или минимизировать hardcode там, где контент должен приходить из YAML/content files;
-- API Reference и Articles должны быть двумя независимыми секциями с отдельной навигацией;
-- добавление endpoint или article должно происходить через YAML/content file, без изменения application code.
+- API Reference и Guides должны быть двумя независимыми секциями с отдельной навигацией;
+- добавление endpoint или guide должно происходить через YAML/content file, без изменения application code.
 
 Сначала сделай следующее:
 
@@ -94,12 +94,12 @@ Response parameters grouped by status.
 - each option has label, language, code;
 - examples are defined in endpoint YAML.
 
-## 6. Articles section
+## 6. Guides section
 
 - separate navigation from YAML;
-- article pages from content files;
+- guide pages from content files;
 - support headings, text, bold, italic, hyperlinks, inline code, code blocks, images;
-- article navigation active state;
+- guide navigation active state;
 - easy add/edit/delete/reorder through content files.
 
 ## 7. Validation
@@ -107,7 +107,7 @@ Response parameters grouped by status.
 Add validation where practical:
 
 - detect duplicate endpoint slugs;
-- detect duplicate article slugs;
+- detect duplicate guide slugs;
 - detect navigation links to missing files;
 - detect missing required fields;
 - avoid rendering empty broken sections;
@@ -119,10 +119,10 @@ The implementation is complete only when:
 
 - I can add a new endpoint by adding one YAML file and linking it in API navigation YAML.
 - I can move an endpoint to another nav section by editing navigation YAML only.
-- I can add a new article by adding one content file and linking it in article navigation YAML.
+- I can add a new guide by adding one content file and linking it in guide navigation YAML.
 - Existing layout remains visually unchanged.
-- No hardcoded endpoint/article/example lists remain where YAML should be source of truth.
-- API Reference and Articles have independent navigation.
+- No hardcoded endpoint/guide/example lists remain where YAML should be source of truth.
+- API Reference and Guides have independent navigation.
 - Request examples selector works per endpoint.
 - Response examples selector works per endpoint.
 - Active navigation item works on direct URL, refresh, and browser navigation.
@@ -146,6 +146,6 @@ Before final answer, summarize:
 1. What files were changed.
 2. How content should now be added.
 3. How to add a new endpoint.
-4. How to add a new article.
+4. How to add a new guide.
 5. Which acceptance criteria are satisfied.
 6. Which items, if any, are left for follow-up.

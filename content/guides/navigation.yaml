@@ -1,0 +1,26 @@
+title: Guides
+sections:
+  - title: Getting started
+    id: getting-started
+    defaultOpen: true
+    items:
+      - title: Authentication
+        slug: authentication
+      - title: Direct link
+        slug: direct-link
+  - title: Promotions
+    id: promotions
+    defaultOpen: true
+    items:
+      - title: Trial
+        slug: trial-discount
+      - title: Coupon
+        slug: coupon
+  - title: Reference
+    id: reference
+    defaultOpen: true
+    items:
+      - title: Statuses
+        slug: charge-and-subscription-statuses
+      - title: Glossary
+        slug: glossary

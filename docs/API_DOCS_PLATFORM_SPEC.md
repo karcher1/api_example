@@ -10,7 +10,7 @@ The task is to complete the functional platform so that documentation content ca
 The website must support two independent documentation areas:
 
 1. API Reference
-2. Informational Articles section
+2. Informational Guides section
 
 These two areas work together inside one website but have separate navigation trees and separate content models.
 
@@ -25,7 +25,7 @@ The website header must contain two main sections:
 1. API Reference
 2. Informational section
 
-The exact title of the second section can be changed later, but functionally it is a separate documentation area for articles, guides, explanations, tutorials, and other non-endpoint content.
+The exact title of the second section can be changed later, but functionally it is a separate documentation area for guides, explanations, tutorials, and other non-endpoint content.
 
 ### 2.2 Layout
 
@@ -107,9 +107,9 @@ The active state must work for:
 
 ### 3.1.4 API navigation independence
 
-API Reference navigation must be independent from the informational articles navigation.
+API Reference navigation must be independent from the informational guides navigation.
 
-Changes to API navigation must not affect the article navigation.
+Changes to API navigation must not affect the guide navigation.
 
 ---
 
@@ -379,7 +379,7 @@ If the current layout has no dedicated place for such blocks, render them in the
 
 # 6. Rich formatted text
 
-The platform must support formatted text in endpoint descriptions, custom blocks, and article content.
+The platform must support formatted text in endpoint descriptions, custom blocks, and guide content.
 
 Required formatting:
 
@@ -398,7 +398,7 @@ Example:
 ```yaml
 description: >
   Creates a new user. Use **Authorization** header with a valid token.
-  See [Authentication Guide](/docs/authentication).
+  See [Authentication Guide](/guides/authentication).
 ```
 
 Markdown rendering must be safe and compatible with the current frontend framework.
@@ -526,36 +526,36 @@ The desired workflow:
 
 ---
 
-# 10. Informational Articles section
+# 10. Informational Guides section
 
 ## 10.1 Purpose
 
-The second documentation section is for articles, guides, explanations, tutorials, and other non-endpoint content.
+The second documentation section is for guides, explanations, tutorials, and other non-endpoint content.
 
 It must be separate from the API Reference section.
 
-## 10.2 Article navigation
+## 10.2 Guide navigation
 
-The articles section must have its own navigation.
+The guides section must have its own navigation.
 
-Article navigation must be managed through simple configuration/content files.
+Guide navigation must be managed through simple configuration/content files.
 
 It must support:
 
 - groups/sections;
-- article pages;
+- guide pages;
 - manual ordering;
-- moving articles between sections;
+- moving guides between sections;
 - renaming sections;
 - adding sections;
 - deleting sections;
-- adding, editing, deleting article pages.
+- adding, editing, deleting guide pages.
 
-No article should be hardcoded in application code.
+No guide should be hardcoded in application code.
 
-## 10.3 Article content
+## 10.3 Guide content
 
-Articles must support:
+Guides must support:
 
 - text;
 - headings;
@@ -569,9 +569,9 @@ Articles must support:
 - examples;
 - notes/warnings/info blocks if practical.
 
-Markdown-compatible article content is preferred.
+Markdown-compatible guide content is preferred.
 
-Example article features:
+Example guide features:
 
 ````md
 # Authentication Guide
@@ -587,9 +587,9 @@ curl -H "Authorization: Bearer TOKEN" https://api.example.com/users
 [Read API Reference](/api/users/create)
 ````
 
-## 10.4 Images in articles
+## 10.4 Images in guides
 
-Articles must support images.
+Guides must support images.
 
 Image requirements:
 
@@ -610,16 +610,16 @@ blocks:
 
 ---
 
-# 11. Relationship between API Reference and Articles
+# 11. Relationship between API Reference and Guides
 
 The two sections must work together inside the same website.
 
 Requirements:
 
-- articles can link to API endpoints;
-- API endpoint descriptions can link to articles;
+- guides can link to API endpoints;
+- API endpoint descriptions can link to guides;
 - both sections must use normal hyperlinks;
-- routing should support direct links to any endpoint or article;
+- routing should support direct links to any endpoint or guide;
 - active navigation must work independently for each section.
 
 ---
@@ -630,16 +630,16 @@ The website must support stable URLs for:
 
 - API Reference section;
 - each API endpoint;
-- Articles section;
-- each article.
+- Guides section;
+- each guide.
 
 Recommended URL patterns:
 
 ```txt
 /api
 /api/{endpoint-slug}
-/docs
-/docs/{article-slug}
+/guides
+/guides/{guide-slug}
 ```
 
 The exact route names can follow the existing project conventions.
@@ -659,7 +659,7 @@ Required behavior:
 - if an endpoint has no request examples, the request examples block should not break the page;
 - if an endpoint has no response examples, the response examples block should not break the page;
 - if a parameter group is empty, the UI should avoid rendering useless empty tables;
-- if an article content file is invalid, the error should be understandable during development.
+- if a guide content file is invalid, the error should be understandable during development.
 
 ---
 
@@ -670,13 +670,13 @@ Prefer adding content validation for YAML files.
 Validation should check:
 
 - required endpoint fields;
-- required article fields;
+- required guide fields;
 - invalid navigation references;
 - duplicate slugs;
 - invalid parameter structures;
 - invalid response arrays;
 - invalid example arrays;
-- missing article files;
+- missing guide files;
 - missing endpoint files.
 
 Validation can be implemented with the current stack's preferred validation library or custom checks.
@@ -706,13 +706,13 @@ The current goal is a clean file-driven documentation platform.
 The feature is complete when all of the following are true:
 
 1. API Reference navigation is generated from content/config files.
-2. Article navigation is generated from separate content/config files.
-3. API Reference and Articles have independent navigation trees.
+2. Guide navigation is generated from separate content/config files.
+3. API Reference and Guides have independent navigation trees.
 4. All API navigation groups are expanded by default on first entry.
 5. Navigation expand/collapse state persists while moving between pages.
 6. Current page is highlighted in the correct navigation.
 7. A new endpoint can be added without changing application code.
-8. A new article can be added without changing application code.
+8. A new guide can be added without changing application code.
 9. Endpoint pages render title, description, method, path, and status.
 10. Endpoint pages render header, path, query, request body, and response parameters.
 11. Response parameters are grouped by status.
@@ -720,7 +720,7 @@ The feature is complete when all of the following are true:
 13. Endpoint pages support formatted text and hyperlinks.
 14. Request examples selector works with custom options per endpoint.
 15. Response examples selector works with custom options per endpoint.
-16. Article pages support formatted content, images, links, headings, and code examples.
+16. Guide pages support formatted content, images, links, headings, and code examples.
 17. Existing layout remains visually unchanged.
 18. Empty sections do not render as broken UI.
 19. Navigation references to missing content are detected during development or build.

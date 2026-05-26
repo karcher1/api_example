@@ -319,7 +319,7 @@ function validateEndpointFile(root, filePath) {
   };
 }
 
-function validateArticleBlocks(root, value, filePath, label = "article content") {
+function validateContentBlocks(root, value, filePath, label = "guide content") {
   ensureArray(value, "blocks", filePath, label).forEach((block, index) => {
     if (!isRecord(block)) {
       contentError(label, filePath, `blocks[${index}] must be an object.`);
@@ -346,7 +346,7 @@ function validateArticleBlocks(root, value, filePath, label = "article content")
   });
 }
 
-function validateArticleFile(root, filePath, label = "article content", fileLabel = "Article file") {
+function validateContentPageFile(root, filePath, label = "guide content", fileLabel = "Guide file") {
   const page = readYamlObject(filePath, fileLabel);
   const slug = requireString(page, "slug", filePath, label);
   const title = requireString(page, "title", filePath, label);
@@ -354,7 +354,7 @@ function validateArticleFile(root, filePath, label = "article content", fileLabe
 
   validateSlugMatchesFile(slug, filePath, label);
   validateMarkdownImages(root, content, filePath, label, "content");
-  validateArticleBlocks(root, page.blocks, filePath, label);
+  validateContentBlocks(root, page.blocks, filePath, label);
 
   return {
     slug,
@@ -457,14 +457,14 @@ function validateApi(root) {
   return endpoints.length;
 }
 
-function validateArticles(root) {
-  const articlesRoot = path.join(root, "content", "articles");
-  const pages = yamlFilePaths(path.join(articlesRoot, "pages"), "Article pages").map((filePath) =>
-    validateArticleFile(root, filePath),
+function validateGuides(root) {
+  const guidesRoot = path.join(root, "content", "guides");
+  const pages = yamlFilePaths(path.join(guidesRoot, "pages"), "Guide pages").map((filePath) =>
+    validateContentPageFile(root, filePath),
   );
-  const pagesBySlug = bySlug(pages, "article");
+  const pagesBySlug = bySlug(pages, "guide");
 
-  validateNavigation(path.join(articlesRoot, "navigation.yaml"), "article navigation", pagesBySlug, "article");
+  validateNavigation(path.join(guidesRoot, "navigation.yaml"), "guide navigation", pagesBySlug, "guide");
 
   return pages.length;
 }
@@ -472,7 +472,7 @@ function validateArticles(root) {
 function validateWebhooks(root) {
   const webhooksRoot = path.join(root, "content", "webhooks");
   const pages = yamlFilePaths(path.join(webhooksRoot, "pages"), "Webhook pages").map((filePath) =>
-    validateArticleFile(root, filePath, "webhook content", "Webhook file"),
+    validateContentPageFile(root, filePath, "webhook content", "Webhook file"),
   );
   const pagesBySlug = bySlug(pages, "webhook page");
 
@@ -484,7 +484,7 @@ function validateWebhooks(root) {
 function validateSdk(root) {
   const sdkRoot = path.join(root, "content", "sdk");
   const pages = yamlFilePaths(path.join(sdkRoot, "pages"), "SDK pages").map((filePath) =>
-    validateArticleFile(root, filePath, "SDK content", "SDK file"),
+    validateContentPageFile(root, filePath, "SDK content", "SDK file"),
   );
   const pagesBySlug = bySlug(pages, "SDK page");
 
@@ -496,11 +496,11 @@ function validateSdk(root) {
 try {
   const { root } = parseArgs();
   const endpointCount = validateApi(root);
-  const articleCount = validateArticles(root);
+  const guideCount = validateGuides(root);
   const webhookCount = validateWebhooks(root);
   const sdkCount = validateSdk(root);
 
-  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${articleCount} article(s), ${webhookCount} webhook page(s), ${sdkCount} SDK page(s).`);
+  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${guideCount} guide(s), ${webhookCount} webhook page(s), ${sdkCount} SDK page(s).`);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

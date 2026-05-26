@@ -13,26 +13,29 @@ interface ArticleShellProps {
 export function ArticleShell({
   page,
   navigation,
-  navigationTitle = "Articles",
+  navigationTitle = "Guides",
   sectionVariant = "article",
 }: ArticleShellProps) {
+  const navigationAriaLabel = `${navigationTitle} navigation`;
+  const navigationStorageKey = `content-nav:${navigationTitle}`;
+
   return (
     <>
       <EndpointNavDrawer
         nodes={navigation}
         activeHref={page.href}
         title={navigationTitle}
-        ariaLabel="Article navigation"
-        storageKey={`article-nav:${navigationTitle}`}
+        ariaLabel={navigationAriaLabel}
+        storageKey={navigationStorageKey}
       />
       <div className={`articles-grid articles-grid-${sectionVariant}`}>
-        <aside className="left-rail" aria-label="Article navigation">
+        <aside className="left-rail" aria-label={navigationAriaLabel}>
           <EndpointNav
             nodes={navigation}
             activeHref={page.href}
             title={navigationTitle}
-            ariaLabel="Article navigation"
-            storageKey={`article-nav:${navigationTitle}`}
+            ariaLabel={navigationAriaLabel}
+            storageKey={navigationStorageKey}
           />
         </aside>
         <main className={`main-column article-main-column article-main-column-${sectionVariant}`}>

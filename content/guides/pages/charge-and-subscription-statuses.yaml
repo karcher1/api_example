@@ -1,0 +1,47 @@
+slug: charge-and-subscription-statuses
+title: Charge & subscription statuses
+description: Reference for charge and subscription statuses.
+content: |
+  # Charge & subscription statuses
+
+  This page helps you quickly understand **what each charge or subscription status means**, when it typically appears, and **what, if anything, a merchant should do**.
+
+  ## Charge status table
+
+  | Status | What it means | When it usually appears | What to do |
+  | --- | --- | --- | --- |
+  | `created` | The charge has been created and the payment flow has started | After the customer appears on Checkout page | No action needed - wait for the next status |
+  | `redirected` | The customer has been redirected to an external page (3DS or a provider page) | When redirecting to 3DS or the provider page | No action needed - wait for the customer/provider to complete the step |
+  | `confirmed` | The system is waiting for confirmation (provider notification) of the authorization result | After successful 3DS verification for cards, or in flows where authorization confirmation is required | No action needed - it usually moves quickly to authorized, declined, or failed |
+  | `deferred` | A deferred payment was created for an alternative payment method, for example an invoice; payment will happen later | After the customer is sent to an external APM page or invoice | Wait for payment. If it is not completed in time, expect declined |
+  | `authorized` | Funds are authorized or held on the card but not captured yet | After successful authorization | If you use the Auth/Capture model, the next step is captured |
+  | `verified` | The charge is confirmed by the system and/or sent to the provider; final collection is pending | Often in sale (one-step capture) flows, or before captured in a capture flow | Wait for the final status |
+  | `captured` | Funds have been captured after a capture operation following a successful authorized status | In Auth/Capture flows after a successful capture | Fulfil the order/service and record the payment as successful |
+  | `settled` | Funds have been collected in an immediate sale payment | In Sale flows (2DS/3DS), or for some APMs after successful payment | Fulfil the order/service and record the payment as successful |
+  | `declined` | The payment was declined for a business or payment reason | Fraud/antifraud rejection, provider or bank decline, failed 3DS, unsuccessful auth/capture, APM expiry, etc. | Ask the customer to try again or use another payment method. If it happens frequently, contact support |
+  | `failed` | The payment failed due to a technical error | System or integration issues, for example a server-side error | Recommend trying again later. If it repeats, contact support with the order details |
+
+  ## Subscription status table
+
+  | Status | What it means | When it usually appears |
+  | --- | --- | --- |
+  | `active` | The subscription is active and in use | Normal operating state |
+  | `frozen` | The subscription is temporarily frozen for a certain period | Frozen by the customer or by a support agent |
+  | `expired` | The subscription term has ended | The validity period has expired |
+  | `blocked` | The subscription is blocked after an unsuccessful capture transaction | After a failed capture attempt |
+  | `disabled` | The subscription is disabled and cannot be reactivated | After a refund or void transaction; one year after the expiry date has passed; or after manual disablement by support |
+  | `suspended` | The subscription is disabled and cannot be reactivated | After a chargeback |
+
+  ## Q&A
+
+  **Q:** What is the difference between `settled` and `captured`?
+
+  **A:** `settled` means funds are collected in a **sale** flow, which is one step. `captured` means funds are collected during **capture** after a prior `authorized` status.
+
+  **Q:** Can a charge go back to an earlier status?
+
+  **A:** Usually no. Statuses progress forward through the flow. If you see unexpected jumps, check logs/webhooks and contact support.
+
+  **Q:** Which statuses are final?
+
+  **A:** Success statuses are `settled` and `captured`. Unsuccessful statuses are `declined` and `failed`.

@@ -17,7 +17,7 @@ The exact folder structure can be adapted to the existing project, but the conte
       get-user.yaml
       delete-user.yaml
 
-  /articles
+  /guides
     navigation.yaml
     /pages
       authentication.yaml
@@ -395,12 +395,12 @@ requestExamples:
 
 ---
 
-# 9. Article navigation schema
+# 9. Guide navigation schema
 
 File:
 
 ```txt
-/content/articles/navigation.yaml
+/content/guides/navigation.yaml
 ```
 
 Example:
@@ -428,8 +428,8 @@ sections:
 
 Rules:
 
-- Article navigation is independent from API navigation.
-- `slug` must match an article content file or article slug.
+- Guide navigation is independent from API navigation.
+- `slug` must match a guide content file or guide slug.
 - Order in YAML is the order in the UI.
 - `defaultOpen` controls initial expanded state.
 - Navigation groups must contain at least one item.
@@ -437,12 +437,12 @@ Rules:
 
 ---
 
-# 10. Article page schema
+# 10. Guide page schema
 
 File example:
 
 ```txt
-/content/articles/pages/authentication.yaml
+/content/guides/pages/authentication.yaml
 ```
 
 Example:
@@ -477,7 +477,7 @@ blocks:
 
 ---
 
-# 11. Required article fields
+# 11. Required guide fields
 
 ```yaml
 slug: string
@@ -494,9 +494,9 @@ blocks: array
 
 ---
 
-# 12. Article block schema
+# 12. Guide block schema
 
-Articles may use plain Markdown in `content`.
+Guides may use plain Markdown in `content`.
 
 Optional structured blocks can be supported:
 
@@ -531,16 +531,16 @@ blocks:
 The implementation should validate:
 
 - duplicate endpoint slugs;
-- duplicate article slugs;
+- duplicate guide slugs;
 - API navigation items that reference missing endpoints;
-- article navigation items that reference missing pages;
+- guide navigation items that reference missing pages;
 - missing required endpoint fields;
-- missing required article fields;
+- missing required guide fields;
 - invalid parameter arrays;
 - invalid response arrays;
 - invalid request example arrays;
 - invalid response example arrays;
-- invalid article content;
+- invalid guide content;
 - invalid or missing navigation sections.
 - content `slug` values that do not match their YAML filename;
 - duplicate request/response example labels or selector IDs;
@@ -558,7 +558,7 @@ path
 status
 ```
 
-Required article fields:
+Required guide fields:
 
 ```yaml
 slug
@@ -575,4 +575,4 @@ content
 - Empty response examples should not break the response examples component.
 - Unknown optional fields should be ignored unless validation explicitly rejects them.
 - Markdown content should be rendered safely.
-- Hyperlinks should work between API pages and article pages.
+- Hyperlinks should work between API pages and guide pages.

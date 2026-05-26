@@ -1,0 +1,136 @@
+slug: authentication
+title: Merchant Authentication to Pay service
+description: How merchants authenticate requests to Pay service endpoints.
+content: |
+  # Merchant Authentication to Pay service
+
+  After a successful integration, use the following base URLs to access Pay service endpoints:
+
+  1. **Production**: [https://pay.billerbase.com](https://pay.billerbase.com)
+  2. **Sandbox**: [https://pay-sandbox.billerbase.com](https://pay-sandbox.billerbase.com)
+
+  ## Integration steps
+
+  After the merchant confirms readiness to integrate with Core Billing, the billing manager provides the following data for the payment gateway integration:
+
+  1. `code` - the merchant code.
+  2. `publicKey` - the public access key that must be used in the `x-public-key` header.
+  3. `secretKey` - the private access key that must be used to generate `x-token` for each request.
+
+  To start using the Authorization service, integrate valid headers that will be used for authentication and authorization.
+
+  > All new headers are mandatory and must be included in every request to Pay service endpoints.
+
+  ## New headers
+
+  ### `x-public-key`
+
+  1. A public key that identifies the merchant account. One merchant can have several keys.
+  2. Required for validation and generation of `x-token`.
+  3. Replaces the `Brand` header.
+
+  ### `x-buyer-ip`
+
+  1. Contains information about the buyer's IP address.
+  2. Required for validation and generation of `x-token`.
+  3. Cannot be `null` or an empty string; must be a valid IPv4 or IPv6 address.
+  4. Replaces the `x-client-ip` header and other standard headers related to the buyer's IP address.
+
+  ### `x-date`
+
+  1. Contains the date and time when the request is sent.
+  2. Required for validation and generation of `x-token`.
+  3. Format: `Y-m-dTH:i:s`, for example `2024-01-27T23:59:59`.
+
+  ### `x-token`
+
+  Generated on the merchant side.
+
+  ## Principles of `x-token` generation
+
+  Using the `hmac(sha256)` hashing algorithm, build a hash from the string `secretKey + x-public-key + x-buyer-ip + x-date`, using `secretKey` as the key.
+
+  ```javascript
+  var moment = require('moment');
+  var CryptoJS = require('crypto-js');
+
+  pm.environment.set('x-date', moment().format('Y-m-dTH:mm:s'));
+
+  var xDateHeader = pm.environment.get('x-date'),
+    xPublicKeyHeader = pm.environment.get('x-public-key'),
+    xBuyerIpHeader = pm.environment.get('x-buyer-ip'),
+    secretKey = pm.environment.get('secretKey');
+
+  var data = secretKey + xPublicKeyHeader + xBuyerIpHeader + xDateHeader;
+  var token = CryptoJS.HmacSHA256(data, secretKey).toString();
+
+  pm.request.addHeader('x-date: ' + xDateHeader);
+  pm.request.addHeader('x-public-key: ' + xPublicKeyHeader);
+  pm.request.addHeader('x-buyer-ip: ' + xBuyerIpHeader);
+  pm.request.addHeader('x-token: ' + token);
+  ```
+
+  ```php
+  <?php
+
+  $json = '{
+    "x-buyer-ip": "10.10.10.10",
+    "x-date": "2024-01-27T23:59:59",
+    "x-public-key": "publicKey",
+    "secretKey": "secretKey"
+  }';
+
+  $data = json_decode($json, true);
+
+  $xToken = hash_hmac(
+      'sha256',
+      $data['secretKey'] . $data['x-public-key'] . $data['x-buyer-ip'] . $data['x-date'],
+      $data['secretKey']
+  );
+
+  print_r(['x-token' => $xToken]);
+
+  /*
+  Array
+  (
+      [x-token] => 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
+  )
+  */
+  ```
+
+  ## Authorization procedure
+
+  ![Authorization flow](/images/guides/auth-flow.png)
+
+  After all integration steps are complete, a successful authorization flow looks like this:
+
+  1. The merchant service sends a request to a specific Pay service endpoint.
+  2. Pay service receives the request, takes the headers from the request (`x-public-key`, `x-buyer-ip`, `x-date`, `x-token`) plus the endpoint URL, and forwards them to Authorization service.
+  3. Authorization service validates the received data:
+     - Based on `x-public-key`, it determines the merchant account, checks that it is active, and obtains its `secretKey`.
+     - Generates `x-token` from the received data using the same algorithm as the merchant.
+     - Compares the generated `x-token` with the one received from Pay service.
+     - Extracts the `x-id` header, checks whether the service exists in access configuration, checks whether this service can call the endpoint, and returns `403 Forbidden` if access is missing.
+     - Reads `x-source`, determines the channel context (`shop`, `cp`, `staff`, `directlink`), configures business logic based on the channel, and returns `400` or `403` if the type is incorrect or not allowed.
+     - Checks the merchant account's access to the requested endpoint.
+     - Sends a `200` status with the merchant code back to Pay service.
+  4. Pay service receives the `200` status and sends the request to other services on behalf of this merchant.
+  5. Pay service returns the response to the merchant.
+
+  > If any check or validation in Authorization service detects a mismatch, the merchant will receive a `500` or `401` error in future releases.
+
+  ```json
+  {
+    "uuid": null,
+    "message": "Unauthorized service use is forbidden",
+    "code": 0,
+    "traceId": "e8977d1cfc799423d8eb7e8d9000965f"
+  }
+  ```
+blocks:
+  - type: info
+    title: Base URLs
+    content: Use `https://pay.billerbase.com` for production and `https://pay-sandbox.billerbase.com` for sandbox.
+  - type: warning
+    title: Mandatory headers
+    content: All new headers are mandatory and must be included in every request to Pay service endpoints.

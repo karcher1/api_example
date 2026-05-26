@@ -1,0 +1,113 @@
+slug: direct-link
+title: Direct link
+description: How merchants create and control direct checkout links.
+content: |
+  # Direct link
+
+  **Direct link** is a tool designed to generate a checkout link that is created entirely by the **merchant**. The merchant collects the required GET parameters, sends the required data to Billing through an API endpoint, and receives a link to the checkout page in the response.
+
+  > Billing does not have its own mechanism for creating a direct link. Billing only provides an API endpoint for creating orders. The direct link is implemented by the merchant, and the merchant controls how and which parameters are sent to Billing and included in the generated checkout link.
+
+  ## Direct Link Mechanism
+
+  ### High-level abstract flow
+
+  The merchant collects the required GET parameters and builds a link like `domain_of_shop/checkout?someKey=someValue&...`.
+
+  The merchant's **Shop Frontend** sends a request to the merchant's **Shop Backend** with these parameters.
+
+  The merchant's **Shop Backend**:
+
+  - Stores some parameters in its database if needed.
+  - Sends some parameters to analytics.
+  - Sends the required data to **Billing** through the **order creation API endpoint**.
+
+  **Billing** processes the order creation request and returns a checkout page link **without GET parameters**, along with any other parameters required by the contract.
+
+  After receiving the response from Billing, the merchant's **Shop Backend** builds the final checkout link by adding all required GET parameters, if the merchant needs them.
+
+  **The user is redirected to the final checkout URL with the specified parameters.**
+
+  ### Billing's role
+
+  Billing provides an API endpoint for creating an order.
+
+  It returns a link to the checkout page without GET parameters and additional parameters according to the contract.
+
+  Billing is **not** responsible for which GET parameters the merchant adds. These parameters are defined and used **only** by the merchant.
+
+  ### Merchant's role
+
+  The merchant independently decides **how** to pass data and **which** GET parameters to use.
+
+  The merchant uses Billing's API endpoint to create an order, builds the final URL to redirect the user to payment, and may additionally pass variables such as `extra` or `metaData` that can later be used by Billing Pay-front.
+
+  **Important:** if the merchant needs to add or change the set of GET parameters, this is done exclusively by the merchant. Billing is not modified and does not change its logic. Billing always returns only the base link and processes the data provided within its API.
+
+  ## How to build a Direct Link
+
+  Before creating the link, prepare two values:
+
+  - **Product code** (`product`) - which plan, subscription, or option is being purchased. It is required to create the link.
+  - **Coupon** (`coupon`) - promo code if a discount coupon is used. It is optional.
+
+  > Important: **1 payment = 1 product**. A single link must contain only one `product`.
+
+  Link template:
+
+  ```text
+  https://<brand-domain>/checkout?product=<PRODUCT_CODE>&coupon=<COUPON_CODE>
+  ```
+
+  ### Checklist before sending the link
+
+  Make sure that:
+
+  - After `/checkout` there is a `?`, and parameters are separated with `&`.
+  - `product` is not empty and has no typos.
+  - The link starts with the correct brand domain.
+
+  ### Common mistakes
+
+  - `https://<brand>/checkout?` - no parameters.
+  - `https://<brand>/checkout?product=` - `product` is empty.
+  - `...prodact=...` - typo in the parameter name.
+  - `.../checkout&product=...` - missing `?` before parameters.
+
+  If the link does not open or opens the wrong checkout page, double-check the domain and the `product` value.
+
+  ## Q&A
+
+  ### Using GET parameters (query parameters)
+
+  **Q:** Why are query parameters needed in the link?
+
+  **A:** For quick verification and running A/B tests. For example, you can change the checkout design or the text on the page based on the link parameters.
+
+  **Q:** Why does the merchant build the GET parameters themselves?
+
+  **A:** Billing has nothing to do with which parameters the merchant decides to use. If the merchant needs additional data, they add it to the link themselves.
+
+  ### Using meta (`metaData`)
+
+  **Q:** Why is meta (`metaData`) needed?
+
+  **A:** To prevent the user from spoofing or modifying this data. Unlike query parameters, which are passed in plain text and can be changed, the merchant can send `metaData` to Billing through a server-to-server channel, which protects it from user tampering.
+
+  ## Key takeaways
+
+  **Direct link** is a merchant-implemented mechanism where Billing acts only as the receiver of a server-to-server request to create an order and returns the payment link.
+
+  Any **GET parameters** the merchant wants to use are added by the merchant. **Billing only accepts the data required to create an order and returns the final link** without GET parameters.
+
+  If the merchant needs to store or analyze information, they do it on their side and, if needed, send the data to Billing through the API.
+
+  `metaData` helps protect data from user tampering, whereas public query parameters can be freely modified in the browser address bar.
+
+  ## Additional information
+
+  API endpoints for order creation: [Create order](/api/create-order) and [One-time payment](/api/one-time-payment).
+blocks:
+  - type: warning
+    title: Merchant-owned mechanism
+    content: Billing does not generate direct links by itself. The merchant owns the link-building logic and controls the GET parameters.

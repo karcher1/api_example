@@ -1,0 +1,69 @@
+slug: trial-discount
+title: Trial
+description: How trial pricing and discounting work.
+content: |
+  # Trial
+
+  A **trial** is a way to grant users access to the **main product** for a **short testing period** at a **reduced price**. For example, you sell a 3-month product, but want to give users access for **10 days** to test it. The merchant can choose the number of days.
+
+  A trial works well when you want to:
+
+  - Lower the entry barrier for new users.
+  - Increase conversion to a full purchase after the test period.
+  - Let users try the product before committing.
+
+  ## How it works
+
+  Trials are implemented through a **coupon code** that is applied when placing an order for the **main product**.
+
+  **Important:** the order is created at the product's **full price**, and the coupon code is applied **to the full price** to reduce the payable amount to the **trial price** and set the **trial access period**.
+
+  ### Step 1. Choose the product and trial length
+
+  - Select the main product (product code) for which you want to provide short-term access.
+  - Set the trial duration in days, for example 10 days.
+
+  ### Step 2. Define the trial price per currency
+
+  Prepare the trial price **for each currency** you sell in.
+
+  Recommended format:
+
+  - Currency -> Price, for example USD -> 4.99, EUR -> 4.59.
+
+  ### Step 3. Send us the trial parameters
+
+  Provide our team with:
+
+  - The product (product code).
+  - The trial duration in days.
+  - The prices per currency.
+
+  ### Step 4. Receive the coupon code
+
+  Once we receive the details, we issue **coupon codes per currency** for trial usage.
+
+  ### Step 5. Apply the coupon when creating an order
+
+  Whenever you want to grant a user a trial, create an order for the **main product** and include the **coupon code**.
+
+  - The order is created at the product's **full price**.
+  - The coupon is applied to the full price and reduces the payable amount to the **trial price**.
+
+  > At the end of the trial period, we perform an **automatic charge (autocharging)** for the **full price** of the main product unless the user cancels the subscription or renewal on the merchant side.
+
+  ## Discounting
+
+  **Discounting** is a separate mechanism and **is not related to the trial flow** described above.
+
+  With discounting, a **percentage discount** is applied to the **main product**, and the final price is calculated from the **full price**.
+
+  ```text
+  Final price = full price x (1 - discount%)
+  ```
+
+  The product's duration and scope **do not change**. Only the price changes.
+blocks:
+  - type: warning
+    title: Automatic charge after trial
+    content: At the end of the trial period, autocharging is performed for the full price of the main product unless the user cancels subscription renewal on the merchant side.

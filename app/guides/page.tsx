@@ -3,6 +3,6 @@ import { getFirstGuidePageHref } from "@/lib/pages";
 
 export const dynamic = "force-dynamic";
 
-export default function DocsIndexPage() {
+export default function GuidesIndexPage() {
   redirect(getFirstGuidePageHref());
 }

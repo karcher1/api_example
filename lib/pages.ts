@@ -75,14 +75,14 @@ function collectionConfig({
   };
 }
 
-const ARTICLES_COLLECTION = collectionConfig({
-  dirName: "articles",
-  routeBase: "/docs",
-  defaultTitle: "Articles",
-  contentLabel: "article content",
-  navigationLabel: "article navigation",
-  itemLabel: "article",
-  nodePrefix: "article",
+const GUIDES_COLLECTION = collectionConfig({
+  dirName: "guides",
+  routeBase: "/guides",
+  defaultTitle: "Guides",
+  contentLabel: "guide content",
+  navigationLabel: "guide navigation",
+  itemLabel: "guide",
+  nodePrefix: "guide",
 });
 
 const WEBHOOKS_COLLECTION = collectionConfig({
@@ -340,20 +340,20 @@ function getPages(collection: ContentCollectionConfig): ContentPage[] {
   return pages;
 }
 
-export function getContentPages(): ContentPage[] {
-  return getPages(ARTICLES_COLLECTION);
+export function getGuidePages(): ContentPage[] {
+  return getPages(GUIDES_COLLECTION);
 }
 
-export function getContentPage(slug: string): ContentPage | undefined {
-  return getContentPages().find((page) => page.slug === slug);
+export function getGuidePage(slug: string): ContentPage | undefined {
+  return getGuidePages().find((page) => page.slug === slug);
 }
 
-export function getContentPageStaticParams(): Array<{ slug: string }> {
-  return getContentPages().map((page) => ({ slug: page.slug }));
+export function getGuidePageStaticParams(): Array<{ slug: string }> {
+  return getGuidePages().map((page) => ({ slug: page.slug }));
 }
 
-export function getLegacyContentPageStaticParams(): Array<{ page: string }> {
-  return getContentPages().map((page) => ({ page: page.slug }));
+export function getLegacyGuidePageStaticParams(): Array<{ page: string }> {
+  return getGuidePages().map((page) => ({ page: page.slug }));
 }
 
 function readNavigationDocument(collection: ContentCollectionConfig): UnknownRecord {
@@ -471,8 +471,8 @@ function getNavigationTitle(collection: ContentCollectionConfig): string {
   return title ?? collection.defaultTitle;
 }
 
-export function getContentNavigationTitle(): string {
-  return getNavigationTitle(ARTICLES_COLLECTION);
+export function getGuideNavigationTitle(): string {
+  return getNavigationTitle(GUIDES_COLLECTION);
 }
 
 function getNavigation(collection: ContentCollectionConfig): NavNode[] {
@@ -484,8 +484,8 @@ function getNavigation(collection: ContentCollectionConfig): NavNode[] {
   return parseNavItems(collection, document.sections, pagesBySlug(pages), placedSlugs, groupIds, "sections");
 }
 
-export function getContentNavigation(): NavNode[] {
-  return getNavigation(ARTICLES_COLLECTION);
+export function getGuideNavigation(): NavNode[] {
+  return getNavigation(GUIDES_COLLECTION);
 }
 
 function getFirstPageHref(collection: ContentCollectionConfig): string {
@@ -500,8 +500,8 @@ function getFirstPageHref(collection: ContentCollectionConfig): string {
   return page?.href ?? "/";
 }
 
-export function getFirstContentPageHref(): string {
-  return getFirstPageHref(ARTICLES_COLLECTION);
+export function getFirstGuidePageHref(): string {
+  return getFirstPageHref(GUIDES_COLLECTION);
 }
 
 export function getWebhookPages(): ContentPage[] {

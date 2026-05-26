@@ -18,7 +18,7 @@ Use this checklist to verify the implementation.
 # 2. Header sections
 
 - [ ] Header contains access to API Reference.
-- [ ] Header contains access to the informational/articles section.
+- [ ] Header contains access to the informational/guides section.
 - [ ] The two sections route to separate documentation areas.
 - [ ] Header behavior remains consistent with the existing layout.
 
@@ -123,25 +123,25 @@ Use this checklist to verify the implementation.
 
 ---
 
-# 10. Articles section
+# 10. Guides section
 
-- [ ] Articles section has its own navigation.
-- [ ] Article navigation is loaded from YAML/content config.
-- [ ] Article navigation is independent from API navigation.
-- [ ] Article navigation supports sections/groups.
-- [ ] Article navigation supports manual order.
-- [ ] Article navigation supports moving articles between sections by editing YAML.
-- [ ] Article list is not hardcoded in application code.
-- [ ] Article active state is highlighted.
-- [ ] Article active state works on direct URL navigation and refresh.
+- [ ] Guides section has its own navigation.
+- [ ] Guide navigation is loaded from YAML/content config.
+- [ ] Guide navigation is independent from API navigation.
+- [ ] Guide navigation supports sections/groups.
+- [ ] Guide navigation supports manual order.
+- [ ] Guide navigation supports moving guides between sections by editing YAML.
+- [ ] Guide list is not hardcoded in application code.
+- [ ] Guide active state is highlighted.
+- [ ] Guide active state works on direct URL navigation and refresh.
 
 ---
 
-# 11. Article content
+# 11. Guide content
 
-- [ ] Article pages are generated from content files.
-- [ ] Article title is rendered.
-- [ ] Article description is rendered if present.
+- [ ] Guide pages are generated from content files.
+- [ ] Guide title is rendered.
+- [ ] Guide description is rendered if present.
 - [ ] Markdown headings work.
 - [ ] Bold text works.
 - [ ] Italic text works.
@@ -160,23 +160,23 @@ Use this checklist to verify the implementation.
 
 - [ ] API Reference base route works.
 - [ ] Individual endpoint routes work.
-- [ ] Articles base route works.
-- [ ] Individual article routes work.
+- [ ] Guides base route works.
+- [ ] Individual guide routes work.
 - [ ] Direct route navigation works.
 - [ ] Refreshing an endpoint page works.
-- [ ] Refreshing an article page works.
-- [ ] Links between articles and API endpoints work.
+- [ ] Refreshing a guide page works.
+- [ ] Links between guides and API endpoints work.
 
 ---
 
 # 13. Validation and errors
 
 - [ ] Missing required endpoint fields are detected.
-- [ ] Missing required article fields are detected.
+- [ ] Missing required guide fields are detected.
 - [ ] Duplicate endpoint slugs are detected.
-- [ ] Duplicate article slugs are detected.
+- [ ] Duplicate guide slugs are detected.
 - [ ] API navigation references to missing endpoints are detected.
-- [ ] Article navigation references to missing articles are detected.
+- [ ] Guide navigation references to missing guides are detected.
 - [ ] Invalid parameter arrays are detected or handled safely.
 - [ ] Invalid response arrays are detected or handled safely.
 - [ ] Invalid examples are detected or handled safely.
@@ -192,12 +192,12 @@ Use this checklist to verify the implementation.
 - [ ] Confirm the endpoint page renders.
 - [ ] Move the endpoint to another section by editing navigation YAML only.
 - [ ] Confirm the endpoint moves in UI.
-- [ ] Add a new article content file.
-- [ ] Add the article slug to article navigation YAML.
-- [ ] Confirm the article appears in navigation.
-- [ ] Confirm the article page renders.
+- [ ] Add a new guide content file.
+- [ ] Add the guide slug to guide navigation YAML.
+- [ ] Confirm the guide appears in navigation.
+- [ ] Confirm the guide page renders.
 - [ ] Remove an endpoint from navigation and confirm it no longer appears.
-- [ ] Remove an article from navigation and confirm it no longer appears.
+- [ ] Remove a guide from navigation and confirm it no longer appears.
 
 ---
 
@@ -207,4 +207,4 @@ Use this checklist to verify the implementation.
 - [ ] Build runs successfully if the project has a build command.
 - [ ] Existing tests pass if the project has tests.
 - [ ] New validation/tests are added if appropriate.
-- [ ] Final response explains how to add endpoints and articles.
+- [ ] Final response explains how to add endpoints and guides.
