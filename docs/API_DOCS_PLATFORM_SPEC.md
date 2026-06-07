@@ -203,6 +203,9 @@ Path parameters consist of:
 - type;
 - mandatory status;
 - description.
+- optional standard.
+
+If `standard` is provided, it should be displayed separately from the description.
 
 Example:
 
@@ -212,6 +215,7 @@ pathParameters:
     type: string
     required: true
     description: Unique user identifier.
+    standard: uuid
 ```
 
 ## 4.5 Query parameters
@@ -241,6 +245,9 @@ Request body parameters consist of:
 - type;
 - mandatory status;
 - description.
+- optional standard.
+
+If `standard` is provided, it should be displayed separately from the description.
 
 Example:
 
@@ -250,6 +257,7 @@ requestBodyParameters:
     type: string
     required: true
     description: User email address. Must be a valid email.
+    standard: RFC 5322 email address
 ```
 
 Request body parameters should support nested objects and arrays if the project needs this for real API documentation.
@@ -260,6 +268,7 @@ Recommended optional fields for future support:
 - `items`
 - `example`
 - `default`
+- `standard`
 
 Nested example:
 
@@ -278,6 +287,7 @@ requestBodyParameters:
         type: string
         required: false
         description: User last name.
+        standard: ISO basic Latin letters
 ```
 
 ## 4.7 Response parameters

@@ -61,7 +61,8 @@ requestBodyParameters:
       - name: currency
         type: string
         required: false
-        description: "The currency in which the payment will be made. Standard: ISO 4217 Alphabetic."
+        description: "The currency in which the payment will be made."
+        standard: ISO 4217 Alphabetic
         default: USD
         minLength: 3
         maxLength: 3
@@ -85,7 +86,8 @@ requestBodyParameters:
       - name: locale
         type: string
         required: false
-        description: "Localization language Standard: ISO 639 set 1."
+        description: Localization language
+        standard: ISO 639 set 1
         default: en
         minLength: 2
         maxLength: 2

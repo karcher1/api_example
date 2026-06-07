@@ -12,6 +12,7 @@ interface SchemaTableProps {
   chrome?: "panel" | "embedded";
   initialExpansion?: "all" | "default" | "none";
   showRequiredState?: boolean;
+  showStandardBadge?: boolean;
 }
 
 interface SchemaTreeNodeProps {
@@ -23,6 +24,7 @@ interface SchemaTreeNodeProps {
   expanded: Set<string>;
   onToggle: (path: string) => void;
   showRequiredState: boolean;
+  showStandardBadge: boolean;
 }
 
 interface SchemaChild {
@@ -99,6 +101,16 @@ function schemaChips(node: SchemaNode): string[] {
   }
 
   return chips;
+}
+
+function StandardBadge({ standard }: { standard?: string }) {
+  const label = standard?.trim();
+
+  if (!label) {
+    return null;
+  }
+
+  return <span className="schema-standard">{label}</span>;
 }
 
 function childNodes(node: SchemaNode): SchemaChild[] {
@@ -195,6 +207,7 @@ function SchemaTreeNode({
   expanded,
   onToggle,
   showRequiredState,
+  showStandardBadge,
 }: SchemaTreeNodeProps) {
   const children = childNodes(node);
   const hasChildren = children.length > 0;
@@ -242,9 +255,12 @@ function SchemaTreeNode({
           </p>
         </div>
         {showRequiredState ? (
-          <span className={node.required ? "schema-required" : "schema-optional"}>
-            {node.required ? "required" : "optional"}
-          </span>
+          <div className="schema-badge-stack">
+            <span className={node.required ? "schema-required" : "schema-optional"}>
+              {node.required ? "required" : "optional"}
+            </span>
+            {showStandardBadge ? <StandardBadge standard={node.standard} /> : null}
+          </div>
         ) : null}
       </div>
 
@@ -263,6 +279,7 @@ function SchemaTreeNode({
                 expanded={expanded}
                 onToggle={onToggle}
                 showRequiredState={showRequiredState}
+                showStandardBadge={showStandardBadge}
               />
             );
           })}
@@ -279,6 +296,7 @@ export function SchemaTable({
   chrome = "panel",
   initialExpansion = "default",
   showRequiredState = true,
+  showStandardBadge = false,
 }: SchemaTableProps) {
   const rootName = rootLabel || schema?.name || "body";
   const rootNode = useMemo(() => (schema ? { ...schema, name: rootName } : undefined), [schema, rootName]);
@@ -334,6 +352,7 @@ export function SchemaTable({
                   expanded={expanded}
                   onToggle={toggle}
                   showRequiredState={showRequiredState}
+                  showStandardBadge={showStandardBadge}
                 />
               );
             })
@@ -350,6 +369,7 @@ export function SchemaTable({
             expanded={expanded}
             onToggle={toggle}
             showRequiredState={showRequiredState}
+            showStandardBadge={showStandardBadge}
           />
         )}
       </div>

@@ -21,7 +21,8 @@ requestBodyParameters:
   - name: currency
     type: string
     required: false
-    description: "The currency in which the prices should be returned Standard: ISO 4217 Alphabetic."
+    description: "The currency in which the prices should be returned"
+    standard: ISO 4217 Alphabetic
     default: USD
     minLength: 3
     maxLength: 3

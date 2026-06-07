@@ -94,6 +94,29 @@ function groupedParameters(parameters: EndpointParameter[]) {
   })).filter((group) => group.parameters.length > 0);
 }
 
+function StandardBadge({ standard }: { standard?: string }) {
+  const label = standard?.trim();
+
+  if (!label) {
+    return null;
+  }
+
+  return <span className="schema-standard">{label}</span>;
+}
+
+function ParameterBadges({ parameter }: { parameter: EndpointParameter }) {
+  const standard = parameter.location === "path" ? parameter.schema?.standard : undefined;
+
+  return (
+    <div className="schema-badge-stack">
+      <span className={parameter.required ? "schema-required" : "schema-optional"}>
+        {parameter.required ? "required" : "optional"}
+      </span>
+      <StandardBadge standard={standard} />
+    </div>
+  );
+}
+
 function ParametersList({ parameters }: { parameters: EndpointParameter[] }) {
   return (
     <div className="parameter-list">
@@ -118,9 +141,7 @@ function ParametersList({ parameters }: { parameters: EndpointParameter[] }) {
                 </div>
               ) : null}
             </div>
-            <span className={parameter.required ? "schema-required" : "schema-optional"}>
-              {parameter.required ? "required" : "optional"}
-            </span>
+            <ParameterBadges parameter={parameter} />
           </article>
         );
       })}
@@ -223,6 +244,7 @@ function RequestBodySection({ endpoint }: EndpointContentProps) {
         rootLabel="body"
         variant="fieldList"
         initialExpansion="all"
+        showStandardBadge
       />
     </section>
   );

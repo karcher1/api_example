@@ -1124,6 +1124,31 @@ pre {
   white-space: nowrap;
 }
 
+.schema-badge-stack {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.schema-standard {
+  display: inline-flex;
+  max-width: min(170px, 100%);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(var(--color-line) / 0.82);
+  border-radius: 999px;
+  background: rgb(var(--color-surface) / 0.62);
+  padding: 2px 7px;
+  color: rgb(var(--color-subtle));
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
 .schema-required::before,
 .schema-optional::before {
   display: block;
@@ -2734,8 +2759,13 @@ button.schema-tree-node-point:focus-visible {
   }
 
   .parameter-row > .schema-required,
-  .parameter-row > .schema-optional {
+  .parameter-row > .schema-optional,
+  .parameter-row > .schema-badge-stack {
     justify-self: start;
+  }
+
+  .parameter-row > .schema-badge-stack {
+    align-items: flex-start;
   }
 
   .schema-card-header {
@@ -2767,8 +2797,13 @@ button.schema-tree-node-point:focus-visible {
   }
 
   .schema-tree-item > .schema-required,
-  .schema-tree-item > .schema-optional {
+  .schema-tree-item > .schema-optional,
+  .schema-tree-item > .schema-badge-stack {
     justify-self: start;
+  }
+
+  .schema-tree-item > .schema-badge-stack {
+    align-items: flex-start;
   }
 
   .overview-command {

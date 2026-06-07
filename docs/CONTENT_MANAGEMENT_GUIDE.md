@@ -87,6 +87,17 @@ responseExamples:
       }
 ```
 
+For path and request body parameters, use `standard` when the standard should be displayed as its own badge:
+
+```yaml
+pathParameters:
+  - name: userId
+    type: string
+    required: true
+    description: Unique user identifier.
+    standard: uuid
+```
+
 ## Step 2. Add endpoint to API navigation
 
 Edit:
@@ -163,6 +174,7 @@ You can edit:
 - path parameters;
 - query parameters;
 - request body parameters;
+- `standard` for path and request body parameters, shown as a separate badge when provided;
 - responses;
 - custom blocks;
 - request examples;

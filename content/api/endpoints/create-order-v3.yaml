@@ -51,7 +51,8 @@ requestBodyParameters:
   - name: currency
     type: string
     required: false
-    description: "Currency code used for the payment Standard: ISO 4217 Alphabetic."
+    description: Currency code used for the payment
+    standard: ISO 4217 Alphabetic
     nullable: true
     default: USD
     minLength: 3
@@ -59,7 +60,8 @@ requestBodyParameters:
   - name: discount
     type: number
     required: false
-    description: "Application of the discount (% value) to the initial cost of the product Standard: min: 0.01, max: 99.99."
+    description: "Application of the discount (% value) to the initial cost of the product"
+    standard: "min: 0.01, max: 99.99"
     nullable: true
     minimum: 0.01
     maximum: 99.99
@@ -168,7 +170,8 @@ requestBodyParameters:
       - name: locale
         type: string
         required: false
-        description: "Localization language Standard: ISO 639 set 1."
+        description: Localization language
+        standard: ISO 639 set 1
         nullable: true
         minLength: 2
         maxLength: 2

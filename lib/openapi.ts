@@ -63,6 +63,7 @@ export interface SchemaNode {
   required?: boolean;
   nullable?: boolean;
   description?: string;
+  standard?: string;
   enum?: string[];
   example?: unknown;
   default?: unknown;
@@ -325,6 +326,7 @@ function parseSchemaNode(
     type,
     required,
     description: optionalString(record, "description"),
+    standard: optionalString(record, "standard"),
     example: record.example,
     default: record.default,
   };
@@ -413,6 +415,7 @@ function requestBodySchema(parameters: RequestBodyParameter[]): SchemaNode | und
       type: parameter.schema?.type ?? "unknown",
       required: parameter.required,
       description: parameter.description,
+      standard: parameter.schema?.standard,
       example: parameter.example,
       default: parameter.schema?.default,
       properties: parameter.schema?.properties,

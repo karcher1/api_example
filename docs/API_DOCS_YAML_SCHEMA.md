@@ -249,6 +249,7 @@ name: string
 type: string
 required: boolean
 description: string
+standard: string # optional, displayed for pathParameters and requestBodyParameters
 ```
 
 Example:
@@ -259,6 +260,8 @@ Example:
   required: false
   description: Minimum 1, maximum 100.
 ```
+
+`standard` is optional. When provided on `pathParameters` or `requestBodyParameters`, it is displayed as a separate badge instead of being included in `description`.
 
 Supported `type` values should not be strictly hardcoded unless validation needs them.
 
@@ -275,17 +278,20 @@ Common examples:
 - datetime
 - uuid
 
-Optional future fields:
+Optional fields:
 
 ```yaml
+standard: string
 children:
   - name: string
     type: string
     required: boolean
     description: string
+    standard: string
 items:
   type: string
   description: string
+  standard: string
 example: any
 default: any
 ```

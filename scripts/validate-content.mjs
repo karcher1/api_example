@@ -87,6 +87,12 @@ function requireString(record, field, filePath, label) {
   return value;
 }
 
+function validateOptionalString(record, field, filePath, label, location) {
+  if (record[field] !== undefined && typeof record[field] !== "string") {
+    contentError(label, filePath, `${location}.${field} must be a string when provided.`);
+  }
+}
+
 function ensureArray(value, field, filePath, label, options = {}) {
   if (value === undefined || value === null) {
     if (options.required) {
@@ -174,6 +180,7 @@ function validateSchemaNode(value, filePath, label, location, options = {}) {
   const requireRequired = options.requireRequired ?? true;
 
   requireString(value, "type", filePath, label);
+  validateOptionalString(value, "standard", filePath, label, location);
 
   if (value.children !== undefined) {
     ensureArray(value.children, `${location}.children`, filePath, label).forEach((child, index) => {

@@ -39,7 +39,8 @@ pathParameters:
   - name: bin
     type: string
     required: true
-    description: "BIN number of the card to search Standard: 8 digits."
+    description: BIN number of the card to search
+    standard: 8 digits
     pattern: ^(\d{6}|\d{8})$
     example: "42424242"
 queryParameters: []

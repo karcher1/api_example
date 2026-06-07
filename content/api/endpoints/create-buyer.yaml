@@ -51,7 +51,8 @@ requestBodyParameters:
   - name: country
     type: string
     required: true
-    description: "Country code Standard: ISO 3166-1 alpha-2."
+    description: Country code
+    standard: ISO 3166-1 alpha-2
     example: US
   - name: zip
     type: string
@@ -66,7 +67,8 @@ requestBodyParameters:
   - name: locale
     type: string
     required: false
-    description: "Localization language Standard: ISO 639 set 1."
+    description: Localization language
+    standard: ISO 639 set 1
     example: en
   - name: buyerMeta
     type: object

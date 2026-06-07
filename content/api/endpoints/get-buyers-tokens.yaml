@@ -39,7 +39,8 @@ pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: "Unique ID of buyer in the system Standard: uuid."
+    description: Unique ID of buyer in the system
+    standard: uuid
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$

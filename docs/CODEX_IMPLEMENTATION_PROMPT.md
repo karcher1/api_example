@@ -71,6 +71,8 @@ Header/path/query/request body parameters имеют поля:
 - required;
 - description.
 
+Path/request body parameters also support optional `standard`, which should render separately from `description`.
+
 Response parameters имеют поля:
 
 - name;
