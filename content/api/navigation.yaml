@@ -19,8 +19,6 @@ sections:
         slug: get-buyers-charge-methods
       - title: Get charge history
         slug: get-charge-history
-      - title: Buyers order history
-        slug: buyers-order-history
   - title: Extra info
     id: extra-info
     defaultOpen: true

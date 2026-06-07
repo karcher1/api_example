@@ -243,31 +243,31 @@ responseExamples:
     language: json
     code: |-
       {
-          "data": [
+        "data": [
+          {
+            "id": "6a6d2f1a-cc44-4779-a937-147494fb9e69",
+            "value": "5032",
+            "paymentMethodType": "card",
+            "paymentMethodIdentifier": "461fb87dfb1336593ae416e9ca6b8a1652c4262d6ea8b694acfe1c873013ddb1124e23cbb02ef1c7af5717b1b649476ff633c1fa63f2190aec215ae0c0818849",
+            "tokens": [
               {
-                  "id": "6a6d2f1a-cc44-4779-a937-147494fb9e69",
-                  "value": "5032",
-                  "paymentMethodType": "card",
-                  "paymentMethodIdentifier": "461fb87dfb1336593ae416e9ca6b8a1652c4262d6ea8b694acfe1c873013ddb1124e23cbb02ef1c7af5717b1b649476ff633c1fa63f2190aec215ae0c0818849",
-                  "tokens": [
-                      {
-                          "id": 1163866,
-                          "provider": "safecharge",
-                          "mid": "default",
-                          "bin": "400002",
-                          "email": "qa.auto+st+olkgqsehap@test.com",
-                          "isEnabled": true,
-                          "chargeId": "1ead2740-e000-4805-bdcb-13d0dedda2e2",
-                          "createdAt": "2024-10-24 06:32:54",
-                          "updatedAt": "2024-10-24 08:23:21",
-                          "successfullyUsedAt": "2024-10-24 06:32:54"
-                      }
-                  ]
+                "id": 1163866,
+                "provider": "safecharge",
+                "mid": "default",
+                "bin": "400002",
+                "email": "qa.auto+st+olkgqsehap@test.com",
+                "isEnabled": true,
+                "chargeId": "1ead2740-e000-4805-bdcb-13d0dedda2e2",
+                "createdAt": "2024-10-24 06:32:54",
+                "updatedAt": "2024-10-24 08:23:21",
+                "successfullyUsedAt": "2024-10-24 06:32:54"
               }
-          ],
-          "meta": {
-              "type": "collection",
-              "total": 1,
-              "offset": 0
+            ]
           }
+        ],
+        "meta": {
+          "type": "collection",
+          "total": 1,
+          "offset": 0
+        }
       }

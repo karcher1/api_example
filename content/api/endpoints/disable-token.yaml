@@ -160,30 +160,6 @@ requestExamples:
       --data '{
           "chargeMethodTokenId": 630
       }'
-      
-      == NodeJs - Request
-      var request = require('request');
-      var options = {
-        'method': 'PUT',
-        'url': 'https://pay-sandbox.billerbase.com/api/v3/buyers/9b4afcac-c8e4-4b0e-a98b-6fd6053db120/disable-token',
-        'headers': {
-          'x-date': '<current date format(Y-m-d H:i:s.u)>',
-          'x-public-key': '<your public key uuid>',
-          'x-buyer-ip': <external ip>',
-          'x-token': '<generated token>',
-          'x-source': 'shop',
-          'x-id': '<your-service-id>',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          "chargeMethodTokenId": 630
-        })
-      
-      };
-      request(options, function (error, response) {
-        if (error) throw new Error(error);
-        console.log(response.body);
-      });
   - label: JSON Body
     language: json
     code: |-

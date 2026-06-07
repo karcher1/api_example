@@ -8,7 +8,6 @@ import type {
   EndpointParameter,
   ParameterLocation,
   ResponseDoc,
-  ResponseParameter,
   SchemaNode,
 } from "@/lib/openapi";
 import { getResponseStatusTone } from "@/lib/examples";
@@ -250,44 +249,9 @@ function RequestBodySection({ endpoint }: EndpointContentProps) {
   );
 }
 
-function ResponseParameters({ parameters }: { parameters: ResponseParameter[] }) {
-  if (!parameters.length) {
-    return <p className="empty-state">This response has no documented fields.</p>;
-  }
-
-  return (
-    <div className="parameter-list">
-      {parameters.map((parameter, index) => (
-        <article className="parameter-row" key={`${parameter.name}-${parameter.type}-${index}`}>
-          <div className="parameter-row-main">
-            <div className="parameter-row-heading">
-              <code>{parameter.name}</code>
-              <span>{parameter.type}</span>
-            </div>
-            <SafeMarkdown source={parameter.description ?? "No description provided."} />
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function hasNestedSchema(node?: SchemaNode): boolean {
-  if (!node) {
-    return false;
-  }
-
-  if (node.items || node.properties?.some((property) => property.items || property.properties?.length)) {
-    return true;
-  }
-
-  return false;
-}
-
 function ResponseCard({ response }: { response: ResponseDoc }) {
   const tone = getResponseStatusTone(response);
   const responseSchema = response.content[0]?.schema;
-  const shouldRenderSchemaTree = hasNestedSchema(responseSchema);
 
   return (
     <details className="response-doc-card">
@@ -297,7 +261,7 @@ function ResponseCard({ response }: { response: ResponseDoc }) {
         <span>{response.description ?? "Response"}</span>
       </summary>
       <div className="response-doc-content">
-        {shouldRenderSchemaTree ? (
+        {responseSchema ? (
           <SchemaTable
             schema={responseSchema}
             rootLabel={`response ${response.status}`}
@@ -307,7 +271,7 @@ function ResponseCard({ response }: { response: ResponseDoc }) {
             showRequiredState={false}
           />
         ) : (
-          <ResponseParameters parameters={response.parameters} />
+          <p className="empty-state">This response has no documented fields.</p>
         )}
       </div>
     </details>

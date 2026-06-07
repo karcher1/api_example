@@ -198,16 +198,16 @@ responseExamples:
     language: json
     code: |-
       {
-          "data": [
-              {
-                  "paymentMethodType": "card",
-                  "paymentMethodIdentifier": "**** **** **** 4444",
-                  "chargeMethodId": "d23ed15a-4c1e-409e-b26e-7966a2f66168"
-              }
-          ],
-          "meta": {
-              "type": "collection",
-              "total": 1,
-              "offset": 0
+        "data": [
+          {
+            "paymentMethodType": "card",
+            "paymentMethodIdentifier": "**** **** **** 4444",
+            "chargeMethodId": "d23ed15a-4c1e-409e-b26e-7966a2f66168"
           }
+        ],
+        "meta": {
+          "type": "collection",
+          "total": 1,
+          "offset": 0
+        }
       }

@@ -78,7 +78,6 @@
 
 ## Локальные endpoints без совпадения на сайте
 
-- `buyers-order-history` (GET /api/v2/buyers/{buyerId}/charge/history) — файл: `content/api/endpoints/buyers-order-history.yaml`
 - `create-initial-charge` (POST /api/v3/initials/{orderId}/charges) — файл: `content/api/endpoints/create-initial-charge.yaml`
 - `get-all-buyers-subscriptions` (GET /api/v2/buyers/{buyerId}/subscriptions) — файл: `content/api/endpoints/get-all-buyers-subscriptions.yaml`
 - `get-buyers-buyer-id-subscriptions-subscription-id-downgrade` (GET /api/v2/buyers/{buyerId}/subscriptions/{subscriptionId}/downgrade) — файл: `content/api/endpoints/get-buyers-buyer-id-subscriptions-subscription-id-downgrade.yaml`

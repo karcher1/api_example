@@ -79,7 +79,7 @@ requestBodyParameters:
       - name: "{key}"
         type: any
         required: false
-        description: Dynamic property value.
+        description: Dynamic property value
 responses:
   - status: "201"
     description: Buyer was successfully created

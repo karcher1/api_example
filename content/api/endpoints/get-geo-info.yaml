@@ -154,25 +154,25 @@ responseExamples:
     language: json
     code: |-
       {
-          "type": "maxmind",
-          "iso2Code": "NL",
-          "recommendedCurrency": "EUR",
-          "possibleVatPercent": 21,
-          "city": {
-              "name": "Amsterdam"
-          },
-          "subdivision": {
-              "name": "North Holland",
-              "isoCode": "NH"
-          },
-          "location": {
-              "latitude": 52.3759,
-              "longitude": 4.8975,
-              "timezone": "Europe/Amsterdam",
-              "postalCode": "1012"
-          },
-          "continent": {
-              "name": "Europe",
-              "isoCode": "EU"
-          }
+        "type": "maxmind",
+        "iso2Code": "NL",
+        "recommendedCurrency": "EUR",
+        "possibleVatPercent": 21,
+        "city": {
+          "name": "Amsterdam"
+        },
+        "subdivision": {
+          "name": "North Holland",
+          "isoCode": "NH"
+        },
+        "location": {
+          "latitude": 52.3759,
+          "longitude": 4.8975,
+          "timezone": "Europe/Amsterdam",
+          "postalCode": "1012"
+        },
+        "continent": {
+          "name": "Europe",
+          "isoCode": "EU"
+        }
       }

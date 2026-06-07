@@ -32,6 +32,13 @@ interface SchemaChild {
   label: string;
 }
 
+function schemaObjectChildren(node: SchemaNode): SchemaChild[] {
+  return (node.properties ?? []).map((property) => ({
+    node: property,
+    label: property.name ?? "property",
+  }));
+}
+
 function schemaTypeLabel(node: SchemaNode): string {
   if (node.items) {
     const itemLabel = [node.items.type, node.items.format].filter(Boolean).join(" / ");
@@ -116,18 +123,19 @@ function StandardBadge({ standard }: { standard?: string }) {
 function childNodes(node: SchemaNode): SchemaChild[] {
   const children: SchemaChild[] = [];
 
-  node.properties?.forEach((property) => {
-    children.push({
-      node: property,
-      label: property.name ?? "property",
-    });
-  });
+  children.push(...schemaObjectChildren(node));
 
   if (node.items) {
-    children.push({
-      node: { ...node.items, name: node.items.name ?? "items" },
-      label: "items[]",
-    });
+    const itemChildren = node.items.type === "object" ? schemaObjectChildren(node.items) : [];
+
+    if (itemChildren.length > 0) {
+      children.push(...itemChildren);
+    } else {
+      children.push({
+        node: { ...node.items, name: node.items.name ?? "items" },
+        label: "items[]",
+      });
+    }
   }
 
   node.variants?.forEach((variant, index) => {
