@@ -34,7 +34,7 @@ queryParameters:
   - name: countryCode
     type: string
     required: true
-    description: "Country code Standard: ISO 3166-1 alpha-2."
+    description: "Country code"
   - name: merchant
     type: string
     required: true

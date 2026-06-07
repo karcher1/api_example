@@ -8,27 +8,27 @@ headerParameters:
   - name: x-public-key
     type: string
     required: true
-    description: No description provided in source.
+    description: "a public key that identifies the merchant account (there can be several for one merchant)"
     example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for information about the buyer's IP address"
     example: 10.10.10.10
   - name: x-date
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for the date and time of sending the request"
     example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
-    description: No description provided in source.
+    description: "generated on the merchant side"
     example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
@@ -39,7 +39,7 @@ pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique identifier of buyer in the system"
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -47,7 +47,7 @@ pathParameters:
   - name: subscriptionId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique subscription identifier associated with the buyer"
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -57,11 +57,11 @@ requestBodyParameters:
   - name: reason
     type: string
     required: true
-    description: No description provided in source.
+    description: "Reason for enabling/disabling autocharge. Default value if reason is not provided - Changed autocharge status by api - autocharge was changed manually."
   - name: autochargeStatus
     type: boolean
     required: true
-    description: No description provided in source.
+    description: "Enables or disables autocharge."
   - name: comment
     type: string
     required: false
@@ -72,23 +72,23 @@ responses:
     parameters:
       - name: data
         type: object
-        description: No description provided in source.
+        description: "Contains the main subscription information"
         children:
           - name: id
             type: string
-            description: No description provided in source.
+            description: "Unique subscription identifier"
             example: bb5403a2-8e20-44e9-a70c-55e6886b414e
           - name: startDate
             type: string
-            description: No description provided in source.
+            description: "The subscription start date/time in YYYY-MM-DDTHH:II:SS format (e.g., 2024-02-26T10:38:51 )"
             example: 2024-01-12T12:55:48+00:00
           - name: endDate
             type: string
-            description: No description provided in source.
+            description: "The subscription end date/time in YYYY-MM-DDTHH:II:SS format (e.g., 2025-02-26T10:38:51 )"
             example: 2024-06-12T12:55:48+00:00
           - name: status
             type: string
-            description: No description provided in source.
+            description: "The subscription status"
             example: active
           - name: autoChargeStatus
             type: boolean
@@ -96,51 +96,51 @@ responses:
             example: "false"
           - name: isManual
             type: boolean
-            description: No description provided in source.
+            description: "Indicates whether the subscription was created manually"
             example: "true"
           - name: createdAt
             type: string
-            description: No description provided in source.
+            description: "The subscription creation date/time in YYYY-MM-DDTHH:II:SS format (e.g., 2025-02-26T10:38:51 )"
             example: 2024-01-12T12:56:10+00:00
           - name: statusInfo
             type: array
-            description: No description provided in source.
+            description: "Represents the subscription status at a specific point in time"
             items:
               type: object
               description: No description provided in source.
               children:
                 - name: status
                   type: string
-                  description: can be [active, expired, blocked, frozen, disabled, suspended]
+                  description: "The subscription status at a specific point in time"
                   example: expired
                 - name: reason
                   type: string
-                  description: No description provided in source.
+                  description: "The reason for the subscription status change"
                   example: Subscription expired
                 - name: createdAt
                   type: string
-                  description: No description provided in source.
+                  description: "The date/time when the status was changed"
                   example: 2023-06-29T13:05:50+00:00
           - name: freezeDetails
             type: object
-            description: No description provided in source.
+            description: "Details about the subscription freeze, if available"
             nullable: true
             children:
               - name: frozenAt
                 type: string
-                description: frozen date time at
+                description: "The subscription freeze date"
                 example: 2024-03-13T11:14:18+00:00
               - name: unfreezeAt
                 type: string
-                description: unfreeze date time at (can not be more 366 days)
+                description: "The subscription unfreeze date"
                 example: 2024-04-14T11:14:18+00:00
       - name: meta
         type: object
-        description: No description provided in source.
+        description: "Provides metadata about the response"
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: entity
   - status: "404"
     description: Order not found

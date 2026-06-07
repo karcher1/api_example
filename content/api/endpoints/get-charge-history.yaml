@@ -72,7 +72,7 @@ responses:
     parameters:
       - name: data
         type: array
-        description: No description provided in source.
+        description: "An array of orders and their payments. Each item contains full information about a single order."
         items:
           type: object
           description: No description provided in source.
@@ -87,10 +87,10 @@ responses:
               nullable: true
             - name: type
               type: string
-              description: No description provided in source.
+              description: "Order type (e.g., checkout , oneclick , etc.)."
             - name: createdAt
               type: string
-              description: No description provided in source.
+              description: "Order creation date and time"
               example: 2023-11-02 18:28:07
             - name: currency
               type: string
@@ -129,7 +129,7 @@ responses:
                     example: default
                   - name: target
                     type: string
-                    description: The charge target (original, cascade, etc.)
+                    description: "The charge target ( original , cascade , etc.)"
                     example: cascade
                   - name: descriptor
                     type: string
@@ -138,11 +138,11 @@ responses:
                     example: BS*mSpy Mobile App
                   - name: status
                     type: string
-                    description: The charge status (settled, declined, deferred)
+                    description: "The charge status ( settled , declined , deferred )"
                     example: settled
                   - name: code
                     type: string
-                    description: No description provided in source.
+                    description: "The charge amount in the order currency which includes discount, coupon and tax"
                     nullable: true
                     example: braintree.verified
                   - name: has3ds
@@ -158,7 +158,7 @@ responses:
                     example: "40.00"
                   - name: createdAt
                     type: string
-                    description: No description provided in source.
+                    description: "The charge creation date and time"
                     example: 2023-11-07T06:47:49+00:00
                   - name: billingInfo
                     type: object
@@ -166,23 +166,23 @@ responses:
                     children:
                       - name: firstName
                         type: string
-                        description: The payment method holder’s first name
+                        description: "The payment method holder's first name"
                         example: AutoQa
                       - name: lastName
                         type: string
-                        description: The payment method holder’s last name
+                        description: "The payment method holder's last name"
                         example: Tester
                       - name: country
                         type: string
-                        description: The buyer’s two-letter country code
+                        description: "The buyer's two-letter country code"
                         example: us
                       - name: city
                         type: string
-                        description: The buyer’s city
+                        description: "The buyer's city"
                         example: New York
                       - name: ipAddress
                         type: string
-                        description: The buyer’s IP address
+                        description: "The buyer's IP address"
                         example: 10.22.3.1
                       - name: fingerprint
                         type: string
@@ -212,11 +212,11 @@ responses:
                     children:
                       - name: type
                         type: string
-                        description: Payment method type (e.g. card, pay_pal, apple_pay, google_pay)
+                        description: "The payment method type (e.g., card , boleto_flash )"
                         example: card
                       - name: data
                         type: object
-                        description: Provider-specific object. For type=card can include card metadata fields like bin, brand, lastFourDigits, riskSegments.
+                        description: "Additional payment method data"
                         nullable: true
                         example:
                           bin: "411111"
@@ -237,7 +237,7 @@ responses:
                             nullable: true
                           - name: cardType
                             type: string
-                            description: The card type (CREDIT, DEBIT, etc.)
+                            description: "The card type ( CREDIT , DEBIT , etc.)"
                             nullable: true
                           - name: email
                             type: string
@@ -245,7 +245,7 @@ responses:
                             nullable: true
                           - name: isoATwo
                             type: string
-                            description: The issuer’s two-letter country code
+                            description: "The issuer's two-letter country code"
                             nullable: true
                           - name: isoCountryName
                             type: string
@@ -268,7 +268,7 @@ responses:
                               children:
                                 - name: type
                                   type: string
-                                  description: No description provided in source.
+                                  description: "The risk segment type (e.g., autocharge, initial, etc.)"
                                   nullable: true
                                 - name: riskSegment
                                   type: string
@@ -370,7 +370,7 @@ responses:
                         description: Tax percentage applied to the final amount
                       - name: tax
                         type: string
-                        description: Tax amount applied to the product
+                        description: "Total tax amount applied to the final amount"
                       - name: amountWithDiscountAndCouponAndTax
                         type: string
                         description: Final amount after applying the discount, coupon, and tax
@@ -398,7 +398,7 @@ responses:
                   description: Final amount after both the discount and the coupon are applied
                 - name: tax
                   type: string
-                  description: No description provided in source.
+                  description: "Total tax amount"
                 - name: amountWithDiscountAndCouponAndTax
                   type: string
                   description: Final amount after applying the discount, coupon, and tax
@@ -414,7 +414,7 @@ responses:
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: collection
           - name: total
             type: integer

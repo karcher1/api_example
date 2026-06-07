@@ -8,32 +8,32 @@ headerParameters:
   - name: x-public-key
     type: string
     required: true
-    description: No description provided in source.
+    description: "a public key that identifies the merchant account (there can be several for one merchant)"
     example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for information about the buyer's IP address"
     example: 10.10.10.10
   - name: x-date
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for the date and time of sending the request"
     example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
-    description: No description provided in source.
+    description: "generated on the merchant side"
     example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
     required: true
-    description: No description provided in source.
+    description: "merchant name"
     example: pay-front-mspy
   - name: x-google-analytics-client-id
     type: string
@@ -44,7 +44,7 @@ pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique identifier of the buyer in the system."
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -54,35 +54,35 @@ requestBodyParameters:
   - name: isMobile
     type: boolean
     required: true
-    description: No description provided in source.
+    description: "Indicates whether the request is for the mobile version. Its value affects the precheckAutocharge settings."
     nullable: false
   - name: sequence
     type: string
     required: false
-    description: No description provided in source.
+    description: "Internal user ID"
     nullable: true
     example: "9876543234567898765"
   - name: currency
     type: string
     required: false
-    description: ISO 4217 code
+    description: "Specifies the currency in which the prices should be returned. If not transferred, the recommended currency determined by IP will be used."
     default: USD
     minLength: 3
     maxLength: 3
   - name: metaData
     type: object
     required: false
-    description: No description provided in source.
+    description: "Object of type \"key-value\", to transmit the internal meta-information of the merchant ( this data is not used by the backend and is transmitted when sending various events on the order )"
   - name: returnUrl
     type: string
     required: false
-    description: No description provided in source.
+    description: "The full URL of the merchant page to which the user will be redirected after a successful payment.  NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta . These placeholders will be automatically replaced with the corresponding values from the request."
     format: uri
     nullable: true
   - name: products
     type: array
     required: true
-    description: No description provided in source.
+    description: "Array of data describing actions performed on the subscription(s)"
     items:
       type: object
       required: false
@@ -91,7 +91,7 @@ requestBodyParameters:
         - name: actionName
           type: string
           required: false
-          description: Action to be performed on the product (e.g., purchase, renew, upgrade, downgrade)
+          description: "Type of action being passed. For this contract, pass purchase ."
           enum:
             - downgrade
             - purchase
@@ -100,26 +100,26 @@ requestBodyParameters:
         - name: productCode
           type: string
           required: false
-          description: Code of the product
+          description: "Product code of the item to be purchased"
         - name: couponCode
           type: string
           required: false
-          description: Code of the coupon applied
+          description: "Coupon code to be applied"
           nullable: true
         - name: subscriptionId
           type: string
           required: false
-          description: Unique identifier of the subscription, required for renew, upgrade and downgrade actions
+          description: "Unique identifier of the buyer's subscription"
           nullable: true
         - name: discount
           type: string
           required: false
-          description: Discount applied to the product
+          description: "Discount percentage to be applied"
           nullable: true
         - name: quantity
           type: integer
           required: false
-          description: Quantity of the product to be purchased. Only for purchase action available
+          description: "Quantity of products to purchase. By default - 1."
         - name: autoChargeStatus
           type: boolean
           required: false
@@ -130,50 +130,50 @@ responses:
     parameters:
       - name: data
         type: object
-        description: No description provided in source.
+        description: "Contains information about the order.  Note: If the request contains a product that does not exist in the database, you will receive an error 404 - Product not found by merchant and code ."
         children:
           - name: url
             type: string
-            description: No description provided in source.
+            description: "Link to the newly created order"
             example: http://pay-front-mspy.minikube/checkout-billing/JcYn4Yw1
           - name: params
             type: object
-            description: No description provided in source.
+            description: "Contains concise information about the newly created order"
             children:
               - name: metaData
                 type: array
-                description: No description provided in source.
+                description: "Represents the transmitted internal meta-information"
                 nullable: true
                 items:
                   type: object
                   description: No description provided in source.
               - name: sequence
                 type: string
-                description: No description provided in source.
+                description: "Internal user ID"
                 nullable: true
                 example: "9876543234567898765"
               - name: discount
                 type: integer
-                description: No description provided in source.
+                description: "The discount applied to the initial cost of the product. Note: Currently, this field is always returned as null , but all discounts will still be applied to the order."
                 nullable: true
                 example: "null"
               - name: coupon
                 type: string
-                description: No description provided in source.
+                description: "The coupon discount applied to the initial cost of the product. Note: Currently, this field is always returned as null , but all discounts will still be applied to the order."
                 nullable: true
                 example: "null"
               - name: googleAnalyticsClientId
                 type: string
-                description: No description provided in source.
+                description: "Transmitted client ID for google-analytics"
                 nullable: true
                 example: ga1234566543
       - name: meta
         type: object
-        description: No description provided in source.
+        description: "Provides metadata about the response"
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: entity
   - status: "404"
     description: Some entity not found

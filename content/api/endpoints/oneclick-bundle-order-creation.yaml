@@ -8,38 +8,38 @@ headerParameters:
   - name: x-public-key
     type: string
     required: true
-    description: No description provided in source.
+    description: "a public key that identifies the merchant account (there can be several for one merchant)"
     example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for information about the buyer's IP address"
     example: 10.10.10.10
   - name: x-date
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for the date and time of sending the request"
     example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
-    description: No description provided in source.
+    description: "generated on the merchant side"
     example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
     required: true
-    description: No description provided in source.
+    description: "merchant name"
     example: pay-front-mspy
 pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique identifier of the buyer in the system."
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -49,24 +49,24 @@ requestBodyParameters:
   - name: isMobile
     type: boolean
     required: true
-    description: No description provided in source.
+    description: "Indicates whether the request is for the mobile version. Its value affects the precheckAutocharge settings."
   - name: chargeMethodId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Identifier of the customer's existing payment method."
     format: uuid
     example: 79814af1-b0ab-4e5d-9221-924e5c330b03
   - name: currency
     type: string
     required: false
-    description: ISO 4217 code
+    description: "Specifies the currency in which the prices should be returned."
     default: USD
     minLength: 3
     maxLength: 3
   - name: products
     type: array
     required: true
-    description: No description provided in source.
+    description: "Array of data describing actions performed on the subscription(s)"
     items:
       type: object
       required: false
@@ -75,23 +75,23 @@ requestBodyParameters:
         - name: actionName
           type: string
           required: true
-          description: Action to be performed on the product purchase
+          description: "Type of action being passed. For this contract, pass purchase ."
           enum:
             - purchase
         - name: productCode
           type: string
           required: true
-          description: No description provided in source.
+          description: "Product code of the item to be purchased"
           example: TESTAH
         - name: couponCode
           type: string
           required: false
-          description: Code of the coupon applied
+          description: "Coupon code to be applied"
           example: xmas20off
         - name: discount
           type: number
           required: false
-          description: Applied discount
+          description: "Discount percentage to be applied"
           nullable: true
           minimum: 0.01
           maximum: 99.99
@@ -99,7 +99,7 @@ requestBodyParameters:
         - name: quantity
           type: integer
           required: false
-          description: Quantity of the product to be purchased
+          description: "Quantity of products to purchase"
           example: "2"
         - name: autoChargeStatus
           type: boolean
@@ -115,26 +115,26 @@ requestBodyParameters:
   - name: metaData
     type: object
     required: false
-    description: No description provided in source.
+    description: "Object of type \"key-value\", to transmit the internal meta-information of the merchant ( this data is not used by the backend and is transmitted when sending various events on the order )"
 responses:
   - status: "201"
     description: Oneclick order created successfully.
     parameters:
       - name: data
         type: object
-        description: No description provided in source.
+        description: "Contains information about the order.  Note: If the request contains a product that does not exist in the database, you will receive an error 404 - Product not found by merchant and code ."
         children:
           - name: id
             type: string
-            description: OrderId of created Entity
+            description: "Unique order identifier"
             example: qg0MrM9b
       - name: meta
         type: object
-        description: No description provided in source.
+        description: "Provides metadata about the response"
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: entity
   - status: "400"
     description: Bad Request

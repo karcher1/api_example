@@ -34,7 +34,7 @@ queryParameters:
   - name: ip
     type: string
     required: true
-    description: "Buyer's IP Standard: IPv4 | IPv6."
+    description: "Buyer's IP"
   - name: merchant
     type: string
     required: true

@@ -8,27 +8,27 @@ headerParameters:
   - name: x-public-key
     type: string
     required: true
-    description: No description provided in source.
+    description: "a public key that identifies the merchant account (there can be several for one merchant)"
     example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for information about the buyer's IP address"
     example: 10.10.10.10
   - name: x-date
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for the date and time of sending the request"
     example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
-    description: No description provided in source.
+    description: "generated on the merchant side"
     example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
@@ -39,7 +39,7 @@ pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique identifier of buyer in the system"
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -47,7 +47,7 @@ pathParameters:
   - name: subscriptionId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique subscription identifier associated with the buyer"
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -57,7 +57,7 @@ requestBodyParameters:
   - name: reason
     type: string
     required: false
-    description: No description provided in source.
+    description: "Contains information about the reason for unfreezing the subscription.  Default: Subscription has been unfrozen by api"
 responses:
   - status: "204"
     description: Subscription successfully unfreezed

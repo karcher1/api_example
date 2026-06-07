@@ -8,27 +8,27 @@ headerParameters:
   - name: x-public-key
     type: string
     required: true
-    description: No description provided in source.
+    description: "a public key that identifies the merchant account (there can be several for one merchant)"
     example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for information about the buyer's IP address"
     example: 10.10.10.10
   - name: x-date
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for the date and time of sending the request"
     example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
-    description: No description provided in source.
+    description: "generated on the merchant side"
     example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
@@ -39,7 +39,7 @@ pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique identifier of buyer in the system"
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -49,19 +49,19 @@ requestBodyParameters:
   - name: productId
     type: string
     required: false
-    description: No description provided in source.
+    description: "Unique identifier of the product the subscription is created for"
     example: f805233d-3e92-4f14-b8dc-bbc1e7062754
   - name: currency
     type: string
     required: false
-    description: ISO 4217 code
+    description: "The currency code in which the payment will be processed. Default: USD (if not provided)"
     default: USD
     minLength: 3
     maxLength: 3
   - name: start
     type: string
     required: false
-    description: No description provided in source.
+    description: "Index"
     example: 2024-03-06T14:00:00Z
   - name: end
     type: string
@@ -74,19 +74,19 @@ responses:
     parameters:
       - name: data
         type: object
-        description: No description provided in source.
+        description: "Contains the main subscription information"
         children:
           - name: id
             type: string
-            description: No description provided in source.
+            description: "Unique subscription identifier"
             example: c3b313a4-fc23-4c82-a826-0d5d3809f66d
       - name: meta
         type: object
-        description: No description provided in source.
+        description: "Provides metadata about the response"
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: entity
   - status: "422"
     description: Validation error

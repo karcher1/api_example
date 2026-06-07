@@ -60,7 +60,7 @@ responses:
           children:
             - name: id
               type: string
-              description: No description provided in source.
+              description: "Unique payment method identifier"
               minLength: 36
               maxLength: 36
               pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -86,7 +86,7 @@ responses:
                 children:
                   - name: id
                     type: integer
-                    description: No description provided in source.
+                    description: "Token identifier"
                     example: "123123"
                   - name: provider
                     type: string

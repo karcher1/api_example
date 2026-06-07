@@ -8,27 +8,27 @@ headerParameters:
   - name: x-public-key
     type: string
     required: true
-    description: No description provided in source.
+    description: "a public key that identifies the merchant account (there can be several for one merchant)"
     example: 6cd0070d-70d2-42b2-9223-0b1f828a808d
   - name: x-buyer-ip
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for information about the buyer's IP address"
     example: 10.10.10.10
   - name: x-date
     type: string
     required: true
-    description: No description provided in source.
+    description: "is responsible for the date and time of sending the request"
     example: 2025-02-19T23:59:59
   - name: x-token
     type: string
     required: true
-    description: No description provided in source.
+    description: "generated on the merchant side"
     example: 5cdc01c2d66c52a513f58e077d85660468852fc141d305888416a151a05dc159
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
@@ -39,7 +39,7 @@ pathParameters:
   - name: buyerId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique identifier of the buyer in the system."
     minLength: 36
     maxLength: 36
     pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
@@ -49,35 +49,35 @@ requestBodyParameters:
   - name: isMobile
     type: boolean
     required: true
-    description: Indicates if the request is from a mobile device
+    description: "Indicates whether the request is for the mobile version. Its value affects the precheckAutocharge settings."
   - name: currency
     type: string
     required: false
-    description: ISO 4217 code
+    description: "The currency in which the prices should be returned. If not transferred, the recommended currency determined by IP will be used."
     default: USD
     minLength: 3
     maxLength: 3
   - name: locale
     type: string
     required: false
-    description: No description provided in source.
+    description: "The locale used to display product names and other content. If not provided, the value en will be used."
     nullable: true
     minLength: 2
     maxLength: 2
   - name: bundles
     type: object
     required: true
-    description: No description provided in source.
+    description: "An array containing information about bundles and the products within them."
     children:
       - name: bundleHashKey
         type: string
         required: true
-        description: No description provided in source.
+        description: "A unique bundle identifier within a single request. It is generated arbitrarily on the merchant side."
         example: bundlehashKey1
       - name: products
         type: array
         required: true
-        description: No description provided in source.
+        description: "An array of objects containing data about subscription action(s)"
         items:
           type: object
           required: false
@@ -86,12 +86,12 @@ requestBodyParameters:
             - name: productHashKey
               type: string
               required: true
-              description: Unique hash key of the product
+              description: "A unique product identifier within a single bundle in the request. It is generated arbitrarily on the merchant side."
               example: productHashKey1
             - name: actionName
               type: string
               required: true
-              description: Action to be performed on the product (renew, upgrade, downgrade)
+              description: "Specifies the action type. For this contract, send purchase ."
               enum:
                 - upgrade
                 - downgrade
@@ -99,46 +99,46 @@ requestBodyParameters:
             - name: productCode
               type: string
               required: true
-              description: No description provided in source.
+              description: "The product code to be purchased"
               example: TESTAH
             - name: couponCode
               type: string
               required: false
-              description: Code of the coupon applied
+              description: "Coupon code to be applied"
               example: xmas20off
             - name: discount
               type: number
               required: false
-              description: No description provided in source.
+              description: "Discount percentage to be applied"
               example: "2.45"
             - name: quantity
               type: integer
               required: true
-              description: Quantity of the product to be purchased
+              description: "Quantity of products to purchase"
               example: "2"
             - name: priceCalculationType
               type: object
               required: true
-              description: No description provided in source.
+              description: "Controls how price information for the product is displayed: per day, week, or month"
               children:
                 - name: dailyAmount
                   type: boolean
                   required: true
-                  description: Indicates if the price calculation is based on daily
+                  description: "Includes information on product prices by day"
                 - name: weeklyAmount
                   type: boolean
                   required: true
-                  description: Indicates if the price calculation is based on weekly amount
+                  description: "Includes information on product prices by week"
                   example: "false"
                 - name: monthlyAmount
                   type: boolean
                   required: true
-                  description: Indicates if the price calculation is based on monthly amount
+                  description: "Includes information on product prices by month"
                   example: "false"
             - name: subscriptionId
               type: string
               required: false
-              description: Unique subscription identifier
+              description: "Unique identifier of the buyer's subscription"
               format: uuid
               example: 72fcf5ff-aaa9-4ab6-9e95-c0f3ca3295dc
 responses:
@@ -147,175 +147,175 @@ responses:
     parameters:
       - name: data
         type: object
-        description: No description provided in source.
+        description: "Contains information related to the subscription product, including currency, taxes, and product-specific details.  Note: If the request contains a product that does not exist in the database, you will receive a 404 - Products not found error code."
         children:
           - name: currency
             type: string
-            description: ISO 4217 code
+            description: "Currency code"
             default: USD
             minLength: 3
             maxLength: 3
           - name: tax
             type: object
-            description: No description provided in source.
+            description: "Contains information about the tax type applied to the subscription product, including the tax type and the country where this tax is applied. Note: If there is no tax information in the database, the response will contain the value \"null\" ."
             children:
               - name: type
                 type: string
-                description: Type of tax applied
+                description: "Type of tax"
               - name: country
                 type: string
-                description: Country where the tax is applied
+                description: "Country code for which the tax is applied"
           - name: chargeMethods
             type: array
-            description: No description provided in source.
+            description: "Contains information about payment methods"
             items:
               type: object
               description: No description provided in source.
               children:
                 - name: paymentMethodType
                   type: string
-                  description: Type of payment method used (e.g., card, pay_pal)
+                  description: "Payment method type"
                 - name: paymentMethodIdentifier
                   type: string
-                  description: Identifier of the payment method
+                  description: "The buyer's card identifier in the billing system"
                 - name: chargeMethodId
                   type: string
-                  description: Unique identifier of the charge method
+                  description: "A unique identifier of the charge method"
           - name: bundles
             type: array
-            description: No description provided in source.
+            description: "Contains information about each bundle and the products within it"
             items:
               type: object
               description: No description provided in source.
               children:
                 - name: bundleHashKey
                   type: string
-                  description: Unique hash key of the bundle
+                  description: "A unique bundle identifier within a single request, generated and sent by the merchant"
                 - name: totalAmount
                   type: object
-                  description: No description provided in source.
+                  description: "Contains information about the bundle's total price"
                   children:
                     - name: origin
                       type: string
-                      description: Original amount of the bundle
+                      description: "The original product amount"
                     - name: discountsAndCoupons
                       type: string
-                      description: Total discounts and coupons applied
+                      description: "The total amount of all applied discounts and coupons. This amount is subtracted from the original price."
                       nullable: true
                       example: "223.63"
                     - name: amountWithDiscountsAndCoupons
                       type: string
-                      description: Amount after applying discounts and coupons
+                      description: "The final amount after subtracting all discounts and coupons from the original amount."
                       nullable: true
                       example: "1225.74"
                     - name: taxPercent
                       type: string
-                      description: Tax percentage applied to the bundle
+                      description: "The tax percentage applied to the product"
                     - name: tax
                       type: string
-                      description: Tax amount applied to the bundle
+                      description: "The exact tax amount calculated based on the tax percentage ( taxPercent )"
                     - name: amountWithDiscountsAndCouponsAndTax
                       type: string
-                      description: Final amount after applying tax
+                      description: "The final amount to pay, including all discounts, coupons, and tax."
                       nullable: true
                       example: "1225.74"
                 - name: products
                   type: array
-                  description: No description provided in source.
+                  description: "Contains detailed information about the product action and product pricing"
                   items:
                     type: object
                     description: No description provided in source.
                     children:
                       - name: productHashKey
                         type: string
-                        description: Unique hash key of the product
+                        description: "A unique product identifier within a single bundle in the request. It is generated arbitrarily on the merchant side."
                       - name: code
                         type: string
-                        description: Product code
+                        description: "The product code to be purchased."
                       - name: isTrial
                         type: boolean
-                        description: Indicates if the product is a trial version
+                        description: "Indicates whether the product is a trial."
                       - name: action
                         type: string
-                        description: Action performed on the product
+                        description: "Specifies the action type for the product."
                       - name: subscriptionId
                         type: string
-                        description: Unique identifier of the subscription
+                        description: "A unique buyer subscription identifier."
                       - name: precheckAutocharge
                         type: object
-                        description: No description provided in source.
+                        description: "Contains information about how the auto-charge checkbox is displayed and its initial state."
                         children:
                           - name: isPrechecked
                             type: boolean
-                            description: Indicates if autocharge is prechecked
+                            description: "Indicates the checkbox state (selected / not selected)"
                           - name: isShown
                             type: boolean
-                            description: Indicates if autocharge option is shown
+                            description: "Indicates whether the checkbox is displayed (shown or hidden)"
                       - name: amount
                         type: object
-                        description: No description provided in source.
+                        description: "Contains information about the product's full price."
                         children:
                           - name: origin
                             type: string
-                            description: Original amount of the product
+                            description: "Original amount of the item before discounts and taxes"
                           - name: amountForAction
                             type: string
-                            description: Amount calculated for the action
+                            description: "The amount that must be paid to perform the action.  Note: For the PURCHASE action, this currently always comes as 0.00 ."
                           - name: discountPercent
                             type: string
-                            description: Discount percentage applied
+                            description: "Discount percentage applied to the original amount"
                           - name: discount
                             type: string
-                            description: Discount amount applied
+                            description: "Total discount amount applied to the original amount"
                           - name: amountWithDiscount
                             type: string
-                            description: Amount after applying discount
+                            description: "Final amount after the discount is applied"
                           - name: couponPercent
                             type: string
-                            description: Coupon percentage applied
+                            description: "Percentage of the discount applied from the coupon"
                           - name: couponCode
                             type: string
-                            description: Coupon code applied
+                            description: "Coupon code used for the additional discount"
                           - name: coupon
                             type: string
-                            description: Coupon amount applied
+                            description: "Total discount amount from the coupon"
                           - name: amountWithDiscountAndCoupon
                             type: string
-                            description: Amount after applying discount and coupon
+                            description: "Final amount after both the discount and the coupon are applied"
                           - name: taxPercent
                             type: string
-                            description: Tax percentage applied to the product
+                            description: "Tax percentage applied to the final amount"
                           - name: tax
                             type: string
-                            description: Tax amount applied to the product
+                            description: "Total tax amount applied to the final amount"
                           - name: amountWithDiscountAndCouponAndTax
                             type: string
-                            description: Final amount after applying tax
+                            description: "Final amount after applying the discount, coupon, and tax"
           - name: products
             type: array
-            description: No description provided in source.
+            description: "Contains detailed information about the product in the bundle."
             items:
               type: object
               description: No description provided in source.
               children:
                 - name: id
                   type: string
-                  description: Unique identifier of the product
+                  description: "Unique product identifier"
                 - name: code
                   type: string
                   description: Product code
                 - name: name
                   type: string
-                  description: Name of the product
+                  description: "Product name in the EN locale"
                 - name: nameByLocale
                   type: string
-                  description: Localized name of the product
+                  description: "Product name in the buyer's locale"
                 - name: durationDays
                   type: integer
-                  description: Duration of the product in days
+                  description: "Product duration in days"
                 - name: durationWeeks
                   type: integer
-                  description: Duration of the product in weeks
+                  description: "Product duration in weeks"
                 - name: durationMonth
                   type: integer
                   description: Duration of the product in months
@@ -324,26 +324,26 @@ responses:
                   description: Indicates if the product is available for purchase
                 - name: availableForShop
                   type: boolean
-                  description: Indicates if the product is available in the shop
+                  description: "Availability for purchase in the Offer page"
                 - name: availableForControlPanel
                   type: boolean
-                  description: Indicates if the product is available in the control panel
+                  description: "Availability for purchase in the CP"
                 - name: availableForAutocharge
                   type: boolean
-                  description: Indicates if the product is available for autocharge
+                  description: "Autocharge availability"
       - name: meta
         type: object
-        description: No description provided in source.
+        description: "Provides metadata about the response"
         children:
           - name: type
             type: string
-            description: Type of the response
+            description: "Data type"
           - name: total
             type: integer
-            description: Total number of items in the response
+            description: "Total amount of entities"
           - name: offset
             type: integer
-            description: Offset of the response
+            description: "Shift in number of entities from the starting point"
   - status: "404"
     description: Product not found
     parameters:

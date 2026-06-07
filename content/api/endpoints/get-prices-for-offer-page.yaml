@@ -86,11 +86,11 @@ responses:
             maxLength: 3
           - name: tax
             type: object
-            description: No description provided in source.
+            description: "Contains information about the tax type applied to the subscription product, including the tax type and the country where this tax is applied. Note: If there is no tax information in the database, the response will contain the value null"
             children:
               - name: type
                 type: string
-                description: No description provided in source.
+                description: "Type of tax"
                 nullable: true
                 example: vat
               - name: country
@@ -119,7 +119,7 @@ responses:
                   example: "4"
                 - name: durationMonth
                   type: integer
-                  description: No description provided in source.
+                  description: "Product duration in months"
                   example: "1"
                 - name: availableForPurchase
                   type: boolean
@@ -213,7 +213,7 @@ responses:
                           example: "10.00"
                         - name: tax
                           type: string
-                          description: No description provided in source.
+                          description: "Total tax amount applied to the final amount"
                           nullable: true
                           example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
@@ -276,7 +276,7 @@ responses:
                           example: "10.00"
                         - name: tax
                           type: string
-                          description: No description provided in source.
+                          description: "Total tax amount applied to the final amount"
                           nullable: true
                           example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
@@ -339,7 +339,7 @@ responses:
                           example: "10.00"
                         - name: tax
                           type: string
-                          description: No description provided in source.
+                          description: "Total tax amount applied to the final amount"
                           nullable: true
                           example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
@@ -402,7 +402,7 @@ responses:
                           example: "10.00"
                         - name: tax
                           type: string
-                          description: No description provided in source.
+                          description: "Total tax amount applied to the final amount"
                           nullable: true
                           example: "3.00"
                         - name: amountWithDiscountAndCouponAndTax
@@ -415,7 +415,7 @@ responses:
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: entity
   - status: "404"
     description: Product not found

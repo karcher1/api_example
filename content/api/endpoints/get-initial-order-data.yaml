@@ -8,7 +8,7 @@ headerParameters:
   - name: x-source
     type: string
     required: true
-    description: No description provided in source.
+    description: "pass the value shop"
     example: pay-front
   - name: x-id
     type: string
@@ -19,7 +19,7 @@ pathParameters:
   - name: orderId
     type: string
     required: true
-    description: No description provided in source.
+    description: "Unique order identifier"
     minLength: 8
     maxLength: 36
     pattern: ^([A-Za-z0-9]{8}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$
@@ -28,7 +28,7 @@ queryParameters:
   - name: isMobile
     type: boolean
     required: false
-    description: No description provided in source.
+    description: "Indicates whether the request is intended for the mobile version"
     example: "false"
   - name: isForced
     type: boolean
@@ -42,7 +42,7 @@ responses:
     parameters:
       - name: data
         type: object
-        description: No description provided in source.
+        description: "Main object containing operation/charge data"
         children:
           - name: orderUuid
             type: string
@@ -51,11 +51,11 @@ responses:
             nullable: true
           - name: chargeId
             type: string
-            description: No description provided in source.
+            description: "Unique charge identifier"
             format: uuid
           - name: chargeStatus
             type: string
-            description: No description provided in source.
+            description: "Charge status"
             enum:
               - authorized
               - captured
@@ -69,12 +69,12 @@ responses:
               - verified
           - name: provider
             type: string
-            description: No description provided in source.
+            description: "Provider / payment provider"
             nullable: true
             example: mspy
           - name: paymentMethodType
             type: string
-            description: No description provided in source.
+            description: "Payment method type"
             nullable: true
             enum:
               - alipay
@@ -100,54 +100,54 @@ responses:
             example: card
           - name: interaction
             type: object
-            description: No description provided in source.
+            description: "Interaction parameters (how to proceed with / confirm the payment)"
             nullable: true
             children:
               - name: url
                 type: string
-                description: No description provided in source.
+                description: "URL for interaction (redirect / invocation)"
               - name: method
                 type: string
-                description: No description provided in source.
+                description: "HTTP method for the request"
                 example: GET
               - name: params
                 type: array
-                description: No description provided in source.
+                description: "List of parameters/values required for the interaction"
                 items:
                   type: string
                   description: No description provided in source.
           - name: error
             type: object
-            description: No description provided in source.
+            description: "Error information (if an error occurred)"
             nullable: true
             children:
               - name: uuid
                 type: string
-                description: No description provided in source.
+                description: "Error identifier (UUID)"
                 format: uuid
               - name: code
                 type: string
-                description: No description provided in source.
+                description: "Error code"
               - name: message
                 type: string
-                description: No description provided in source.
+                description: "Error message"
               - name: traceId
                 type: string
-                description: Unique request identifier
+                description: "Trace / correlation identifier for logs"
                 nullable: true
                 example: 082d86c339533af07c14252afcecc7bd
           - name: hasPostTransaction
             type: boolean
-            description: No description provided in source.
+            description: "Indicates whether there is a post-transaction step/action"
             nullable: true
             example: "true"
           - name: thankYouPageType
             type: string
-            description: No description provided in source.
+            description: "Type of the \"Thank You\" page to be opened"
             nullable: true
           - name: step
             type: string
-            description: No description provided in source.
+            description: "Current process step"
             nullable: true
             enum:
               - READY_FOR_THANK_YOU_PAGE_LONG_TERM
@@ -158,11 +158,11 @@ responses:
               - PAYMENT_FAILED
       - name: meta
         type: object
-        description: No description provided in source.
+        description: "Provides metadata about the response"
         children:
           - name: type
             type: string
-            description: No description provided in source.
+            description: "Data type"
             example: entity
   - status: "204"
     description: Order is still processing

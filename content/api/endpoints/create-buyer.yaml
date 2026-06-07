@@ -73,7 +73,7 @@ requestBodyParameters:
   - name: buyerMeta
     type: object
     required: false
-    description: No description provided in source.
+    description: "Object of type \"key-value\", to transmit the internal meta-information of the merchant ( this data is not used by the backend and is transmitted when sending various events on the order )"
     nullable: true
     children:
       - name: "{key}"

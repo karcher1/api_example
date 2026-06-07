@@ -84,7 +84,7 @@ requestBodyParameters:
   - name: metaData
     type: array
     required: false
-    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
+    description: "Object of type \"key-value\", to transmit the internal meta-information of the merchant ( this data is not used by the backend and is transmitted when sending various events on the order )"
     nullable: true
     items:
       type: object
@@ -93,7 +93,7 @@ requestBodyParameters:
   - name: buyerMeta
     type: object
     required: false
-    description: Object of type "key-value", to transmit the internal meta-information of the merchant (this data is not used by the backend and is transmitted when sending various events on the order)
+    description: "Object of type \"key-value\", to transmit the internal meta-information of the merchant ( this data is not used by the backend and is transmitted when sending various events on the order )"
     nullable: true
     children:
       - name: Attributes for metaData are dynamic
@@ -103,7 +103,7 @@ requestBodyParameters:
   - name: returnUrl
     type: string
     required: false
-    description: "The full URL of the merchant page to which the user will be redirected after a successful payment. NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta. These placeholders will be automatically replaced with the corresponding values from the request."
+    description: "The full URL of the merchant page to which the user will be redirected after a successful payment.  NOTE: The merchant may include custom query parameters in the URL using placeholders for values provided in metaData or buyerMeta . These placeholders will be automatically replaced with the corresponding values from the request."
     format: uri
     nullable: true
   - name: products

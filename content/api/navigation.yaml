@@ -19,8 +19,6 @@ sections:
         slug: get-buyers-charge-methods
       - title: Get charge history
         slug: get-charge-history
-      - title: Oneclick order creation.
-        slug: oneclick-order-creation
       - title: Buyers order history
         slug: buyers-order-history
   - title: Extra info
