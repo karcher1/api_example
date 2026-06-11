@@ -10,7 +10,7 @@
 - Успешно прочитано страниц сайта: 36
 - Страниц сайта, распознанных как API endpoints: 32
 - Совпавших endpoints по `method + path`: 32
-- Локальных endpoints без совпадения на сайте: 12
+- Локальных endpoints без совпадения на сайте: 11
 - Endpoints на сайте без локального совпадения: 0
 - Совпавших параметров: 799
 - Обновлено описаний параметров: 414
@@ -84,7 +84,6 @@
 - `get-buyers-buyer-id-subscriptions-subscription-id-manual-renew` (GET /api/v2/buyers/{buyerId}/subscriptions/{subscriptionId}/manual_renew) — файл: `content/api/endpoints/get-buyers-buyer-id-subscriptions-subscription-id-manual-renew.yaml`
 - `get-buyers-buyer-id-subscriptions-subscription-id-purchase` (GET /api/v2/buyers/{buyerId}/subscriptions/{subscriptionId}/purchase) — файл: `content/api/endpoints/get-buyers-buyer-id-subscriptions-subscription-id-purchase.yaml`
 - `get-order-result-polling-endpoint` (GET /api/v2/orders/{orderId}/result) — файл: `content/api/endpoints/get-order-result-polling-endpoint.yaml`
-- `get-product-prices-for-purchase` (GET /api/v2/products/purchase) — файл: `content/api/endpoints/get-product-prices-for-purchase.yaml`
 - `get-product-prices-for-subscription-upgrade` (GET /api/v2/buyers/{buyerId}/subscriptions/{subscriptionId}/upgrade) — файл: `content/api/endpoints/get-product-prices-for-subscription-upgrade.yaml`
 - `get-shop-prices-for-bundles` (POST /api/v3/products/shop-prices/bundles) — файл: `content/api/endpoints/get-shop-prices-for-bundles.yaml`
 - `one-time-payment` (POST /api/v3/initials/one-time/url) — файл: `content/api/endpoints/one-time-payment.yaml`

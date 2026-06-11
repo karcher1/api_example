@@ -2028,6 +2028,11 @@ button.schema-tree-node-point:focus-visible {
     linear-gradient(180deg, rgb(252 254 255 / 0.82), rgb(246 250 249 / 0.58));
 }
 
+.article-main-column-article,
+.article-main-column-webhook {
+  padding-top: 44px;
+}
+
 .article-main-column-api-reference {
   background:
     linear-gradient(180deg, rgb(253 254 255 / 0.72), rgb(247 250 253 / 0.48));
@@ -2073,6 +2078,56 @@ button.schema-tree-node-point:focus-visible {
   --article-tone-rgb: 22 111 96;
   --article-tone-soft-rgb: 226 244 240;
   --article-panel-rgb: 251 254 253;
+}
+
+.article-document-article,
+.article-document-webhook {
+  gap: 20px;
+}
+
+.article-document-article .article-hero,
+.article-document-webhook .article-hero {
+  margin-bottom: 0;
+  padding-bottom: 6px;
+}
+
+.article-document-article .mdx-p,
+.article-document-webhook .mdx-p {
+  font-size: 15.8px;
+  line-height: 1.72;
+}
+
+.article-document-article .article-section-plain,
+.article-document-webhook .article-section-plain {
+  gap: 13px;
+  padding-top: 24px;
+}
+
+.article-document-article .article-section-plain-intro,
+.article-document-webhook .article-section-plain-intro {
+  padding-top: 0;
+}
+
+.article-document-article .article-section-plain .mdx-h2,
+.article-document-webhook .article-section-plain .mdx-h2 {
+  font-size: 25px;
+}
+
+.article-document-article .article-section-plain .mdx-h3,
+.article-document-webhook .article-section-plain .mdx-h3 {
+  margin-top: 8px;
+}
+
+.article-document-article .article-section-plain .mdx-list,
+.article-document-webhook .article-section-plain .mdx-list {
+  gap: 7px;
+  font-size: 15.5px;
+  line-height: 1.68;
+}
+
+.article-document-article .article-section-plain .mdx-blockquote,
+.article-document-webhook .article-section-plain .mdx-blockquote {
+  margin: 2px 0;
 }
 
 .article-document-api-reference {
@@ -2304,6 +2359,25 @@ button.schema-tree-node-point:focus-visible {
   min-width: 0;
   width: 100%;
   max-width: 100%;
+}
+
+.article-section-plain .article-image-block {
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-line) / 0.86);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.78);
+}
+
+.article-section-plain .article-image-block img,
+.article-document .article-section-plain .mdx-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.article-document-webhook .article-section-plain .table-wrap {
+  margin-top: 2px;
 }
 
 @keyframes article-card-in {

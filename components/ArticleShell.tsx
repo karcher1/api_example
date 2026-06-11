@@ -9,6 +9,7 @@ interface ArticleShellProps {
   navigationTitle?: string;
   sectionVariant?: "article" | "webhook";
   sectionCards?: boolean;
+  plainSections?: boolean;
 }
 
 export function ArticleShell({
@@ -17,6 +18,7 @@ export function ArticleShell({
   navigationTitle = "Guides",
   sectionVariant = "article",
   sectionCards = true,
+  plainSections = false,
 }: ArticleShellProps) {
   const navigationAriaLabel = `${navigationTitle} navigation`;
   const navigationStorageKey = `content-nav:${navigationTitle}`;
@@ -46,6 +48,7 @@ export function ArticleShell({
             collectionTitle={navigationTitle}
             sectionVariant={sectionVariant}
             sectionCards={sectionCards}
+            plainSections={plainSections}
           />
         </main>
       </div>

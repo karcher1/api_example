@@ -59,46 +59,50 @@ responses:
       - name: city
         type: object
         description: Object with information about the city
-      - name: name
-        type: string
-        description: Name of the city
+        children:
+          - name: name
+            type: string
+            description: Name of the city
       - name: subdivision
         type: object
         description: Object describing the first-level administrative region (state/province)
-      - name: name
-        type: string
-        description: Name of the subdivision
-      - name: isoCode
-        type: string
-        description: Subdivision code
+        children:
+          - name: name
+            type: string
+            description: Name of the subdivision
+          - name: isoCode
+            type: string
+            description: Subdivision code
       - name: location
         type: object
         description: Object holding detailed geographic and postal information
-      - name: latitude
-        type: float
-        description: Latitude coordinate of the location (decimal degrees)
-      - name: longitude
-        type: float
-        description: Longitude coordinate of the location (decimal degrees)
-      - name: timezone
-        type: string
-        description: IANA time zone identifier for the location
-      - name: postalCode
-        type: string
-        description: Postal/ZIP code for the location
+        children:
+          - name: latitude
+            type: float
+            description: Latitude coordinate of the location (decimal degrees)
+          - name: longitude
+            type: float
+            description: Longitude coordinate of the location (decimal degrees)
+          - name: timezone
+            type: string
+            description: IANA time zone identifier for the location
+          - name: postalCode
+            type: string
+            description: Postal/ZIP code for the location
       - name: continent
         type: object
         description: Object with information about the continent
-      - name: name
-        type: string
-        description: Name of the continent
-      - name: isoCode
-        type: string
-        description: Continent code
+        children:
+          - name: name
+            type: string
+            description: Name of the continent
+          - name: isoCode
+            type: string
+            description: Continent code
 blocks:
   - type: info
     title: Errors and interpretation
-    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](/api/endpoint-response-errors)."
 requestExamples:
   - label: PHP
     language: php

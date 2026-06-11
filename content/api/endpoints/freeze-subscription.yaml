@@ -73,35 +73,35 @@ responses:
     parameters:
       - name: uuid
         type: string
-        description: Error message
+        description: Unique error identifier
         format: uuid
         example: 6642ea47-568c-4f12-bc85-dc750f5a140e
       - name: code
         type: number
-        description: No description provided in source.
+        description: Error code
         example: "3000"
       - name: message
         type: string
-        description: Error message
+        description: Error message text
         example: Malformed request syntax.
       - name: traceId
         type: string
-        description: Error message
+        description: Request identifier
         example: 082d86c339533af07c14252afcecc7bd
   - status: "500"
     description: Exception error
     parameters:
       - name: code
         type: number
-        description: No description provided in source.
+        description: Error code
         example: "0"
       - name: message
         type: string
-        description: Exception message
+        description: Error message text
         example: Short exception description.
       - name: traceId
         type: string
-        description: Error message
+        description: Request identifier
         example: 082d86c339533af07c14252afcecc7bd
 blocks: []
 requestExamples:

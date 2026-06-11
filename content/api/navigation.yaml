@@ -40,8 +40,6 @@ sections:
         slug: get-prices-for-offer-page
       - title: Get shop prices for bundles
         slug: get-shop-prices-for-bundles
-      - title: Get product prices for purchase
-        slug: get-product-prices-for-purchase
   - title: Checkout page
     id: checkout-page
     defaultOpen: true

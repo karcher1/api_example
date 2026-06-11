@@ -45,6 +45,8 @@ export default async function WebhookPage({ params }: WebhookPageProps) {
       navigation={getWebhookNavigation()}
       navigationTitle={getWebhookNavigationTitle()}
       sectionVariant="webhook"
+      sectionCards={false}
+      plainSections
     />
   );
 }

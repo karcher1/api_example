@@ -418,25 +418,25 @@ responses:
     parameters:
       - name: uuid
         type: string
-        description: Error message
+        description: Unique error identifier
         format: uuid
         example: 6642ea47-568c-4f12-bc85-dc750f5a140e
       - name: code
         type: number
-        description: No description provided in source.
+        description: Error code
         example: "3000"
       - name: message
         type: string
-        description: Error message
+        description: Error message text
         example: Malformed request syntax.
       - name: traceId
         type: string
-        description: Error message
+        description: Request identifier
         example: 082d86c339533af07c14252afcecc7bd
 blocks:
   - type: info
     title: Errors and interpretation
-    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](/api/endpoint-response-errors)."
 requestExamples:
   - label: PHP
     language: php

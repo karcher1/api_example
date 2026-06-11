@@ -103,7 +103,7 @@ responses:
 blocks:
   - type: info
     title: Errors and interpretation
-    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](https://gateway.billerix.com/docs/api/endpoint-response-errors)."
+    content: "The list of possible errors for this endpoint, along with their types and interpretation, is provided in the general reference: [Endpoint response errors](/api/endpoint-response-errors)."
 requestExamples:
   - label: PHP
     language: php

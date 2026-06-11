@@ -44,6 +44,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
       page={page}
       navigation={getGuideNavigation()}
       navigationTitle={getGuideNavigationTitle()}
+      sectionCards={false}
+      plainSections
     />
   );
 }
