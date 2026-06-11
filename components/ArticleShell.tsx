@@ -8,6 +8,7 @@ interface ArticleShellProps {
   navigation: NavNode[];
   navigationTitle?: string;
   sectionVariant?: "article" | "webhook";
+  sectionCards?: boolean;
 }
 
 export function ArticleShell({
@@ -15,6 +16,7 @@ export function ArticleShell({
   navigation,
   navigationTitle = "Guides",
   sectionVariant = "article",
+  sectionCards = true,
 }: ArticleShellProps) {
   const navigationAriaLabel = `${navigationTitle} navigation`;
   const navigationStorageKey = `content-nav:${navigationTitle}`;
@@ -39,7 +41,12 @@ export function ArticleShell({
           />
         </aside>
         <main className={`main-column article-main-column article-main-column-${sectionVariant}`}>
-          <ArticleContent page={page} collectionTitle={navigationTitle} sectionVariant={sectionVariant} />
+          <ArticleContent
+            page={page}
+            collectionTitle={navigationTitle}
+            sectionVariant={sectionVariant}
+            sectionCards={sectionCards}
+          />
         </main>
       </div>
     </>

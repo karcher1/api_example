@@ -1,3 +1,6 @@
+items:
+  - title: Endpoint response errors
+    slug: endpoint-response-errors
 sections:
   - title: Buyers
     id: buyers

@@ -42,6 +42,14 @@ function addSection(navPath, section) {
   writeYaml(navPath, nav);
 }
 
+function addRootItem(navPath, item) {
+  const nav = readYaml(navPath);
+
+  nav.items = nav.items ?? [];
+  nav.items.unshift(item);
+  writeYaml(navPath, nav);
+}
+
 function replaceSection(navPath, oldId, nextSection) {
   const nav = readYaml(navPath);
 
@@ -95,6 +103,36 @@ responseExamples:
     code: |
       {
         "data": []
+      }
+`,
+  );
+}
+
+function writeApiArticleFixture(root) {
+  const filePath = path.join(root, "content", "api", "pages", "workflow-api-article.yaml");
+
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(
+    filePath,
+    `slug: workflow-api-article
+title: Workflow API Article
+description: Temporary content workflow API article.
+
+content: |
+  # Workflow API Article
+
+  This page verifies standalone API article creation through YAML.
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | code | integer | Error code |
+
+examples:
+  - label: "400"
+    language: json
+    code: |
+      {
+        "code": 400
       }
 `,
   );
@@ -182,6 +220,10 @@ try {
   const sdkNavPath = path.join(tempRoot, "content", "sdk", "navigation.yaml");
 
   runValidation(tempRoot, "base content validates");
+
+  writeApiArticleFixture(tempRoot);
+  addRootItem(apiNavPath, { title: "Workflow API Article", slug: "workflow-api-article" });
+  runValidation(tempRoot, "new API article linked as a top-level API navigation item");
 
   writeEndpointFixture(tempRoot);
   addSection(apiNavPath, {

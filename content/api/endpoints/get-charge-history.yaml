@@ -80,11 +80,6 @@ responses:
             - name: orderId
               type: string
               description: Unique order identifier
-            - name: orderUuid
-              type: string
-              description: No description provided in source.
-              format: uuid
-              nullable: true
             - name: type
               type: string
               description: "Order type (e.g., checkout , oneclick , etc.)."
@@ -274,9 +269,6 @@ responses:
                                   type: string
                                   description: The risk segment value (e.g., black, potential_high, etc.)
                                   nullable: true
-                          - name: "{key}"
-                            type: any
-                            description: Dynamic property value.
             - name: products
               type: array
               description: A list of products purchased in the order.
@@ -289,11 +281,6 @@ responses:
                     description: Unique product identifier
                     format: uuid
                     example: 79814af1-b0ab-4e5d-9221-924e5c330b03
-                  - name: orderUuid
-                    type: string
-                    description: Order UUID
-                    format: uuid
-                    nullable: true
                   - name: code
                     type: string
                     description: Product code

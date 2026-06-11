@@ -148,6 +148,20 @@ function ParametersList({ parameters }: { parameters: EndpointParameter[] }) {
   );
 }
 
+function parameterGroupSchema(parameters: EndpointParameter[]): SchemaNode {
+  return {
+    name: "parameters",
+    type: "object",
+    properties: parameters.map((parameter) => ({
+      ...(parameter.schema ?? { type: "unknown" }),
+      name: parameter.name,
+      required: parameter.required,
+      description: parameter.description ?? parameter.schema?.description,
+      example: parameter.example ?? parameter.schema?.example,
+    })),
+  };
+}
+
 function DocsBlockView({ block }: { block: EndpointDocBlock }) {
   if (block.type === "notice") {
     return (
@@ -220,10 +234,25 @@ function ParameterSection({
 }: {
   group: ReturnType<typeof groupedParameters>[number];
 }) {
+  if (group.location === "header") {
+    return (
+      <section className="docs-section docs-section-spacious" id={`${group.location}-parameters`}>
+        <h2>{group.title}</h2>
+        <ParametersList parameters={group.parameters} />
+      </section>
+    );
+  }
+
   return (
     <section className="docs-section docs-section-spacious" id={`${group.location}-parameters`}>
       <h2>{group.title}</h2>
-      <ParametersList parameters={group.parameters} />
+      <SchemaTable
+        schema={parameterGroupSchema(group.parameters)}
+        rootLabel={`${group.location} parameters`}
+        variant="fieldList"
+        initialExpansion="all"
+        showStandardBadge={group.location === "path"}
+      />
     </section>
   );
 }

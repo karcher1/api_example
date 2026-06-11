@@ -2028,6 +2028,12 @@ button.schema-tree-node-point:focus-visible {
     linear-gradient(180deg, rgb(252 254 255 / 0.82), rgb(246 250 249 / 0.58));
 }
 
+.article-main-column-api-reference {
+  background:
+    linear-gradient(180deg, rgb(253 254 255 / 0.72), rgb(247 250 253 / 0.48));
+  padding: 40px 40px 96px;
+}
+
 .mdx-document {
   width: 100%;
   min-width: 0;
@@ -2067,6 +2073,21 @@ button.schema-tree-node-point:focus-visible {
   --article-tone-rgb: 22 111 96;
   --article-tone-soft-rgb: 226 244 240;
   --article-panel-rgb: 251 254 253;
+}
+
+.article-document-api-reference {
+  gap: 18px;
+  max-width: min(900px, 100%);
+}
+
+.article-document-api-reference .article-hero {
+  margin-bottom: 0;
+  padding: 0 0 4px;
+}
+
+.article-document-api-reference .mdx-p {
+  font-size: 15.5px;
+  line-height: 1.68;
 }
 
 .article-hero {
@@ -2204,6 +2225,82 @@ button.schema-tree-node-point:focus-visible {
 .article-section-card .webhook-schema-tree,
 .article-section-card .mdx-pre,
 .article-section-card .article-image-block {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.article-section-plain {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid rgb(var(--color-line) / 0.86);
+  padding-top: 22px;
+}
+
+.article-section-plain-intro {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.article-section-plain > * {
+  min-width: 0;
+}
+
+.article-section-plain .mdx-h2 {
+  margin: 0 0 2px;
+  font-size: 24px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.article-section-plain .mdx-h3 {
+  position: relative;
+  margin: 6px 0 0;
+  padding-left: 14px;
+  font-size: 18px;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.article-section-plain .mdx-h3::before {
+  position: absolute;
+  inset: 0.2em auto auto 0;
+  width: 3px;
+  height: 1em;
+  border-radius: 999px;
+  background: rgb(var(--article-tone-rgb) / 0.55);
+  content: "";
+}
+
+.article-section-plain .table-wrap + .mdx-h3 {
+  margin-top: 12px;
+}
+
+.article-section-plain .mdx-p,
+.article-section-plain .mdx-list,
+.article-section-plain .mdx-blockquote,
+.article-section-plain .mdx-pre,
+.article-section-plain .table-wrap,
+.article-section-plain .webhook-schema-tree,
+.article-section-plain .article-image-block {
+  margin: 0;
+}
+
+.article-section-plain .mdx-code {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.article-section-plain .table-wrap,
+.article-section-plain .webhook-schema-tree,
+.article-section-plain .mdx-pre,
+.article-section-plain .article-image-block {
   min-width: 0;
   width: 100%;
   max-width: 100%;

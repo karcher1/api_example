@@ -147,6 +147,28 @@ export interface EndpointDoc {
   };
 }
 
+export interface ApiArticleBlock {
+  id: string;
+  type: string;
+  title?: string;
+  content?: string;
+  language?: string;
+  code?: string;
+  src?: string;
+  alt?: string;
+  caption?: string;
+}
+
+export interface ApiArticlePage {
+  slug: string;
+  href: string;
+  title: string;
+  description?: string;
+  body: string;
+  blocks: ApiArticleBlock[];
+  examples: EndpointCodeExample[];
+}
+
 export interface NavNode {
   id: string;
   type: "group" | "endpoint";
@@ -163,6 +185,7 @@ type UnknownRecord = Record<string, unknown>;
 const API_ROOT = path.join(process.cwd(), "content", "api");
 const API_NAVIGATION_PATH = path.join(API_ROOT, "navigation.yaml");
 const API_ENDPOINTS_DIR = path.join(API_ROOT, "endpoints");
+const API_PAGES_DIR = path.join(API_ROOT, "pages");
 const PUBLIC_ROOT = path.join(process.cwd(), "public");
 const DEFAULT_SECTION_ORDER: AutoSectionId[] = [
   "overview",
@@ -516,6 +539,50 @@ function parseBlocks(value: unknown, filePath: string): EndpointDocBlock[] {
   });
 }
 
+function parseApiArticleBlocks(value: unknown, filePath: string): ApiArticleBlock[] {
+  return ensureArray(value, "blocks", filePath).map((blockValue, index) => {
+    if (!isRecord(blockValue)) {
+      contentError(filePath, `blocks[${index}] must be an object.`);
+    }
+
+    const type = requireString(blockValue, "type", filePath);
+    const title = optionalString(blockValue, "title");
+    const content = optionalString(blockValue, "content");
+    const code = optionalString(blockValue, "code");
+    const src = optionalString(blockValue, "src");
+
+    if (KNOWN_BLOCK_TONES.has(type) && !content) {
+      contentError(filePath, `blocks[${index}].content is required for ${type} blocks.`);
+    }
+
+    if (type === "code" && !code) {
+      contentError(filePath, `blocks[${index}].code is required for code blocks.`);
+    }
+
+    if (type === "image" && !src) {
+      contentError(filePath, `blocks[${index}].src is required for image blocks.`);
+    }
+
+    if (type === "image" && src) {
+      validateLocalPublicAssetSrc(src, filePath, `blocks[${index}].src`);
+    }
+
+    validateMarkdownLocalImageSrcs(content, filePath, `blocks[${index}].content`);
+
+    return {
+      id: slugify(title || `${type}-${index + 1}`),
+      type,
+      title,
+      content,
+      language: optionalString(blockValue, "language"),
+      code,
+      src,
+      alt: optionalString(blockValue, "alt"),
+      caption: optionalString(blockValue, "caption"),
+    };
+  });
+}
+
 function parseExamples(value: unknown, field: string, filePath: string): EndpointCodeExample[] {
   const seenLabels = new Map<string, number>();
   const seenIds = new Map<string, string>();
@@ -561,6 +628,18 @@ function endpointFilePaths(): string[] {
     .filter((file) => file.endsWith(".yaml") || file.endsWith(".yml"))
     .sort()
     .map((file) => path.join(API_ENDPOINTS_DIR, file));
+}
+
+function apiPageFilePaths(): string[] {
+  if (!fs.existsSync(API_PAGES_DIR)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(API_PAGES_DIR)
+    .filter((file) => file.endsWith(".yaml") || file.endsWith(".yml"))
+    .sort()
+    .map((file) => path.join(API_PAGES_DIR, file));
 }
 
 function endpointFromFile(filePath: string): EndpointDoc {
@@ -634,6 +713,28 @@ function endpointFromFile(filePath: string): EndpointDoc {
   };
 }
 
+function apiPageFromFile(filePath: string): ApiArticlePage {
+  const document = readYamlObject(filePath, "API article file");
+  const slug = requireString(document, "slug", filePath);
+  const title = requireString(document, "title", filePath);
+  const body = requireString(document, "content", filePath);
+  const description = optionalString(document, "description");
+
+  validateSlugMatchesFile(slug, filePath);
+  validateMarkdownLocalImageSrcs(body, filePath, "content");
+  validateMarkdownLocalImageSrcs(description, filePath, "description");
+
+  return {
+    slug,
+    href: `/api/${slug}`,
+    title,
+    description,
+    body,
+    blocks: parseApiArticleBlocks(document.blocks, filePath),
+    examples: parseExamples(document.examples, "examples", filePath),
+  };
+}
+
 export function getEndpoints(): EndpointDoc[] {
   const seen = new Map<string, string>();
   const endpoints: EndpointDoc[] = [];
@@ -655,10 +756,46 @@ export function getEndpoints(): EndpointDoc[] {
   return endpoints;
 }
 
+export function getApiPages(): ApiArticlePage[] {
+  const seen = new Map<string, string>();
+  const pages: ApiArticlePage[] = [];
+
+  apiPageFilePaths().forEach((filePath) => {
+    const page = apiPageFromFile(filePath);
+    const existing = seen.get(page.slug);
+
+    if (existing) {
+      throw new Error(
+        `Duplicate API article slug "${page.slug}" in ${existing} and ${filePath}.`,
+      );
+    }
+
+    seen.set(page.slug, filePath);
+    pages.push(page);
+  });
+
+  return pages;
+}
+
+function assertNoApiRouteSlugCollisions(endpoints: EndpointDoc[], pages: ApiArticlePage[]) {
+  const endpointSlugs = new Set(endpoints.map((endpoint) => endpoint.slug));
+  const collision = pages.find((page) => endpointSlugs.has(page.slug));
+
+  if (collision) {
+    throw new Error(
+      `Duplicate API route slug "${collision.slug}" is used by both an endpoint and an API article.`,
+    );
+  }
+}
+
 export function getEndpointBySlug(slugParts: string[]): EndpointDoc | undefined {
   const slug = slugParts[slugParts.length - 1];
 
   return getEndpoints().find((endpoint) => endpoint.slug === slug);
+}
+
+export function getApiPageBySlug(slug: string): ApiArticlePage | undefined {
+  return getApiPages().find((page) => page.slug === slug);
 }
 
 export function getEndpointStaticParams(): Array<{ slug: string }> {
@@ -681,9 +818,29 @@ function endpointNavNode(endpoint: EndpointDoc, label?: string): NavNode {
   };
 }
 
+function apiPageNavNode(page: ApiArticlePage, label?: string): NavNode {
+  return {
+    id: `api-page:${page.slug}`,
+    type: "endpoint",
+    label: label || page.title,
+    href: page.href,
+    children: [],
+  };
+}
+
+type ApiNavigationContent =
+  | {
+      type: "endpoint";
+      value: EndpointDoc;
+    }
+  | {
+      type: "page";
+      value: ApiArticlePage;
+    };
+
 function parseNavItems(
   value: unknown,
-  endpointsBySlug: Map<string, EndpointDoc>,
+  contentBySlug: Map<string, ApiNavigationContent>,
   placedSlugs: Set<string>,
   groupIds: Set<string>,
   location: string,
@@ -711,19 +868,21 @@ function parseNavItems(
         navError(`${itemLocation} cannot define both slug and items.`);
       }
 
-      const endpoint = endpointsBySlug.get(slug);
+      const content = contentBySlug.get(slug);
 
-      if (!endpoint) {
-        navError(`${itemLocation}.slug references missing endpoint "${slug}".`);
+      if (!content) {
+        navError(`${itemLocation}.slug references missing API endpoint or article "${slug}".`);
       }
 
       if (placedSlugs.has(slug)) {
-        navError(`Endpoint slug "${slug}" is listed more than once in navigation.`);
+        navError(`API slug "${slug}" is listed more than once in navigation.`);
       }
 
       placedSlugs.add(slug);
 
-      return endpointNavNode(endpoint, optionalString(itemValue, "title"));
+      return content.type === "endpoint"
+        ? endpointNavNode(content.value, optionalString(itemValue, "title"))
+        : apiPageNavNode(content.value, optionalString(itemValue, "title"));
     }
 
     const id = requireString(itemValue, "id", API_NAVIGATION_PATH);
@@ -740,13 +899,17 @@ function parseNavItems(
       type: "group",
       label,
       defaultOpen: itemValue.defaultOpen !== false,
-      children: parseNavItems(children, endpointsBySlug, placedSlugs, groupIds, `${itemLocation}.items`),
+      children: parseNavItems(children, contentBySlug, placedSlugs, groupIds, `${itemLocation}.items`),
     };
   });
 }
 
 function readNavigationDocument(): UnknownRecord {
   const document = readYamlObject(API_NAVIGATION_PATH, "API navigation file");
+
+  if (document.items !== undefined && !Array.isArray(document.items)) {
+    navError("items must be an array when provided.");
+  }
 
   if (!Array.isArray(document.sections)) {
     navError("sections must be an array.");
@@ -759,8 +922,28 @@ function readNavigationDocument(): UnknownRecord {
   return document;
 }
 
-function endpointsBySlug(endpoints: EndpointDoc[]): Map<string, EndpointDoc> {
-  return new Map(endpoints.map((endpoint) => [endpoint.slug, endpoint]));
+function apiNavigationContentBySlug(
+  endpoints: EndpointDoc[],
+  pages: ApiArticlePage[],
+): Map<string, ApiNavigationContent> {
+  assertNoApiRouteSlugCollisions(endpoints, pages);
+
+  return new Map([
+    ...endpoints.map((endpoint): [string, ApiNavigationContent] => [
+      endpoint.slug,
+      {
+        type: "endpoint",
+        value: endpoint,
+      },
+    ]),
+    ...pages.map((page): [string, ApiNavigationContent] => [
+      page.slug,
+      {
+        type: "page",
+        value: page,
+      },
+    ]),
+  ]);
 }
 
 function firstEndpointInNavigation(nodes: NavNode[]): NavNode | undefined {
@@ -787,11 +970,17 @@ export function getEndpointNavigationTitle(): string {
 
 export function getEndpointNavigation(): NavNode[] {
   const endpoints = getEndpoints();
+  const pages = getApiPages();
   const document = readNavigationDocument();
   const placedSlugs = new Set<string>();
   const groupIds = new Set<string>();
+  const contentBySlug = apiNavigationContentBySlug(endpoints, pages);
+  const rootItems = document.items === undefined
+    ? []
+    : parseNavItems(document.items, contentBySlug, placedSlugs, groupIds, "items");
+  const sectionItems = parseNavItems(document.sections, contentBySlug, placedSlugs, groupIds, "sections");
 
-  return parseNavItems(document.sections, endpointsBySlug(endpoints), placedSlugs, groupIds, "sections");
+  return [...rootItems, ...sectionItems];
 }
 
 export function getFirstEndpointHref(): string {

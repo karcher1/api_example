@@ -53,7 +53,7 @@ responses:
     parameters:
       - name: data
         type: array
-        description: An array of objects that contains information related to each of the payment methods of a particular bayer
+        description: An array of objects that contains information related to each of the payment methods of a particular buyer
         items:
           type: object
           description: No description provided in source.
@@ -61,12 +61,6 @@ responses:
             - name: chargeMethodId
               type: string
               description: Unique payment method identifier
-            - name: type
-              type: string
-              description: Data type
-            - name: value
-              type: string
-              description: Deprecated, use paymentMethodIdentifier
             - name: paymentMethodType
               type: string
               description: Payment method type

@@ -14,6 +14,7 @@ They should only edit:
 
 - API navigation YAML;
 - endpoint YAML files;
+- API article YAML files;
 - guide navigation YAML;
 - guide content YAML files;
 - images/assets if needed.
@@ -155,7 +156,74 @@ Navigation groups must contain at least one item. If moving an endpoint leaves a
 
 ---
 
-# 4. How to edit API endpoint content
+# 4. How to add a standalone API article
+
+Use an API article for API Reference content that is not a single HTTP endpoint, for example shared error dictionaries or integration reference notes.
+
+## Step 1. Create article file
+
+Create a file in:
+
+```txt
+/content/api/pages/{page-slug}.yaml
+```
+
+Example:
+
+```txt
+/content/api/pages/endpoint-response-errors.yaml
+```
+
+Minimal article:
+
+```yaml
+slug: endpoint-response-errors
+title: Endpoint response errors
+description: Error response contracts and charge failure reason mapping.
+
+content: |
+  # Endpoint response errors
+
+  This page documents shared API response errors.
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | code | integer | Error code |
+
+examples:
+  - label: "400"
+    language: json
+    code: |
+      {
+        "code": 400,
+        "message": "Bad request"
+      }
+```
+
+The `slug` must match the filename and must not duplicate any endpoint slug. Use `examples` when the article should show code samples in the API Reference right panel.
+
+## Step 2. Add article to API navigation
+
+To show the article above all collapsible API sections, add it to root-level `items`:
+
+```yaml
+items:
+  - title: Endpoint response errors
+    slug: endpoint-response-errors
+
+sections:
+  - title: Users
+    id: users
+    items:
+      - title: List users
+        slug: list-users
+```
+
+You can also place an API article inside a section by adding its `slug` to that section's `items`.
+
+---
+
+# 5. How to edit API endpoint content
 
 Open the endpoint file:
 
@@ -182,7 +250,7 @@ You can edit:
 
 ---
 
-# 5. How to add request examples
+# 6. How to add request examples
 
 Add items to `requestExamples`:
 
@@ -208,7 +276,7 @@ Rules:
 
 ---
 
-# 6. How to add response examples
+# 7. How to add response examples
 
 Add items to `responseExamples`:
 
@@ -238,7 +306,7 @@ Rules:
 
 ---
 
-# 7. How to add custom blocks to endpoint pages
+# 8. How to add custom blocks to endpoint pages
 
 Use `blocks`:
 
@@ -267,7 +335,7 @@ The block content should support Markdown-compatible formatting.
 
 ---
 
-# 8. How to add a new guide
+# 9. How to add a new guide
 
 ## Step 1. Create guide file
 
@@ -336,7 +404,7 @@ npm run validate:content
 
 ---
 
-# 9. How to add images to guides
+# 10. How to add images to guides
 
 Option 1: Markdown image in `content`:
 
@@ -358,7 +426,7 @@ Both options are supported. Local image paths must be absolute public paths, for
 
 ---
 
-# 10. How to link guides and API endpoints
+# 11. How to link guides and API endpoints
 
 Use normal hyperlinks:
 
@@ -374,7 +442,7 @@ Exact route prefixes may follow existing project conventions.
 
 ---
 
-# 11. What should not require code changes
+# 12. What should not require code changes
 
 These actions should not require editing application code:
 
@@ -394,7 +462,7 @@ These actions should not require editing application code:
 
 ---
 
-# 12. What may require code changes
+# 13. What may require code changes
 
 These actions may require application changes:
 

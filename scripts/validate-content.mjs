@@ -370,6 +370,15 @@ function validateContentPageFile(root, filePath, label = "guide content", fileLa
   };
 }
 
+function validateApiArticleFile(root, filePath) {
+  const page = validateContentPageFile(root, filePath, "API article content", "API article file");
+  const article = readYamlObject(filePath, "API article file");
+
+  validateExamples(article.examples, "examples", filePath, "API article content");
+
+  return page;
+}
+
 function validateNavigationItems(value, knownBySlug, placedSlugs, groupIds, filePath, label, itemLabel, location) {
   if (!Array.isArray(value)) {
     navError(label, filePath, `${location} must be an array.`);
@@ -424,6 +433,12 @@ function validateNavigationItems(value, knownBySlug, placedSlugs, groupIds, file
 
 function validateNavigation(filePath, label, knownBySlug, itemLabel) {
   const document = readYamlObject(filePath, label);
+  const placedSlugs = new Set();
+  const groupIds = new Set();
+
+  if (document.items !== undefined) {
+    validateNavigationItems(document.items, knownBySlug, placedSlugs, groupIds, filePath, label, itemLabel, "items");
+  }
 
   if (!Array.isArray(document.sections)) {
     navError(label, filePath, "sections must be an array.");
@@ -433,7 +448,7 @@ function validateNavigation(filePath, label, knownBySlug, itemLabel) {
     navError(label, filePath, "sections must contain at least one section.");
   }
 
-  validateNavigationItems(document.sections, knownBySlug, new Set(), new Set(), filePath, label, itemLabel, "sections");
+  validateNavigationItems(document.sections, knownBySlug, placedSlugs, groupIds, filePath, label, itemLabel, "sections");
 }
 
 function bySlug(items, label) {
@@ -452,16 +467,48 @@ function bySlug(items, label) {
   return map;
 }
 
+function mergeSlugMaps(primary, secondary, collisionLabel) {
+  const merged = new Map(primary);
+
+  secondary.forEach((value, slug) => {
+    const existing = merged.get(slug);
+
+    if (existing) {
+      throw new Error(`Duplicate ${collisionLabel} slug "${slug}" in ${existing.filePath} and ${value.filePath}.`);
+    }
+
+    merged.set(slug, value);
+  });
+
+  return merged;
+}
+
 function validateApi(root) {
   const apiRoot = path.join(root, "content", "api");
   const endpoints = yamlFilePaths(path.join(apiRoot, "endpoints"), "API endpoints").map((filePath) =>
     validateEndpointFile(root, filePath),
   );
   const endpointsBySlug = bySlug(endpoints, "API endpoint");
+  const apiPagesDir = path.join(apiRoot, "pages");
+  const articles = fs.existsSync(apiPagesDir)
+    ? yamlFilePaths(apiPagesDir, "API article pages").map((filePath) =>
+        validateApiArticleFile(root, filePath),
+      )
+    : [];
+  const articlesBySlug = bySlug(articles, "API article");
+  const navigationTargetsBySlug = mergeSlugMaps(endpointsBySlug, articlesBySlug, "API route");
 
-  validateNavigation(path.join(apiRoot, "navigation.yaml"), "API navigation", endpointsBySlug, "endpoint");
+  validateNavigation(
+    path.join(apiRoot, "navigation.yaml"),
+    "API navigation",
+    navigationTargetsBySlug,
+    "API endpoint or article",
+  );
 
-  return endpoints.length;
+  return {
+    endpoints: endpoints.length,
+    articles: articles.length,
+  };
 }
 
 function validateGuides(root) {
@@ -502,12 +549,12 @@ function validateSdk(root) {
 
 try {
   const { root } = parseArgs();
-  const endpointCount = validateApi(root);
+  const apiCount = validateApi(root);
   const guideCount = validateGuides(root);
   const webhookCount = validateWebhooks(root);
   const sdkCount = validateSdk(root);
 
-  console.log(`Content validation passed: ${endpointCount} API endpoint(s), ${guideCount} guide(s), ${webhookCount} webhook page(s), ${sdkCount} SDK page(s).`);
+  console.log(`Content validation passed: ${apiCount.endpoints} API endpoint(s), ${apiCount.articles} API article(s), ${guideCount} guide(s), ${webhookCount} webhook page(s), ${sdkCount} SDK page(s).`);
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

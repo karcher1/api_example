@@ -7,6 +7,7 @@ import type { SchemaNode } from "@/lib/openapi";
 interface SafeMarkdownProps {
   source: string;
   sectionCards?: boolean;
+  plainSections?: boolean;
 }
 
 type TableKind = "events" | "params" | "default";
@@ -249,7 +250,59 @@ function renderSectionCards(blocks: JSX.Element[]) {
   );
 }
 
-export function SafeMarkdown({ source, sectionCards = false }: SafeMarkdownProps) {
+function groupBlocksBySection(blocks: JSX.Element[]) {
+  const sections: Array<{
+    key: string;
+    type: "intro" | "section";
+    blocks: JSX.Element[];
+  }> = [];
+
+  blocks.forEach((block, index) => {
+    if (isSectionHeading(block)) {
+      sections.push({
+        key: `markdown-section-${index}`,
+        type: "section",
+        blocks: [block],
+      });
+      return;
+    }
+
+    const current = sections[sections.length - 1];
+
+    if (current) {
+      current.blocks.push(block);
+      return;
+    }
+
+    sections.push({
+      key: "markdown-intro",
+      type: "intro",
+      blocks: [block],
+    });
+  });
+
+  return sections;
+}
+
+function renderPlainSections(blocks: JSX.Element[]) {
+  return (
+    <>
+      {groupBlocksBySection(blocks).map((section) => (
+        <section
+          className={[
+            "article-section-plain",
+            section.type === "intro" ? "article-section-plain-intro" : "",
+          ].filter(Boolean).join(" ")}
+          key={section.key}
+        >
+          {section.blocks}
+        </section>
+      ))}
+    </>
+  );
+}
+
+export function SafeMarkdown({ source, sectionCards = false, plainSections = false }: SafeMarkdownProps) {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const blocks: JSX.Element[] = [];
   const nextHeadingId = createHeadingIdTracker();
@@ -448,5 +501,13 @@ export function SafeMarkdown({ source, sectionCards = false }: SafeMarkdownProps
     blockIndex += 1;
   }
 
-  return sectionCards ? renderSectionCards(blocks) : <>{blocks}</>;
+  if (sectionCards) {
+    return renderSectionCards(blocks);
+  }
+
+  if (plainSections) {
+    return renderPlainSections(blocks);
+  }
+
+  return <>{blocks}</>;
 }

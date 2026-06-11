@@ -1,0 +1,122 @@
+slug: endpoint-response-errors
+title: Endpoint response errors
+description: Error response contracts and charge failure reason mapping.
+content: |
+  # Endpoint response errors
+
+  This page consolidates error scenarios you may encounter when working with the endpoint: from basic HTTP responses to a classification of failed charge reasons. The document provides a response contract, as well as an error type mapping (EXTERNAL / BUSINESS), so you can interpret failures unambiguously and choose the correct way to present errors to the user.
+
+  ## Endpoint errors
+
+  ### 400 - Race condition
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | uuid | string \| null | Unique error identifier |
+  | message | string | Error message text |
+  | code | integer | Error code |
+  | traceId | string | Request identifier |
+
+  ### 404 - Not found
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | uuid | string \| null | Unique error identifier |
+  | message | string | Error message text |
+  | code | integer | Error code |
+  | traceId | string | Request identifier |
+
+  ### 422 - Validation error
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | uuid | string \| null | Unique error identifier |
+  | message | string | Error message text |
+  | code | integer | Error code |
+  | traceId | string | Request identifier |
+  | errors | array of objects | Contains error details |
+  | errors[].field | string | Indicates the field or its nested path |
+  | errors[].title | string | Detailed error description |
+
+  ### 500 - Exception error
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | uuid | string \| null | Unique error identifier |
+  | message | string | Error message text |
+  | code | integer | Error code |
+  | traceId | string | Request identifier |
+
+  ## Dictionary of possible values for charge errors
+
+  ### EXTERNAL technical errors from providers
+
+  | UUID | Message | Code | Error type | Description |
+  | --- | --- | --- | --- | --- |
+  | a39d10fb-a73e-4092-9e34-b8f0c5451bb9 | Charge failed | 2101 | external_timeout | The provider did not return a result in time (provider-side timeout). |
+  | 0b58b701-30a5-4eab-965d-cc712aa68cf0 | Charge failed | 2101 | external_technical_error | A technical error occurred on the processing or bank side. |
+  | f024a51b-a85e-4b18-9197-0927dc864a51 | Charge failed | 2101 | configuration_errors | Incorrect merchant or integration configuration (settings, routing, permissions). |
+  | ea9b4131-2e44-46af-aa65-f55f68db157a | Charge failed | 2101 | invalid_parameters | Invalid or missing parameters that the provider does not accept. |
+  | 4f7a9b2c-3d1e-4a5f-8b6c-7d8e9f0a1b2c | Charge failed | 2101 | mismatch_error | The provider does not support the currency, brand, or operation type. |
+  | 268011ca-a21b-4169-95cd-b7d41d042e6d | Charge failed | 2101 | missing_error_type | The provider code is not mapped in the configuration (unknown decline type). |
+
+  ### BUSINESS declined errors
+
+  | UUID | Message | Code | Error type | Description |
+  | --- | --- | --- | --- | --- |
+  | 410a56c9-39c2-4387-aa6d-ea12e6b4d1e4 | Charge failed | 2101 | active_token_not_found | No active token was found for the payment (the payment cannot be processed). |
+  | bdf477c2-4181-4e74-b580-64d37d79c69f | Charge failed | 2101 | cancelled | The payment was cancelled by the customer, the bank, or via `void`, `stop payment`, or `cancel`. |
+  | c11b3280-771d-4ac6-9ded-0f4c6cffc4c6 | Invalid card data | 2102 | card_validation_failed | Invalid card details (CVV, expiry date, card number format, etc.). |
+  | 80744c5c-edb2-4194-8026-fcf4455a783f | Invalid card data | 2102 | declined_by_card_bin | BIN not found or invalid BIN in the cardbin service. |
+  | 9fada7ba-cbde-434d-97fc-0fbc61aab585 | Charge failed | 2101 | declined_by_internal_anti_fraud | Declined by Billing's internal antifraud (blacklist, sanctions, anomalous activity). |
+  | be7f817b-62f7-46d9-b257-e554d5644c69 | Charge failed | 2101 | declined_by_provider_anti_fraud | Declined by the payment system's or issuing bank's antifraud. |
+  | a872183b-244a-4d78-9250-e5ff976913ee | Charge failed | 2101 | declined_by_three_ds | 3DS verification failed (no code entered, incorrect code, timeout, or a non-3DS card). |
+  | 45beacf7-54f7-4706-836c-0019c0c0f6d2 | General decline / do not honour | 2105 | general_decline | Bank decline without a specific reason ("do not honour"). |
+  | 2274eded-bb92-4813-94c1-ad323a69b064 | Insufficient funds | 2104 | insufficient_funds | Insufficient funds or card limits reached. |
+  | 9bec96b4-e67a-4401-aea5-31a62e863abc | Charge failed | 2101 | limit_exceeded | Limits exceeded (provider, bank, or product). |
+  | 11a8e97c-ec79-4c13-8989-6fe6c4bf3f2a | Charge failed | 2101 | risk_response | Declined due to high risk (score, risk rules). |
+  | 449fc358-652b-46b4-b9b2-0e89de5773ef | Charge failed | 2101 | stolen_restricted_card | Stolen, blocked, or restricted card. |
+  | 6036f712-9dd1-425f-a8ba-25b4471fd1a2 | Charge failed | 2101 | rejected | General business decline (a reject without specific details; not a technical failure). |
+examples:
+  - label: "400"
+    language: json
+    code: |
+      {
+        "uuid": "8d911b21-b987-4006-a887-29558ff05b7e",
+        "code": 2107,
+        "message": "Race condition",
+        "traceId": "1d6973b1-8fcb-4dd8-8356-557a369a5ba0"
+      }
+  - label: "404"
+    language: json
+    code: |
+      {
+        "uuid": null,
+        "message": "Entity not found",
+        "code": 0,
+        "traceId": "9b29989bd9e957856aafe8b62b0910f1"
+      }
+  - label: "422"
+    language: json
+    code: |
+      {
+        "uuid": null,
+        "message": "Validation error",
+        "code": 0,
+        "traceId": "f075c9d5ac00263a85449bc27730e4ce",
+        "errors": [
+          {
+            "field": "item",
+            "title": "This collection should contain exactly 1 element."
+          }
+        ]
+      }
+  - label: "500"
+    language: json
+    code: |
+      {
+        "uuid": null,
+        "code": 0,
+        "message": "Short exception description.",
+        "traceId": "082d86c339533af07c14252afcecc7bd"
+      }

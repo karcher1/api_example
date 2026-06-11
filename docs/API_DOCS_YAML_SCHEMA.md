@@ -12,6 +12,8 @@ The exact folder structure can be adapted to the existing project, but the conte
 /content
   /api
     navigation.yaml
+    /pages
+      endpoint-response-errors.yaml
     /endpoints
       create-user.yaml
       get-user.yaml
@@ -40,6 +42,10 @@ File:
 Example:
 
 ```yaml
+items:
+  - title: Endpoint response errors
+    slug: endpoint-response-errors
+
 sections:
   - title: Users
     id: users
@@ -62,12 +68,14 @@ sections:
 
 Rules:
 
+- Optional root-level `items` defines standalone API navigation links rendered before collapsible sections.
+- Root-level `items` can link to API endpoint files or API article page files.
 - `sections` defines the API navigation tree.
 - `title` is displayed in the sidebar.
 - `id` is a stable internal identifier.
 - `defaultOpen` controls initial expanded state.
 - `items` contains endpoints.
-- `slug` must match an endpoint content file or endpoint slug.
+- `slug` must match an endpoint content file, an API article content file, or the corresponding content slug.
 - Order in YAML is the order in the UI.
 - Navigation groups must contain at least one item.
 - A navigation item must not define both `slug` and nested `items`.
@@ -88,7 +96,67 @@ sections:
 
 ---
 
-# 3. API endpoint schema
+# 3. API article page schema
+
+File example:
+
+```txt
+/content/api/pages/endpoint-response-errors.yaml
+```
+
+Example:
+
+```yaml
+slug: endpoint-response-errors
+title: Endpoint response errors
+description: Error response contracts and charge failure reason mapping.
+
+content: |
+  # Endpoint response errors
+
+  Use this page for API reference content that is not a single HTTP endpoint.
+
+  | Attribute | Type | Description |
+  | --- | --- | --- |
+  | code | integer | Error code |
+
+examples:
+  - label: "400"
+    language: json
+    code: |
+      {
+        "code": 400,
+        "message": "Bad request"
+      }
+```
+
+Required fields:
+
+```yaml
+slug: string
+title: string
+content: string
+```
+
+Recommended optional fields:
+
+```yaml
+description: string
+blocks: array
+examples: array
+```
+
+Rules:
+
+- API article pages live under `/content/api/pages`.
+- `slug` must match the YAML filename and resolves to `/api/{slug}`.
+- API article slugs must not duplicate endpoint slugs because both share the same route namespace.
+- Use API article pages for reference content that belongs in API Reference navigation but does not have endpoint metadata like `method` and `path`.
+- `examples` uses the same `label`, `language`, and `code` shape as endpoint examples and renders in the API article right panel when present.
+
+---
+
+# 4. API endpoint schema
 
 File example:
 
@@ -214,7 +282,7 @@ responseExamples:
 
 ---
 
-# 4. Required endpoint fields
+# 5. Required endpoint fields
 
 ```yaml
 slug: string
@@ -235,7 +303,7 @@ Recommended validation:
 
 ---
 
-# 5. Parameter object schema
+# 6. Parameter object schema
 
 Used by:
 
@@ -298,7 +366,7 @@ default: any
 
 ---
 
-# 6. Response object schema
+# 7. Response object schema
 
 ```yaml
 status: number|string
@@ -347,7 +415,7 @@ responses:
 
 ---
 
-# 7. Custom block schema
+# 8. Custom block schema
 
 ```yaml
 type: note|info|warning|danger|tip|string
@@ -370,7 +438,7 @@ Block types should be flexible. If an unknown block type is provided, the UI sho
 
 ---
 
-# 8. Code example schema
+# 9. Code example schema
 
 Used by:
 
@@ -401,7 +469,7 @@ requestExamples:
 
 ---
 
-# 9. Guide navigation schema
+# 10. Guide navigation schema
 
 File:
 
@@ -443,7 +511,7 @@ Rules:
 
 ---
 
-# 10. Guide page schema
+# 11. Guide page schema
 
 File example:
 
@@ -483,7 +551,7 @@ blocks:
 
 ---
 
-# 11. Required guide fields
+# 12. Required guide fields
 
 ```yaml
 slug: string
@@ -500,7 +568,7 @@ blocks: array
 
 ---
 
-# 12. Guide block schema
+# 13. Guide block schema
 
 Guides may use plain Markdown in `content`.
 
@@ -532,7 +600,7 @@ blocks:
 
 ---
 
-# 13. Validation rules
+# 14. Validation rules
 
 The implementation should validate:
 
@@ -574,7 +642,7 @@ content
 
 ---
 
-# 14. Rendering rules
+# 15. Rendering rules
 
 - Empty parameter groups should not render broken empty tables.
 - Empty request examples should not break the request examples component.

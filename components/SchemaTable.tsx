@@ -126,16 +126,7 @@ function childNodes(node: SchemaNode): SchemaChild[] {
   children.push(...schemaObjectChildren(node));
 
   if (node.items) {
-    const itemChildren = node.items.type === "object" ? schemaObjectChildren(node.items) : [];
-
-    if (itemChildren.length > 0) {
-      children.push(...itemChildren);
-    } else {
-      children.push({
-        node: { ...node.items, name: node.items.name ?? "items" },
-        label: "items[]",
-      });
-    }
+    children.push(...childNodes(node.items));
   }
 
   node.variants?.forEach((variant, index) => {

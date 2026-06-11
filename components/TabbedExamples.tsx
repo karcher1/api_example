@@ -10,6 +10,27 @@ interface TabbedExamplesProps {
   responseExamples: ResponseExample[];
 }
 
+interface CodeExample {
+  id: string;
+  label: string;
+  language: string;
+  value: string;
+}
+
+interface ExampleCardProps {
+  title: string;
+  examples: CodeExample[];
+  ariaLabel: string;
+  emptyState: string;
+}
+
+interface SingleExamplePanelProps {
+  title?: string;
+  examples: CodeExample[];
+  ariaLabel?: string;
+  emptyState?: string;
+}
+
 interface ExampleSelectOption {
   id: string;
   label: string;
@@ -45,67 +66,73 @@ function ExampleSelect({ ariaLabel, value, options, onChange }: ExampleSelectPro
   );
 }
 
-export function TabbedExamples({ requestExamples, responseExamples }: TabbedExamplesProps) {
-  const [activeRequestId, setActiveRequestId] = useState(requestExamples[0]?.id);
-  const [activeResponseId, setActiveResponseId] = useState(responseExamples[0]?.id);
-  const activeRequest = requestExamples.find((example) => example.id === activeRequestId) ?? requestExamples[0];
-  const activeResponse = responseExamples.find((example) => example.id === activeResponseId) ?? responseExamples[0];
-  const requestOptions = requestExamples.map((example) => ({
-    id: example.id,
-    label: example.label,
-  }));
-  const responseOptions = responseExamples.map((example) => ({
+function ExampleCard({ title, examples, ariaLabel, emptyState }: ExampleCardProps) {
+  const [activeId, setActiveId] = useState(examples[0]?.id);
+  const activeExample = examples.find((example) => example.id === activeId) ?? examples[0];
+  const options = examples.map((example) => ({
     id: example.id,
     label: example.label,
   }));
 
   useEffect(() => {
-    setActiveRequestId(requestExamples[0]?.id);
-  }, [requestExamples]);
-
-  useEffect(() => {
-    setActiveResponseId(responseExamples[0]?.id);
-  }, [responseExamples]);
+    setActiveId(examples[0]?.id);
+  }, [examples]);
 
   return (
-    <div className="right-panel examples-panel">
-      <section className="example-card">
-        <div className="example-card-header">
-          <div className="example-card-title">
-            <span>Request</span>
-          </div>
-          <ExampleSelect
-            ariaLabel="Select request example"
-            value={activeRequest?.id}
-            options={requestOptions}
-            onChange={setActiveRequestId}
-          />
+    <section className="example-card">
+      <div className="example-card-header">
+        <div className="example-card-title">
+          <span>{title}</span>
         </div>
-        {activeRequest ? (
-          <CodeBlock value={activeRequest.value} language={activeRequest.language} />
-        ) : (
-          <p className="empty-state">No request example documented.</p>
-        )}
-      </section>
+        <ExampleSelect
+          ariaLabel={ariaLabel}
+          value={activeExample?.id}
+          options={options}
+          onChange={setActiveId}
+        />
+      </div>
+      {activeExample ? (
+        <CodeBlock value={activeExample.value} language={activeExample.language} />
+      ) : (
+        <p className="empty-state">{emptyState}</p>
+      )}
+    </section>
+  );
+}
 
-      <section className="example-card">
-        <div className="example-card-header">
-          <div className="example-card-title">
-            <span>Response</span>
-          </div>
-          <ExampleSelect
-            ariaLabel="Select response example"
-            value={activeResponse?.id}
-            options={responseOptions}
-            onChange={setActiveResponseId}
-          />
-        </div>
-        {activeResponse ? (
-          <CodeBlock value={activeResponse.value} language={activeResponse.language} />
-        ) : (
-          <p className="empty-state">No response example documented.</p>
-        )}
-      </section>
+export function TabbedExamples({ requestExamples, responseExamples }: TabbedExamplesProps) {
+  return (
+    <div className="right-panel examples-panel">
+      <ExampleCard
+        title="Request"
+        examples={requestExamples}
+        ariaLabel="Select request example"
+        emptyState="No request example documented."
+      />
+      <ExampleCard
+        title="Response"
+        examples={responseExamples}
+        ariaLabel="Select response example"
+        emptyState="No response example documented."
+      />
+    </div>
+  );
+}
+
+export function SingleExamplePanel({
+  title = "Response",
+  examples,
+  ariaLabel = "Select response example",
+  emptyState = "No response example documented.",
+}: SingleExamplePanelProps) {
+  return (
+    <div className="right-panel examples-panel">
+      <ExampleCard
+        title={title}
+        examples={examples}
+        ariaLabel={ariaLabel}
+        emptyState={emptyState}
+      />
     </div>
   );
 }

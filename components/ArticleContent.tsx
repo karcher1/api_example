@@ -6,7 +6,9 @@ import type { ArticleBlock, ContentPage } from "@/lib/pages";
 interface ArticleContentProps {
   page: ContentPage;
   collectionTitle?: string;
-  sectionVariant?: "article" | "webhook";
+  sectionVariant?: "article" | "webhook" | "api-reference";
+  sectionCards?: boolean;
+  plainSections?: boolean;
 }
 
 function noticeTone(type: string): string {
@@ -62,6 +64,8 @@ function ArticleBlockView({ block }: { block: ArticleBlock }) {
 export function ArticleContent({
   page,
   sectionVariant = "article",
+  sectionCards = true,
+  plainSections = false,
 }: ArticleContentProps) {
   const body = bodyWithoutDuplicateTitle(page);
 
@@ -76,7 +80,7 @@ export function ArticleContent({
       <header className={`static-page-header article-hero article-hero-${sectionVariant}`}>
         <h1>{page.title}</h1>
       </header>
-      <SafeMarkdown source={body} sectionCards />
+      <SafeMarkdown source={body} sectionCards={sectionCards} plainSections={plainSections} />
       {page.blocks.length ? (
         <div className="article-blocks">
           {page.blocks.map((block) => (
