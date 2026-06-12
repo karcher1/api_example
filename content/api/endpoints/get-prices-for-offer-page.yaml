@@ -5,11 +5,27 @@ method: POST
 path: /api/v3/products/shop-prices
 status: lts
 headerParameters:
+  - name: x-public-key
+    type: string
+    required: true
+    description: a public key that identifies the merchant account (there can be several for one merchant)
+  - name: x-buyer-ip
+    type: string
+    required: true
+    description: is responsible for information about the buyer's IP address
+  - name: x-date
+    type: string
+    required: true
+    description: is responsible for the date and time of sending the request
+  - name: x-token
+    type: string
+    required: true
+    description: generated on the merchant side
   - name: x-source
     type: string
     required: true
     description: pass the value shop
-    example: pay-front
+    example: shop
   - name: x-id
     type: string
     required: true
